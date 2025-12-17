@@ -1,0 +1,55 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: core_mongo_dev
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-root}
+    volumes:
+      - mongo_data_dev:/data/db
+
+  api:
+    image: node:20-alpine
+    container_name: core_api_dev
+    working_dir: /app
+    command: ["sh", "-lc", "corepack enable && corepack prepare pnpm@9.0.0 --activate && pnpm install && pnpm run start:dev"]
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      MONGO_URI: mongodb://${MONGO_ROOT_USER:-root}:${MONGO_ROOT_PASSWORD:-root}@mongo:27017/${MONGO_DB:-app}?authSource=admin
+    volumes:
+      - ./apps/api:/app
+      - pnpm_store_api:/pnpm-store
+      - node_modules_api:/app/node_modules
+    depends_on:
+      - mongo
+
+  web:
+    image: node:20-alpine
+    container_name: core_web_dev
+    working_dir: /app
+    command: ["sh", "-lc", "corepack enable && corepack prepare pnpm@9.0.0 --activate && pnpm install && pnpm run dev"]
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./apps/web:/app
+      - pnpm_store_web:/pnpm-store
+      - node_modules_web:/app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  mongo_data_dev:
+  pnpm_store_api:
+  pnpm_store_web:
+  node_modules_api:
+  node_modules_web:
