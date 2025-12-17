@@ -21,7 +21,6 @@ RUN pnpm install --prod --frozen-lockfile
 
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
-COPY --from=build /app/next.config.* ./ 2>/dev/null || true
 
 EXPOSE 3000
 CMD ["pnpm", "start", "-p", "3000"]
