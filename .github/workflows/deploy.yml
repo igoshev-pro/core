@@ -27,16 +27,16 @@ jobs:
       - name: Build & push API
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: apps/api/Dockerfile
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/igoshev-pro-api:main
 
       - name: Build & push WEB
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: apps/web/Dockerfile
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/igoshev-pro-web:main
 
