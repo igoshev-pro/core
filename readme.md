@@ -17,3 +17,7 @@ docker compose -f docker-compose.dev.yml down
 docker compose -f docker-compose.dev.yml down -v
 
 pnpm run start:dev
+
+на сервере перезапуск
+
+docker compose --env-file .env up -d --force-recreate
