@@ -1,16 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { UserModule } from './user/user.module';
+import { DatabaseModule } from './core/database/core-database.module';
+import { ProjectModule } from './feature/project/project.module';
+import { UserModule } from './feature/user/user.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './feature/user/user.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    MongooseModule.forRootAsync({
+    ConfigModule.forRoot({ isGlobal: true }),
+  MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const uri = config.get<string>("MONGO_URI", { infer: true });
@@ -20,9 +19,9 @@ import { UserModule } from './user/user.module';
         };
       },
     }),
+    DatabaseModule,
     UserModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+    ProjectModule,
+  ]
 })
 export class AppModule {}
