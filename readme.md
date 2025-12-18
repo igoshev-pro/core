@@ -93,3 +93,77 @@ docker compose --env-file .env up -d --force-recreate
 	"updatedAt": "2025-12-18T23:49:07.094Z",
 	"__v": 0
 }
+
+прод
+
+{
+	"name": "Дмитрий",
+	"email": "dimitri@igoshev.de",
+	"role": "superAdmin",
+	"status": "active",
+	"balance": [
+		0
+	],
+	"currentCurrency": "RUB",
+	"_id": "694494546cb50d540522d2c0",
+	"createdAt": "2025-12-18T23:55:00.432Z",
+	"updatedAt": "2025-12-18T23:55:00.432Z",
+	"__v": 0
+}
+
+{
+	"slug": "igoshev-pro",
+	"name": "Igoshev PRO",
+	"url": "https://igoshev.pro",
+	"description": "SAAS",
+	"domains": [
+		"localhost",
+		"igoshev.pro"
+	],
+	"primaryDomain": "igoshev.pro",
+	"type": "core",
+	"status": "active",
+	"owner": "694494546cb50d540522d2c0",
+	"features": {
+		"topLevel": [],
+		"cmsFeatures": [],
+		"entityFeatures": [],
+		"modulesFeatures": []
+	},
+	"db": {
+		"mongo": {
+			"uri": "mongodb://root:root@localhost:27017/app?authSource=admin",
+			"core": ""
+		}
+	},
+	"templateId": "landing-default",
+	"themeId": "default",
+	"seo": {
+		"defaultTitle": "",
+		"defaultDescription": "",
+		"_id": "6944948c6cb50d540522d2c2"
+	},
+	"siteSettings": {
+		"template": {
+			"name": "Default"
+		},
+		"theme": {
+			"primaryColor": "#000000",
+			"secondaryColor": "#ffffff",
+			"accentColor": "#ff0000"
+		},
+		"fonts": {
+			"primary": "Roboto",
+			"secondary": "Arial"
+		},
+		"_id": "6944948c6cb50d540522d2c3"
+	},
+	"pages": [],
+	"isDemo": false,
+	"isArchived": false,
+	"_id": "6944948c6cb50d540522d2c4",
+	"entities": [],
+	"createdAt": "2025-12-18T23:55:56.787Z",
+	"updatedAt": "2025-12-18T23:55:56.787Z",
+	"__v": 0
+}
