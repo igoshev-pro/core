@@ -5,7 +5,7 @@ import { UpdateSuperAdminDto } from './dto/update-super-admin.dto';
 import { JwtGuard } from '../auth/guards/jwt.guard'
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard'
 
-@UseGuards(JwtGuard, SuperAdminGuard)
+// @UseGuards(JwtGuard, SuperAdminGuard)
 @Controller('core/super-admins')
 export class SuperAdminsController {
   constructor(private readonly superAdminsService: SuperAdminsService) {}

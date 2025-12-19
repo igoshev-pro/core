@@ -17,10 +17,9 @@ export class AuthService {
 
     if (!user?._id) throw new HttpException('User not found', 404);
 
-    // @ts-ignore
     const result = await this.verifyToken(user.otp, user.email, data.otp);
-    // @ts-ignore
-    if (!result.valid) throw new HttpException(result.reason, 401);
+ 
+    if (!result.valid) throw new HttpException("Tokin not valid", 401);
 
     const payload = { sub: user._id, role: user.role };
 
@@ -67,13 +66,7 @@ export class AuthService {
     // });
 
     // 5. Возвращаем ответ
-    return {
-      success: true,
-      message: 'OTP отправлен на email',
-      userId: user._id,
-      type: user.type,
-      code: otp,
-    };
+    return otp
   }
 
   private async findUserByEmail(email: string) {
@@ -83,25 +76,9 @@ export class AuthService {
       this.clientsService.findByEmail(email),
     ]);
 
-    if (superAdmin) {
-      return {
-        _id: superAdmin._id.toString(),
-        email: superAdmin.email,
-        name: superAdmin.name,
-        role: superAdmin.role || 'superAdmin',
-        type: 'superAdmin',
-      };
-    }
+    if (superAdmin) return superAdmin
 
-    if (client) {
-      return {
-        _id: client._id.toString(),
-        email: client.email,
-        name: client.name,
-        role: client.role || 'client',
-        type: 'client',
-      };
-    }
+    if (client) return client
 
     return null;
   }
