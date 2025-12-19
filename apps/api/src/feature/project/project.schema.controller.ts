@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import { generateSchemaFromDto } from 'src/common/utils/schema-generator.util';
 import { CreateProjectDto } from './project.dto';
+import { generateSchemaFromDto } from 'src/common/utils/schema-generator.util';
 
 @Controller('schema')
 export class ProjectSchemaController {

@@ -1,3 +1,4 @@
+// project.entity.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { User } from '../user/user.entity';
@@ -14,14 +15,35 @@ export type ProjectDocument = Project & Document;
 
 @Schema({ timestamps: true })
 export class Project {
-  @Prop({ required: true, unique: true }) url: string;
-  @Prop({ required: true, unique: true }) slug: string;
-  @Prop({ required: true }) name: string;
+  @Prop({ required: true, unique: true })
+  slug: string;
 
-  @Prop() description?: string;
-  @Prop() preview?: string;
-  @Prop() logo?: string;
-  @Prop() logoSmall?: string;
+  @Prop({ required: true })
+  name: string;
+
+  /** (опционально) “красивый URL” для админки */
+  @Prop()
+  url?: string;
+
+  @Prop()
+  description?: string;
+
+  @Prop()
+  preview?: string;
+
+  @Prop()
+  logo?: string;
+
+  @Prop()
+  logoSmall?: string;
+
+  /** Мульти-тенант: нормализованные hostnames (без порта/пути) */
+  @Prop({ type: [String], default: [], index: true })
+  domains: string[];
+
+  /** Основной домен (нормализованный) */
+  @Prop({ type: String, index: true })
+  primaryDomain?: string;
 
   @Prop({ required: true, enum: Object.values(ProjectType) })
   type: ProjectType;
@@ -29,7 +51,8 @@ export class Project {
   @Prop({ default: ProjectStatus.ACTIVE, enum: Object.values(ProjectStatus) })
   status: ProjectStatus;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' }) owner: User;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  owner: User;
 
   @Prop({
     type: ProjectFeatures,
@@ -44,22 +67,33 @@ export class Project {
 
   @Prop({ type: Object, default: {} })
   db: {
-    // pg?: {
-    //   host: string;
-    //   port: number;
-    //   user: string;
-    //   pass: string;
-    //   name: string;
-    //   entities: string[];
-    // };
     mongo?: { uri: string; name: string };
   };
 
+  /** То, что нужно фронту для рендера */
+  @Prop({ type: String, default: 'landing-default' })
+  templateId: string;
+
+  @Prop({ type: String, default: 'default' })
+  themeId: string;
+
+  /** CSS vars overrides: { "--color-primary": "red", ... } */
+  @Prop({ type: Object, default: {} })
+  themeOverrides: Record<string, string>;
+
   @Prop({
     type: {
-      template: {
-        name: { type: String, default: 'Default' },
-      },
+      defaultTitle: { type: String, default: '' },
+      defaultDescription: { type: String, default: '' },
+    },
+    default: {},
+  })
+  seo: { defaultTitle?: string; defaultDescription?: string };
+
+  /** Твои настройки сайта (можно оставить) */
+  @Prop({
+    type: {
+      template: { name: { type: String, default: 'Default' } },
       theme: {
         primaryColor: { type: String, default: '#000000' },
         secondaryColor: { type: String, default: '#ffffff' },
@@ -73,12 +107,9 @@ export class Project {
     default: {},
   })
   siteSettings: {
-    theme: {
-      primaryColor: string;
-      secondaryColor: string;
-      accentColor: string;
-    };
-    fonts: { primary: string; secondary: string };
+    template?: { name?: string };
+    theme?: { primaryColor?: string; secondaryColor?: string; accentColor?: string };
+    fonts?: { primary?: string; secondary?: string };
   };
 
   @Prop({ type: Object })
@@ -90,19 +121,23 @@ export class Project {
   @Prop({ type: Object })
   address?: Address;
 
+  /** Связь на Page (в tenant-эндпоинте популишь и отдаёшь resolved pages) */
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Page' }],
     default: [],
   })
   pages: mongoose.Types.ObjectId[];
 
-  @Prop({ type: Array, default: [] }) entities: EntitySchema[];
+  @Prop({ type: Array, default: [] })
+  entities: EntitySchema[];
 
-  @Prop({ default: false }) isDemo?: boolean;
-  @Prop({ default: false }) isArchived?: boolean;
+  @Prop({ default: false })
+  isDemo?: boolean;
 
-  //   domainTech: string | null;    // типа "k3jf92"
-  // domainCustom: string | null;  // типа "client.ru"
+  @Prop({ default: false })
+  isArchived?: boolean;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
+ProjectSchema.index({ domains: 1 });
+ProjectSchema.index({ primaryDomain: 1 });
