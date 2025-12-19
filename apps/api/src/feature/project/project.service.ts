@@ -1,9 +1,8 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Project, ProjectDocument } from './project.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateProjectDto, type UpdateProjectDto } from './project.dto';
-import { DbProject, mapProjectDbToFront } from './project.mapper';
 
 @Injectable()
 export class ProjectService {
@@ -43,14 +42,6 @@ export class ProjectService {
     return await this.projectModel.findOne({ url: domain }).exec();
   }
 
-  async getForRender(domain: string) {
-    const project = await this.projectModel.findOne({ url: domain }).exec();
-
-    if (!project) throw new NotFoundException('Проект не найден');
-
-    return mapProjectDbToFront(project as DbProject)
-  }
-
   async update(id: string, data: UpdateProjectDto) {
     // Получаем старый проект перед обновлением
     const oldProject = await this.projectModel.findById(id).lean();
@@ -72,7 +63,7 @@ export class ProjectService {
     return { ...updatedProject, ...oldFields };
   }
 
-  // remove(id: string) {
-  //   return this.projectModel.deleteOne({ _id: id }).exec();
-  // }
+  remove(id: string) {
+    return this.projectModel.deleteOne({ _id: id }).exec();
+  }
 }

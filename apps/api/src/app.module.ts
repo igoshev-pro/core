@@ -1,27 +1,27 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 import { DatabaseModule } from './core/database/core-database.module';
 import { ProjectModule } from './feature/project/project.module';
 import { UserModule } from './feature/user/user.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './feature/user/user.entity';
+import { TenantModule } from './common/tenant/tenant.module'
+import { AuthModule } from './feature/auth/auth.module'
+import { MailModule } from './feature/mail/mail.module'
+import { FileModule } from './feature/file/file.module'
+import { PageModule } from './feature/page/page.module'
+import { SectionModule } from './feature/section/section.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-  MongooseModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const uri = config.get<string>("MONGO_URI", { infer: true });
-        return {
-          uri,
-          serverSelectionTimeoutMS: 5000,
-        };
-      },
-    }),
     DatabaseModule,
-    UserModule,
     ProjectModule,
+    TenantModule,
+    UserModule,
+    AuthModule,
+    MailModule,
+    FileModule,
+    PageModule,
+    SectionModule,
   ]
 })
 export class AppModule {}

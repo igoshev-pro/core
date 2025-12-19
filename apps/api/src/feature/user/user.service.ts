@@ -3,39 +3,34 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-// import { TenantMongoService } from 'src/core/tenant/tenant-mongo.service';
+import { TenantMongoService } from 'src/core/tenant/tenant-mongo.service';
 import { Model } from 'mongoose';
 import { User, UserDocument, UserSchema, type Currency } from './user.entity';
 import type { CreateUserDto, UpdateUserDto } from './user.dto';
-import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class UserService {
-  constructor(
-      @InjectModel(User.name)
-      private readonly userModel: Model<UserDocument>,
-    ) {}
-  // private userModel: Model<UserDocument>;
+  private userModel: Model<UserDocument>;
 
-  // constructor(private readonly tenantMongo: TenantMongoService) {}
+  constructor(private readonly tenantMongo: TenantMongoService) {}
 
-  // async initModel() {
-  //   if (!this.userModel) {
-  //     this.userModel = await this.tenantMongo.getModel<UserDocument>(
-  //       User.name,
-  //       UserSchema,
-  //     );
-  //   }
-  // }
+  async initModel() {
+    if (!this.userModel) {
+      this.userModel = await this.tenantMongo.getModel<UserDocument>(
+        User.name,
+        UserSchema,
+      );
+    }
+  }
 
   async create(data: CreateUserDto) {
-    // await this.initModel();
+    await this.initModel();
     const newUser = new this.userModel(data);
     return newUser.save();
   }
 
   async findAll(query: Record<string, any>) {
-    // await this.initModel();
+    await this.initModel();
 
     const { limit } = query;
 
@@ -54,12 +49,12 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    // await this.initModel();
+    await this.initModel();
     return this.userModel.findOne({ _id: id }).exec();
   }
 
   async findByEmail(email: string) {
-    // await this.initModel();
+    await this.initModel();
     return this.userModel.findOne({ email }).exec();
   }
 
@@ -67,7 +62,7 @@ export class UserService {
     id: string,
     data: UpdateUserDto,
   ): Promise<User & Record<string, any>> {
-    // await this.initModel();
+    await this.initModel();
 
     // поддержим оба варианта, на будущее
     const payload: UpdateUserDto = (data as any)?.body ?? (data as any);
@@ -95,7 +90,7 @@ export class UserService {
   }
 
   async remove(id: string) {
-    // await this.initModel();
+    await this.initModel();
     return this.userModel.findOneAndDelete({ _id: id }).exec();
   }
 
