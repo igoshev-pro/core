@@ -7,28 +7,28 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 export class SuperAdminsController {
   constructor(private readonly superAdminsService: SuperAdminsService) {}
 
-  @Post()
-  create(@Body() createAdminDto: CreateAdminDto) {
-    return this.superAdminsService.create(createAdminDto);
-  }
+  // @Post()
+  // create(@Body() createAdminDto: CreateAdminDto) {
+  //   return this.superAdminsService.create(createAdminDto);
+  // }
 
-  @Get()
-  findAll(@Query() query: Record<string, string>) {
-    return this.superAdminsService.findAll(query);
-  }
+  // @Get()
+  // findAll(@Query() query: Record<string, string>) {
+  //   return this.superAdminsService.findAll(query);
+  // }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.superAdminsService.findOne(id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.superAdminsService.findOne(id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
-    return this.superAdminsService.update(id, updateAdminDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
+  //   return this.superAdminsService.update(id, updateAdminDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.superAdminsService.remove(id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.superAdminsService.remove(id);
+  // }
 }
