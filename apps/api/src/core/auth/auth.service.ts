@@ -2,6 +2,7 @@ import { ForbiddenException, HttpException, Injectable, NotFoundException, Unaut
 import { JwtService } from '@nestjs/jwt';
 import { SuperAdminsService } from '../super-admins/super-admins.service';
 import { ClientsService } from '../clients/clients.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -9,8 +10,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly superAdminsService: SuperAdminsService,
     private readonly clientsService: ClientsService,
-    // private readonly MailService: MailService,
-  ) {}
+    private readonly mailService: MailService
+  ) { }
 
   async login(data: { email: string; otp: string }) {
     const user = await this.findUserByEmail(data.email);
@@ -18,7 +19,7 @@ export class AuthService {
     if (!user?._id) throw new HttpException('User not found', 404);
 
     const result = await this.verifyToken(user.otp, user.email, data.otp);
- 
+
     if (!result.valid) throw new HttpException("Tokin not valid", 401);
 
     const payload = { sub: user._id, role: user.role };
@@ -60,10 +61,17 @@ export class AuthService {
     // 3. Сохраняем OTP в соответствующей БД
     await this.saveUserOTP(user, otpToken);
 
+    console.log(user)
+
     // 4. Отправляем email (асинхронно, не ждем)
-    // this.sendOTPEmail(user, otp).catch(err => {
-    //   this.logger.error(`Failed to send OTP email to ${user.email}:`, err);
-    // });
+    this.mailService.sendOTPEmail({
+      email: user.email,
+      name: user.name,
+      otp,
+      company: 'Igoshev PRO',
+      language: 'ru',
+    });
+    // this.mailService.sendTestEmail(user.email)
 
     // 5. Возвращаем ответ
     return otp

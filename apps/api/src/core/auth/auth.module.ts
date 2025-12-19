@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt'
 import { jwtConstants } from './constants'
 import { SuperAdminsModule } from '../super-admins/super-admins.module'
 import { ClientsModule } from '../clients/clients.module'
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ClientsModule } from '../clients/clients.module'
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '7d' },
     }),
+    MailModule,
     SuperAdminsModule,
     ClientsModule
   ],

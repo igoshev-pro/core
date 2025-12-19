@@ -21,6 +21,13 @@ services:
       NODE_ENV: development
       PORT: "3000"
       MONGO_URI: mongodb://${MONGO_ROOT_USER:-root}:${MONGO_ROOT_PASSWORD:-root}@mongo:27017/${MONGO_DB:-app}?authSource=admin
+      MONGO_URI_FIRST_PART: mongodb://root:root@localhost:27017/
+      MONGO_URI_LAST_PART: ?retryWrites=?authSource=admin
+      SMTP_HOST: ${SMTP_HOST:-smtp.ionos.de}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
     volumes:
       - ./apps/api:/app
       - pnpm_store_api:/pnpm-store

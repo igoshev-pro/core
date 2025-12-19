@@ -5,6 +5,7 @@ import { SuperAdminsModule } from "./core/super-admins/super-admins.module"
 import { AuthModule } from "./core/auth/auth.module"
 import { ClientsModule } from "./core/clients/clients.module"
 import { ProjectsModule } from "./core/projects/projects.module"
+import { MailModule } from "./core/mail/mail.module"
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ProjectsModule } from "./core/projects/projects.module"
     }),
     SuperAdminsModule,
     AuthModule,
+    MailModule,
     ClientsModule,
     ProjectsModule
   ]
