@@ -61,8 +61,6 @@ export class AuthService {
     // 3. Сохраняем OTP в соответствующей БД
     await this.saveUserOTP(user, otpToken);
 
-    console.log(user)
-
     // 4. Отправляем email (асинхронно, не ждем)
     this.mailService.sendOTPEmail({
       email: user.email,
