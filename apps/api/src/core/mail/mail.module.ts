@@ -4,20 +4,20 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { join } from 'path';
 import { MailService } from './mail.service';
 import { handlebarsHelpers } from './handlebars-helpers';
-const fs = require('fs');
+// const fs = require('fs');
 
-function getTemplatesPath() {
-  const isProd = process.env.NODE_ENV === 'production';
-  const isDocker = process.env.DOCKER === 'true' || fs.existsSync('/.dockerenv');
+// function getTemplatesPath() {
+//   const isProd = process.env.NODE_ENV === 'production';
+//   const isDocker = process.env.DOCKER === 'true' || fs.existsSync('/.dockerenv');
   
-  if (isProd || isDocker) {
-    // В Docker/prod - используем dist
-    return join(process.cwd(), 'dist', 'core', 'mail', 'templates');
-  } else {
-    // В dev - используем src
-    return join(process.cwd(), 'src', 'core', 'mail', 'templates');
-  }
-}
+//   if (isProd || isDocker) {
+//     // В Docker/prod - используем dist
+//     return join(process.cwd(), 'dist', 'core', 'mail', 'templates');
+//   } else {
+//     // В dev - используем src
+//     return join(process.cwd(), 'src', 'core', 'mail', 'templates');
+//   }
+// }
 
 @Module({
   imports: [
@@ -57,7 +57,7 @@ function getTemplatesPath() {
             from: `"No Reply" <${process.env.SMTP_FROM}>`,
           },
           template: {
-            dir: getTemplatesPath(),
+            dir: join(process.cwd(), 'dist', 'core', 'mail', 'templates'),
             adapter: new HandlebarsAdapter(handlebarsHelpers),
             options: {
               strict: true,
