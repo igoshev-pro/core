@@ -6,9 +6,13 @@ import { SuperAdmin, SuperAdminSchema } from './entities/super-admin.entity'
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: SuperAdmin.name, schema: SuperAdminSchema }]),
+    MongooseModule.forFeature([{ name: SuperAdmin.name, schema: SuperAdminSchema }], 'core'),
   ],
   controllers: [SuperAdminsController],
   providers: [SuperAdminsService],
+  exports: [
+    SuperAdminsService,
+    MongooseModule,
+  ],
 })
-export class AdminsModule {}
+export class SuperAdminsModule {}

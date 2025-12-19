@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import { CreateSuperAdminDto } from './dto/create-super-admin.dto';
+import { UpdateSuperAdminDto } from './dto/update-super-admin.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { SuperAdmin, type SuperAdminDocument } from './entities/super-admin.entity';
 import { Model } from 'mongoose';
@@ -8,11 +8,11 @@ import { Model } from 'mongoose';
 @Injectable()
 export class SuperAdminsService {
   constructor(
-    @InjectModel(SuperAdmin.name)
+    @InjectModel(SuperAdmin.name, 'core')
     private readonly superAdminModel: Model<SuperAdminDocument>,
   ) {}
 
-  create(data: CreateAdminDto) {
+  create(data: CreateSuperAdminDto) {
     const newSuperAdmin = new this.superAdminModel(data);
     return newSuperAdmin.save();
   }
@@ -33,7 +33,11 @@ export class SuperAdminsService {
     return this.superAdminModel.findOne({ _id: id }).exec();
   }
 
-  update(id: string, data: UpdateAdminDto) {
+  async findByEmail(email: string) {
+    return this.superAdminModel.findOne({ email }).exec();
+  }
+
+  update(id: string, data: UpdateSuperAdminDto) {
     return this.superAdminModel
       .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })
       .lean();

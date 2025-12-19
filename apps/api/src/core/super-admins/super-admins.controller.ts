@@ -1,34 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { SuperAdminsService } from './super-admins.service';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import { CreateSuperAdminDto } from './dto/create-super-admin.dto';
+import { UpdateSuperAdminDto } from './dto/update-super-admin.dto';
+import { JwtGuard } from '../auth/guards/jwt.guard'
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard'
 
+@UseGuards(JwtGuard, SuperAdminGuard)
 @Controller('core/super-admins')
 export class SuperAdminsController {
   constructor(private readonly superAdminsService: SuperAdminsService) {}
 
-  // @Post()
-  // create(@Body() createAdminDto: CreateAdminDto) {
-  //   return this.superAdminsService.create(createAdminDto);
-  // }
+  @Post()
+  create(@Body() createSuperAdminDto: CreateSuperAdminDto) {
+    return this.superAdminsService.create(createSuperAdminDto);
+  }
 
-  // @Get()
-  // findAll(@Query() query: Record<string, string>) {
-  //   return this.superAdminsService.findAll(query);
-  // }
+  @Get()
+  findAll(@Query() query: Record<string, string>) {
+    return this.superAdminsService.findAll(query);
+  }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.superAdminsService.findOne(id);
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.superAdminsService.findOne(id);
+  }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
-  //   return this.superAdminsService.update(id, updateAdminDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateSuperAdminDto: UpdateSuperAdminDto) {
+    return this.superAdminsService.update(id, updateSuperAdminDto);
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.superAdminsService.remove(id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.superAdminsService.remove(id);
+  }
 }

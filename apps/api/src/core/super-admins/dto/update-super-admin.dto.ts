@@ -1,4 +1,4 @@
-export class UpdateClientDto {
+export class UpdateSuperAdminDto {
   name?: string;
   email?: string;
   otp?: string;

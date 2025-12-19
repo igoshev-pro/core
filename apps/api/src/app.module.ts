@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { MongooseModule } from "@nestjs/mongoose"
-import { AdminsModule } from "./core/super-admins/super-admins.module"
+import { SuperAdminsModule } from "./core/super-admins/super-admins.module"
 import { AuthModule } from "./core/auth/auth.module"
 import { ClientsModule } from "./core/clients/clients.module"
 import { ProjectsModule } from "./core/projects/projects.module"
@@ -11,13 +11,14 @@ import { ProjectsModule } from "./core/projects/projects.module"
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
+      connectionName: 'core',
       useFactory: (config: ConfigService) => ({
         uri: config.get('MONGO_URI'),
         dbName: 'core'
       }),
       inject: [ConfigService],
     }),
-    AdminsModule,
+    SuperAdminsModule,
     AuthModule,
     ClientsModule,
     ProjectsModule
