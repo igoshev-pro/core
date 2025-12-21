@@ -12,22 +12,23 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { JwtGuard } from '../auth/guards/jwt.guard'
-import { SuperAdminGuard } from '../auth/guards/super-admin.guard'
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Me } from '../auth/me.decorator'
 import { UserRole } from 'src/common/enums/user.unum'
+import { ClientGuard } from '../clients/client.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('core/projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
-  @UseGuards(JwtGuard)
+  @UseGuards(ClientGuard)
   @Post()
   create(@Body() createProjectDto: CreateProjectDto) {
     return this.projectsService.create(createProjectDto);
   }
 
-  @UseGuards(JwtGuard)
+  @UseGuards(ClientGuard)
   @Get()
   findAll(@Query() query: Record<string, string>, @Me() user: any) {
     if (user.role !== UserRole.SuperAdmin) {
@@ -36,12 +37,13 @@ export class ProjectsController {
     return this.projectsService.findAll(query);
   }
 
+  @UseGuards(ClientGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.projectsService.findOne(id);
   }
 
-  @UseGuards(JwtGuard, SuperAdminGuard)
+  @UseGuards(ClientGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -50,7 +52,7 @@ export class ProjectsController {
     return this.projectsService.update(id, updateProjectDto);
   }
 
-  @UseGuards(JwtGuard, SuperAdminGuard)
+  @UseGuards(ClientGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.projectsService.remove(id);

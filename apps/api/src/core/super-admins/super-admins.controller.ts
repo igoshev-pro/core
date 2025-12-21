@@ -2,13 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } f
 import { SuperAdminsService } from './super-admins.service';
 import { CreateSuperAdminDto } from './dto/create-super-admin.dto';
 import { UpdateSuperAdminDto } from './dto/update-super-admin.dto';
-import { JwtGuard } from '../auth/guards/jwt.guard'
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard'
+import { Me } from '../auth/me.decorator';
 
-@UseGuards(JwtGuard, SuperAdminGuard)
+@UseGuards(JwtAuthGuard, SuperAdminGuard)
 @Controller('core/super-admins')
 export class SuperAdminsController {
-  constructor(private readonly superAdminsService: SuperAdminsService) {}
+  constructor(private readonly superAdminsService: SuperAdminsService) { }
 
   @Post()
   create(@Body() createSuperAdminDto: CreateSuperAdminDto) {
@@ -33,5 +34,10 @@ export class SuperAdminsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.superAdminsService.remove(id);
+  }
+
+  @Get('get/me')
+  getProfile(@Me() user: any) {
+    return this.superAdminsService.findOne(user?.sub);
   }
 }

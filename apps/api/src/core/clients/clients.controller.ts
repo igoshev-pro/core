@@ -2,36 +2,48 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } f
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { JwtGuard } from '../auth/guards/jwt.guard'
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard'
+import { ClientGuard } from './client.guard';
+import { Me } from '../auth/me.decorator';
 
-@UseGuards(JwtGuard, SuperAdminGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('core/clients')
 export class ClientsController {
-  constructor(private readonly ClientsService: ClientsService) {}
+  constructor(private readonly clientsService: ClientsService) {}
 
+  @UseGuards(SuperAdminGuard)
   @Post()
   create(@Body() createClientDto: CreateClientDto) {
-    return this.ClientsService.create(createClientDto);
+    return this.clientsService.create(createClientDto);
   }
 
+  @UseGuards(SuperAdminGuard)
   @Get()
   findAll(@Query() query: Record<string, string>) {
-    return this.ClientsService.findAll(query);
+    return this.clientsService.findAll(query);
   }
 
+  @UseGuards(ClientGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.ClientsService.findOne(id);
+    return this.clientsService.findOne(id);
   }
 
+  @UseGuards(SuperAdminGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
-    return this.ClientsService.update(id, updateClientDto);
+    return this.clientsService.update(id, updateClientDto);
   }
 
+  @UseGuards(SuperAdminGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.ClientsService.remove(id);
+    return this.clientsService.remove(id);
+  }
+
+  @Get('get/me')
+  getProfile(@Me() user: any) {
+    return this.clientsService.findOne(user?.sub);
   }
 }

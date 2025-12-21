@@ -10,7 +10,7 @@ export class ClientsService {
   constructor(
     @InjectModel(Client.name, 'core')
     private readonly clientModel: Model<ClientDocument>,
-  ) {}
+  ) { }
 
   create(data: CreateClientDto) {
     const newClient = new this.clientModel(data);
@@ -26,15 +26,16 @@ export class ClientsService {
       .find()
       .sort({ createdAt: -1 })
       .limit(Number.isNaN(limitValue) ? 10 : limitValue)
+      .populate('projects')
       .exec();
   }
 
   findOne(id: string) {
-    return this.clientModel.findOne({ _id: id }).exec();
+    return this.clientModel.findOne({ _id: id }).populate([{ path: 'projects', model: 'Project' }]).exec();
   }
 
   async findByEmail(email: string) {
-    return this.clientModel.findOne({ email }).exec();
+    return this.clientModel.findOne({ email }).populate([{ path: 'projects', model: 'Project' }]).exec();
   }
 
   update(id: string, data: UpdateClientDto) {
@@ -43,7 +44,18 @@ export class ClientsService {
       .lean();
   }
 
-  remove(id: string) {
-    return this.clientModel.findOneAndDelete({ _id: id }).exec();
+  async remove(id: string) {
+    // const client: any = await this.clientModel
+    //   .findOne({ _id: id })
+    //   .lean()
+    //   .exec();
+
+    // if (!client) return;
+
+    // 1️⃣ удалить проекты пользователя
+    // await this.projectsService.removeManyByIds(client?.projects ?? []);
+
+    // 2️⃣ удалить пользователя
+    await this.clientModel.deleteOne({ _id: id }).exec()
   }
 }

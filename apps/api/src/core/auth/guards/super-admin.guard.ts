@@ -1,84 +1,42 @@
 import {
-  Injectable,
   CanActivate,
   ExecutionContext,
-  UnauthorizedException,
   ForbiddenException,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
 import { UserRole, UserStatus } from 'src/common/enums/user.unum';
 import { SuperAdminsService } from 'src/core/super-admins/super-admins.service';
-import { jwtConstants } from '../constants'
+import type { RequestWithAuth } from './auth.types';
 
 @Injectable()
 export class SuperAdminGuard implements CanActivate {
-  constructor(
-    private readonly reflector: Reflector,
-    private readonly jwtService: JwtService,
-    private readonly superAdminsService: SuperAdminsService,
-  ) {}
+  constructor(private readonly superAdminsService: SuperAdminsService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<RequestWithAuth>();
 
-    // 1. Получаем токен из запроса
-    const token = this.extractTokenFromHeader(request);
-    if (!token) {
-      throw new UnauthorizedException('No authentication token provided');
+    const payload = request.user;
+    if (!payload) {
+      throw new UnauthorizedException('Missing auth context (JwtAuthGuard)');
     }
 
-    try {
-      // 2. Верифицируем токен
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: jwtConstants.secret,
-      });
-
-      // 3. Проверяем, что пользователь суперадмин
-      if (payload.role !== 'superAdmin') {
-        throw new ForbiddenException('Super admin access required');
-      }
-
-      // 4. Проверяем дополнительно по базе (опционально)
-      const isValidAdmin = await this.validateSuperAdminInDb(payload.sub);
-      if (!isValidAdmin) {
-        throw new ForbiddenException(
-          'Super admin account not found or inactive',
-        );
-      }
-
-      // 5. Добавляем пользователя в request
-      // @ts-ignore
-      request.user = {
-        id: payload.sub,
-        email: payload.email,
-        role: payload.role,
-      };
-
-      return true;
-    } catch (error) {
-      if (error instanceof ForbiddenException) {
-        throw error;
-      }
-      throw new UnauthorizedException('Invalid or expired token');
+    if (payload.role !== UserRole.SuperAdmin) {
+      throw new ForbiddenException('Super admin access required');
     }
-  }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
-  }
+    const superAdmin = await this.superAdminsService.findOne(payload.sub);
+    if (!superAdmin) {
+      throw new ForbiddenException('Super admin account not found');
+    }
 
-  private async validateSuperAdminInDb(userId: string): Promise<boolean> {
-    const superAdmin = await this.superAdminsService.findOne(userId);
+    const ok =
+      (superAdmin as any).role === UserRole.SuperAdmin &&
+      (superAdmin as any).status === UserStatus.Active;
 
-    if (
-      !superAdmin ||
-      superAdmin?.role !== UserRole.SuperAdmin ||
-      superAdmin?.status !== UserStatus.Active
-    )
-      return false;
+    if (!ok) {
+      throw new ForbiddenException('Super admin account is inactive');
+    }
 
     return true;
   }

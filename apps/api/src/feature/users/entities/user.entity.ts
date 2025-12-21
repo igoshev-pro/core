@@ -1,10 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
 import { UserRole, UserStatus } from 'src/common/enums/user.unum'
-import { Project } from 'src/core/projects/entities/project.entity';
 
 @Schema({ timestamps: true })
-export class Client {
+export class User {
   @Prop({ required: true })
   name: string;
 
@@ -17,7 +15,7 @@ export class Client {
   @Prop({ type: String })
   avatar?: string;
 
-  @Prop({ default: UserRole.Client, enum: UserRole, required: true })
+  @Prop({ default: UserRole.User, enum: UserRole, required: true })
   role: UserRole;
 
   @Prop({
@@ -26,16 +24,8 @@ export class Client {
     default: UserStatus.Active,
   })
   status: UserStatus;
-
-  @Prop([
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Project',
-      default: null,
-    },
-  ])
-  projects: Project[];
 }
 
-export type ClientDocument = Client & Document;
-export const ClientSchema = SchemaFactory.createForClass(Client);
+export type UserDocument = User & Document;
+export const UserSchema = SchemaFactory.createForClass(User);
+

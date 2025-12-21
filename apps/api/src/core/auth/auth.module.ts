@@ -6,6 +6,9 @@ import { jwtConstants } from './constants'
 import { SuperAdminsModule } from '../super-admins/super-admins.module'
 import { ClientsModule } from '../clients/clients.module'
 import { MailModule } from '../mail/mail.module';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { TenantGuard } from './guards/tenant.guard';
+import { SuperAdminGuard } from './guards/super-admin.guard';
 
 @Module({
   imports: [
@@ -19,6 +22,6 @@ import { MailModule } from '../mail/mail.module';
     ClientsModule
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtAuthGuard, TenantGuard, SuperAdminGuard],
 })
 export class AuthModule {}

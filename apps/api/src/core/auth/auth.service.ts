@@ -10,6 +10,7 @@ import { SuperAdminsService } from '../super-admins/super-admins.service';
 import { ClientsService } from '../clients/clients.service';
 import { MailService } from '../mail/mail.service';
 import { jwtConstants } from './constants';
+import { UserRole } from 'src/common/enums/user.unum';
 
 @Injectable()
 export class AuthService {
@@ -18,10 +19,10 @@ export class AuthService {
     private readonly superAdminsService: SuperAdminsService,
     private readonly clientsService: ClientsService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   async login(data: { email: string; otp: string }) {
-    const user = await this.findUserByEmail(data.email);
+    const user: any = await this.findUserByEmail(data.email);
 
     if (!user?._id) throw new HttpException('User not found', 404);
 
@@ -29,28 +30,15 @@ export class AuthService {
 
     if (!result.valid) throw new HttpException('Tokin not valid', 401);
 
-    const payload = { sub: user._id, role: user.role };
+    const payload: any = { sub: user._id, role: user.role };
+    if (user.role === UserRole.Client && user?.projects?.length) {
+      payload.projectId = user.projects[0]?._id
+    }
 
     return {
       accessToken: await this.createToken(payload),
     };
   }
-
-  // async getOTP(email: string) {
-  //   let user = await this.clientsService.findByEmail(email);
-  //   user = await this.superAdminsService.findByEmail(email);
-
-  //   if (!user?._id) throw new HttpException('User not found', 404);
-
-  //   const code = this.generateCode();
-  //   const token = await this.generateToken(user.email, code, user.role);
-
-  //   await this.superAdminsService.update(user?._id.toString(), { otp: token });
-
-  //   // this.MailService.sendOTPEmail(email, code, user?.name);
-
-  //   return code
-  // }
 
   async getOTP(email: string) {
     // 1. Ищем пользователя
