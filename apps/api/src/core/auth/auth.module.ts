@@ -9,6 +9,7 @@ import { MailModule } from '../mail/mail.module';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TenantGuard } from './guards/tenant.guard';
 import { SuperAdminGuard } from './guards/super-admin.guard';
+import { UsersModule } from 'src/feature/users/users.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { SuperAdminGuard } from './guards/super-admin.guard';
     }),
     MailModule,
     SuperAdminsModule,
-    ClientsModule
+    ClientsModule,
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard, TenantGuard, SuperAdminGuard],

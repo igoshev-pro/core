@@ -1,15 +1,13 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Me } from './me.decorator'
-import { JwtAuthGuard } from './guards/jwt-auth.guard'
 
 @Controller('core/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  login(@Body() body: { email: string; otp: string }) {
-    return this.authService.login(body);
+  login(@Body() body: { email: string; otp: string }, @Headers('x-project-id') projectId: string) {
+    return this.authService.login(body, projectId);
   }
 
   @Post('otp')

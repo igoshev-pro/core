@@ -27,7 +27,7 @@ export class MailService {
         email,
         name,
         otp,
-        company = 'Igoshev PRO',
+        company = 'igoshev.pro',
         logoUrl = 'https://api.igoshev.de/logo-core.png',
         primaryColor = '#22C55E',
         language = 'ru',
@@ -36,7 +36,7 @@ export class MailService {
       this.logger.log(`Отправка OTP кода на ${email}`);
 
       const subject = language === 'ru'
-        ? `Код для входа в панель управления ${company}`
+        ? `Код для входа в на сайт ${company}`
         : `Your ${company} login code`;
 
       await this.mailerService.sendMail({

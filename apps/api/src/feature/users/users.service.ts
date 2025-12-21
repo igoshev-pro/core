@@ -31,11 +31,11 @@ export class UsersService {
   }
 
   findOne(id: string) {
-    return this.userModel.findOne({ _id: id }).populate([{ path: 'projects', model: 'Project' }]).exec();
+    return this.userModel.findOne({ _id: id }).exec();
   }
 
   async findByEmail(email: string) {
-    return this.userModel.findOne({ email }).populate([{ path: 'projects', model: 'Project' }]).exec();
+    return this.userModel.findOne({ email }).exec();
   }
 
   update(id: string, data: UpdateUserDto) {
