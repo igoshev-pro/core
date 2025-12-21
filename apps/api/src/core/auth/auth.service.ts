@@ -1,8 +1,15 @@
-import { ForbiddenException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SuperAdminsService } from '../super-admins/super-admins.service';
 import { ClientsService } from '../clients/clients.service';
 import { MailService } from '../mail/mail.service';
+import { jwtConstants } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -10,8 +17,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly superAdminsService: SuperAdminsService,
     private readonly clientsService: ClientsService,
-    private readonly mailService: MailService
-  ) { }
+    private readonly mailService: MailService,
+  ) {}
 
   async login(data: { email: string; otp: string }) {
     const user = await this.findUserByEmail(data.email);
@@ -20,12 +27,12 @@ export class AuthService {
 
     const result = await this.verifyToken(user.otp, user.email, data.otp);
 
-    if (!result.valid) throw new HttpException("Tokin not valid", 401);
+    if (!result.valid) throw new HttpException('Tokin not valid', 401);
 
     const payload = { sub: user._id, role: user.role };
 
     return {
-      accessToken: await this.createToken(payload, '7d'),
+      accessToken: await this.createToken(payload),
     };
   }
 
@@ -72,7 +79,7 @@ export class AuthService {
     // this.mailService.sendTestEmail(user.email)
 
     // 5. Возвращаем ответ
-    return otp
+    return otp;
   }
 
   private async findUserByEmail(email: string) {
@@ -82,9 +89,9 @@ export class AuthService {
       this.clientsService.findByEmail(email),
     ]);
 
-    if (superAdmin) return superAdmin
+    if (superAdmin) return superAdmin;
 
-    if (client) return client
+    if (client) return client;
 
     return null;
   }
@@ -94,7 +101,7 @@ export class AuthService {
       otp: otpToken,
     };
 
-    if (user.type === 'superAdmin') {
+    if (user.role === 'superAdmin') {
       await this.superAdminsService.update(user._id, updateData);
     } else {
       await this.clientsService.update(user._id, updateData);
@@ -108,9 +115,6 @@ export class AuthService {
   }
 
   async getMe(user: any) {
-    // user.sub содержит ID пользователя из JWT токена
-    // user.type содержит тип пользователя из токена ('superAdmin' | 'client')
-
     if (!user?.sub || !user?.type) {
       throw new UnauthorizedException('Invalid user data');
     }
@@ -144,20 +148,15 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  async generateToken(
-    email: string,
-    code: string,
-    role: string,
-  ): Promise<string> {
+  async generateToken(email, code, role): Promise<string> {
     return this.jwtService.signAsync(
       { email, code, role },
       { expiresIn: '15m' },
     );
   }
 
-  async createToken(payload, expiresIn: string): Promise<string> {
-    // @ts-ignore
-    return await this.jwtService.signAsync(payload, { expiresIn });
+  async createToken(payload): Promise<string> {
+    return await this.jwtService.signAsync(payload, { expiresIn: '7d' });
   }
 
   async verifyToken(
@@ -166,10 +165,9 @@ export class AuthService {
     code: string,
   ): Promise<{ valid: boolean; reason?: string }> {
     try {
-      const payload = await this.jwtService.verifyAsync<{
-        email: string;
-        code: string;
-      }>(token);
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: jwtConstants.secret,
+      });
 
       if (payload.email !== email) {
         return { valid: false, reason: 'EMAIL_MISMATCH' };

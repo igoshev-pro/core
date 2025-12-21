@@ -1,26 +1,66 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Project, type ProjectDocument } from './entities/project.entity';
 
 @Injectable()
 export class ProjectsService {
-  create(createProjectDto: CreateProjectDto) {
-    return 'This action adds a new project';
+  constructor(
+    @InjectModel(Project.name, 'core')
+    private readonly projectModel: Model<ProjectDocument>,
+  ) {}
+
+  create(data: CreateProjectDto) {
+    if (!data?.db?.mongo?.uri && data?.db?.mongo?.name)
+      data.db.mongo.uri = `${process.env.MONGO_URI_FIRST_PART}${data.db.mongo.name.toLowerCase()}${process.env.MONGO_URI_LAST_PART}`;
+
+    const newProject = new this.projectModel(data);
+    return newProject.save();
   }
 
-  findAll() {
-    return `This action returns all projects`;
+  findAll(query: Record<string, string> = {}) {
+    const { owner, limit } = query;
+
+    const filter: Record<string, any> = {};
+    if (owner) filter.owner = owner;
+
+    const limitValue = Number.parseInt(limit ?? '', 10);
+
+    return this.projectModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .limit(Number.isNaN(limitValue) ? 10 : limitValue)
+      .exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} project`;
+  findOne(id: string) {
+    return this.projectModel.findOne({ _id: id }).exec();
   }
 
-  update(id: number, updateProjectDto: UpdateProjectDto) {
-    return `This action updates a #${id} project`;
+  async update(id: string, data: UpdateProjectDto) {
+    // Получаем старый проект перед обновлением
+    const oldProject = await this.projectModel.findById(id).lean();
+    if (!oldProject) {
+      throw new NotFoundException('Проект не найден');
+    }
+
+    // Выполняем обновление
+    const updatedProject = await this.projectModel
+      .findOneAndUpdate({ _id: id }, { ...data }, { new: true })
+      .lean();
+
+    // Формируем объект со старыми значениями для отслеживаемых полей
+    const oldFields: Record<string, any> = {};
+    for (const key of ['preview', 'logo']) {
+      oldFields[`_${key}`] = oldProject[key];
+    }
+
+    return { ...updatedProject, ...oldFields };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} project`;
+  remove(id: string) {
+    this.projectModel.deleteOne({ _id: id }).exec();
   }
 }

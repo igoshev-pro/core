@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateProjectDto } from './create-project.dto';
-
-export class UpdateProjectDto extends PartialType(CreateProjectDto) {}
+export class UpdateProjectDto {
+  domainTech?: string;
+  domainCustom?: string;
+  name?: string;
+  type?: string;
+  status?: string;
+  owner?: string;
+  db?: {
+    mongo?: { uri: string; name: string };
+  };
+}
