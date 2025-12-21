@@ -9,6 +9,7 @@ import { MailModule } from "./core/mail/mail.module"
 import { TenantDatabaseModule } from "./tenant/tenant-database.module"
 import { TenantMiddleware } from "./tenant/tenant.middleware"
 import { UsersModule } from './feature/users/users.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { UsersModule } from './feature/users/users.module';
     ClientsModule,
     ProjectsModule,
     TenantDatabaseModule.forRoot(),
-    UsersModule
+    UsersModule,
+    StorageModule
   ]
 })
 export class AppModule implements NestModule {

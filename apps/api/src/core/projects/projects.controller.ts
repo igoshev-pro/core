@@ -18,7 +18,7 @@ import { UserRole } from 'src/common/enums/user.unum'
 import { ClientGuard } from '../clients/client.guard';
 
 @UseGuards(JwtAuthGuard)
-@Controller('core/projects')
+@Controller('projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 

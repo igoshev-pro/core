@@ -7,7 +7,7 @@ import { SuperAdminGuard } from '../auth/guards/super-admin.guard'
 import { Me } from '../auth/me.decorator';
 
 @UseGuards(JwtAuthGuard, SuperAdminGuard)
-@Controller('core/super-admins')
+@Controller('super-admins')
 export class SuperAdminsController {
   constructor(private readonly superAdminsService: SuperAdminsService) { }
 

@@ -8,7 +8,7 @@ import { ClientGuard } from './client.guard';
 import { Me } from '../auth/me.decorator';
 
 @UseGuards(JwtAuthGuard)
-@Controller('core/clients')
+@Controller('clients')
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 

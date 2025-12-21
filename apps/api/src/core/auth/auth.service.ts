@@ -68,7 +68,7 @@ export class AuthService {
       company: 'igoshev.pro',
       language: 'ru',
     });
-    // this.mailService.sendTestEmail(user.email)
+    this.mailService.sendTestEmail(user.email)
 
     // 5. Возвращаем ответ
     return otp;
