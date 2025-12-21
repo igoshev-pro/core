@@ -12,9 +12,22 @@ export class ProjectsService {
     private readonly projectModel: Model<ProjectDocument>,
   ) {}
 
+  generateReadableRandomDomain() {
+    const adjectives = ['quick', 'bright', 'clever', 'fast', 'smart', 'happy', 'sunny'];
+    const nouns = ['fox', 'bear', 'wolf', 'eagle', 'hawk', 'lion', 'tiger'];
+    
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const number = Math.floor(Math.random() * 99);
+    
+    return `${adj}-${noun}${number}-demo.igoshev.pro`;
+}
+
   create(data: CreateProjectDto) {
     if (!data?.db?.mongo?.uri && data?.db?.mongo?.name)
       data.db.mongo.uri = `${process.env.MONGO_URI_FIRST_PART}${data.db.mongo.name.toLowerCase()}${process.env.MONGO_URI_LAST_PART}`;
+
+    data.domainTech = this.generateReadableRandomDomain()
 
     const newProject = new this.projectModel(data);
     return newProject.save();

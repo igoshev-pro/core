@@ -1,5 +1,5 @@
 export class CreateProjectDto {
-    domainTech: string;
+    domainTech?: string;
     domainCustom?: string;
     name: string;
     type: string;
