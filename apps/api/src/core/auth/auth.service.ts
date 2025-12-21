@@ -11,7 +11,6 @@ import { ClientsService } from '../clients/clients.service';
 import { MailService } from '../mail/mail.service';
 import { jwtConstants } from './constants';
 import { UserRole } from 'src/common/enums/user.unum';
-import { UsersService } from 'src/feature/users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +19,6 @@ export class AuthService {
     private readonly superAdminsService: SuperAdminsService,
     private readonly clientsService: ClientsService,
     private readonly mailService: MailService,
-    private readonly usersService: UsersService
   ) { }
 
   async login(data: { email: string; otp: string }, projectId?: string) {
@@ -35,8 +33,6 @@ export class AuthService {
     const payload: any = { sub: user._id, role: user.role };
     if (user.role === UserRole.Client && user?.projects?.length) {
       payload.projectId = user.projects[0]?._id
-    } else if (user.role === UserRole.User && projectId) {
-      payload.projectId = projectId
     }
 
     return {
@@ -68,7 +64,7 @@ export class AuthService {
       company: 'igoshev.pro',
       language: 'ru',
     });
-    this.mailService.sendTestEmail(user.email)
+    // this.mailService.sendTestEmail(user.email)
 
     // 5. Возвращаем ответ
     return otp;
@@ -76,17 +72,13 @@ export class AuthService {
 
   private async findUserByEmail(email: string) {
     // Параллельный поиск в обеих БД
-    const [superAdmin, client, user] = await Promise.all([
+    const [superAdmin, client] = await Promise.all([
       this.superAdminsService.findByEmail(email),
-      this.clientsService.findByEmail(email),
-      this.usersService.findByEmail(email),
+      this.clientsService.findByEmail(email)
     ]);
 
     if (superAdmin) return superAdmin;
     if (client) return client;
-    if (user) return user;
-
-    console.log(1, superAdmin, client, user)
 
     return null;
   }
@@ -100,8 +92,6 @@ export class AuthService {
       await this.superAdminsService.update(user._id, updateData);
     } else if (user.role === UserRole.Client) {
       await this.clientsService.update(user._id, updateData);
-    } else {
-      await this.usersService.update(user._id, updateData)
     }
   }
 

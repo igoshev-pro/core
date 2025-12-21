@@ -1,12 +1,26 @@
-import { DynamicModule, Global, Module, Provider, Scope, UnauthorizedException } from '@nestjs/common';
+import {
+  DynamicModule,
+  Module,
+  Provider,
+  Scope,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Connection, Model, Schema } from 'mongoose';
 import { TenantConnectionManager } from './tenant-connection.manager';
-import { TENANT_CONNECTION, TENANT_PROJECT_ID, getTenantModelToken } from './tenant.tokens';
+import {
+  TENANT_CONNECTION,
+  TENANT_PROJECT_ID,
+  getTenantModelToken,
+} from './tenant.tokens';
 import { ProjectsModule } from 'src/core/projects/projects.module';
 import { ProjectsService } from 'src/core/projects/projects.service';
 
-type ReqWithTenant = Request & { [TENANT_PROJECT_ID]?: string };
+type ReqWithTenant = Request & {
+  projectId?: string;
+  headers?: Record<string, unknown>;
+  [TENANT_PROJECT_ID]?: string;
+};
 
 export interface TenantModelDef {
   name: string;
@@ -14,7 +28,6 @@ export interface TenantModelDef {
   collection?: string;
 }
 
-@Global()
 @Module({
   imports: [ProjectsModule],
   providers: [TenantConnectionManager],
@@ -22,7 +35,7 @@ export interface TenantModelDef {
 })
 export class TenantDatabaseModule {
   /**
-   * Создаёт request-scoped tenant connection провайдер
+   * Request-scoped tenant connection
    */
   static forRoot(): DynamicModule {
     const tenantConnectionProvider: Provider = {
@@ -34,47 +47,51 @@ export class TenantDatabaseModule {
         projectsService: ProjectsService,
         manager: TenantConnectionManager,
       ): Promise<Connection> => {
-        const projectId = req?.[TENANT_PROJECT_ID];
+        const headerProjectId =
+          (req.headers?.['x-project-id'] as string | undefined) ?? undefined;
+
+        const projectId =
+          req?.[TENANT_PROJECT_ID] ??
+          req?.projectId ??
+          headerProjectId;
 
         if (!projectId) {
-          // если у тебя есть публичные эндпоинты без tenant — можешь возвращать null
-          // но обычно лучше явно требовать projectId для tenant-роутов
           throw new UnauthorizedException('Missing x-project-id');
         }
 
         const db = await projectsService.getDbConfigOrThrow(projectId);
-        // key можно сделать projectId (надёжно)
         return manager.getOrCreateConnection(projectId, db.uri);
       },
     };
 
     return {
       module: TenantDatabaseModule,
-      providers: [tenantConnectionProvider],
-      exports: [tenantConnectionProvider, TenantConnectionManager],
+      imports: [ProjectsModule],
+      providers: [TenantConnectionManager, tenantConnectionProvider],
+      exports: [TenantConnectionManager, tenantConnectionProvider],
     };
   }
 
   /**
-   * Регистрирует модели в tenant connection (как MongooseModule.forFeature, но динамично)
+   * Tenant models
+   * 🔥 forFeature САМ подтягивает forRoot
    */
   static forFeature(models: TenantModelDef[]): DynamicModule {
-    const providers: Provider[] = models.map((m) => ({
+    const modelProviders: Provider[] = models.map((m) => ({
       provide: getTenantModelToken(m.name),
       inject: [TENANT_CONNECTION],
-      useFactory: (conn: Connection): Model<any> => {
-        // Важно: model name должен совпадать со схемой
-        // collection можно зафиксировать, если нужно
-        return conn.model(m.name, m.schema, m.collection);
-      },
+      useFactory: (conn: Connection): Model<any> =>
+        conn.model(m.name, m.schema, m.collection),
     }));
 
     return {
       module: TenantDatabaseModule,
-      imports: [ProjectsModule],
-      providers,
-      exports: providers,
-      global: true
+      imports: [
+        // 🔥 КЛЮЧЕВОЕ МЕСТО
+        TenantDatabaseModule.forRoot(),
+      ],
+      providers: modelProviders,
+      exports: modelProviders,
     };
   }
 }

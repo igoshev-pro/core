@@ -9,31 +9,31 @@ import { ClientGuard } from 'src/core/clients/client.guard';
 @UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly UsersService: UsersService) {}
+  // constructor(private readonly UsersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.UsersService.create(createUserDto);
-  }
+  // @Post()
+  // create(@Body() createUserDto: CreateUserDto) {
+  //   return this.UsersService.create(createUserDto);
+  // }
 
-  @UseGuards(ClientGuard)
-  @Get()
-  findAll(@Query() query: Record<string, string>) {
-    return this.UsersService.findAll(query);
-  }
+  // @UseGuards(ClientGuard)
+  // @Get()
+  // findAll(@Query() query: Record<string, string>) {
+  //   return this.UsersService.findAll(query);
+  // }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.UsersService.findOne(id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.UsersService.findOne(id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.UsersService.update(id, updateUserDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  //   return this.UsersService.update(id, updateUserDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.UsersService.remove(id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.UsersService.remove(id);
+  // }
 }
