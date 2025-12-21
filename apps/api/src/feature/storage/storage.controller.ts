@@ -2,8 +2,8 @@ import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { StorageService } from './storage.service';
 import { PresignUploadDto } from './dto/presign-upload.dto';
 import { PresignDownloadDto } from './dto/presign-download.dto';
-import { ProjectHeaderGuard } from '../common/guards/project-header.guard';
-import { ProjectId } from '../common/decorators/project-id.decorator';
+import { ProjectHeaderGuard } from '../../common/guards/project-header.guard';
+import { ProjectId } from '../../common/decorators/project-id.decorator';
 
 @Controller('storage')
 @UseGuards(ProjectHeaderGuard)

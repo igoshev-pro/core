@@ -6,11 +6,11 @@ import { TenantDatabaseModule } from 'src/tenant/tenant-database.module';
 
 
 @Module({
-  // imports: [
-  //   TenantDatabaseModule.forFeature([
-  //     { name: User.name, schema: UserSchema },
-  //   ]),
-  // ],
+  imports: [
+    TenantDatabaseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+    ]),
+  ],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

@@ -7,8 +7,14 @@ type TenantKey = string;
 export class TenantConnectionManager implements OnModuleDestroy {
   private readonly logger = new Logger(TenantConnectionManager.name);
 
+  /**
+   * key -> connection
+   */
   private readonly connections = new Map<TenantKey, Connection>();
 
+  /**
+   * key -> in-flight promise (чтобы не создать 10 коннектов параллельно)
+   */
   private readonly connecting = new Map<TenantKey, Promise<Connection>>();
 
   async getOrCreateConnection(key: TenantKey, uri: string): Promise<Connection> {

@@ -8,7 +8,7 @@ import { ProjectsModule } from "./core/projects/projects.module"
 import { MailModule } from "./core/mail/mail.module"
 import { TenantMiddleware } from "./tenant/tenant.middleware"
 import { UsersModule } from './feature/users/users.module';
-import { StorageModule } from './storage/storage.module';
+import { StorageModule } from './feature/storage/storage.module';
 
 @Module({
   imports: [
@@ -33,6 +33,9 @@ import { StorageModule } from './storage/storage.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TenantMiddleware).forRoutes({ path: 'feature/(.*)', method: RequestMethod.ALL });
+    consumer.apply(TenantMiddleware).exclude(
+      { path: 'core/(.*)', method: RequestMethod.ALL },
+    )
+      .forRoutes({ path: '(.*)', method: RequestMethod.ALL });
   }
 }
