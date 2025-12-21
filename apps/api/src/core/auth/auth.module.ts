@@ -21,7 +21,6 @@ import { UsersModule } from 'src/feature/users/users.module';
     MailModule,
     SuperAdminsModule,
     ClientsModule,
-    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard, TenantGuard, SuperAdminGuard],
