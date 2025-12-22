@@ -16,7 +16,7 @@ export class UsersController {
     return this.UsersService.create(createUserDto);
   }
 
-  @UseGuards(ClientGuard)
+  // @UseGuards(ClientGuard)
   @Get()
   findAll(@Query() query: Record<string, string>) {
     return this.UsersService.findAll(query);
