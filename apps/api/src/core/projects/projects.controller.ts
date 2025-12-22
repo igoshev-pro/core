@@ -25,7 +25,7 @@ export type Mode = 'public' | 'admin';
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard, ClientGuard)
   @Post()
   create(@Body() createProjectDto: CreateProjectDto) {
     return this.projectsService.create(createProjectDto);
