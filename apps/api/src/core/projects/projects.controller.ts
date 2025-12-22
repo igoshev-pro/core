@@ -16,8 +16,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Me } from '../auth/me.decorator'
 import { UserRole } from 'src/common/enums/user.unum'
 import { ClientGuard } from '../clients/client.guard';
+import { InternalTokenGuard } from 'src/common/guards/internal-token.guard';
+import { Header } from '@nestjs/common';
 
-@UseGuards(JwtAuthGuard)
+export type Mode = 'public' | 'admin';
+
 @Controller('core/projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
@@ -28,7 +31,7 @@ export class ProjectsController {
     return this.projectsService.create(createProjectDto);
   }
 
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard, ClientGuard)
   @Get()
   findAll(@Query() query: Record<string, string>, @Me() user: any) {
     if (user.role !== UserRole.SuperAdmin) {
@@ -37,13 +40,13 @@ export class ProjectsController {
     return this.projectsService.findAll(query);
   }
 
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard, ClientGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.projectsService.findOne(id);
   }
 
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard, ClientGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -52,9 +55,29 @@ export class ProjectsController {
     return this.projectsService.update(id, updateProjectDto);
   }
 
-  @UseGuards(ClientGuard)
+  @UseGuards(JwtAuthGuard, ClientGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.projectsService.remove(id);
+  }
+
+  @UseGuards(InternalTokenGuard)
+  @Header('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
+  @Get(':id/runtime')
+  async getRuntime(
+    @Param('id') id: string,
+    @Query('mode') mode: Mode = 'public',
+  ) {
+    return this.projectsService.getRuntime(id, mode);
+  }
+
+  @UseGuards(InternalTokenGuard)
+  @Header('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
+  @Get(':id/schema')
+  async getSchema(
+    @Param('id') id: string,
+    @Query('mode') mode: Mode = 'public',
+  ) {
+    return this.projectsService.getSchema(id, mode);
   }
 }

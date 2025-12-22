@@ -12,6 +12,7 @@ import { Project, type ProjectDocument } from './entities/project.entity';
 import { Client, ClientDocument } from '../clients/entities/client.entity';
 import { ProjectStatus } from './project.enum';
 import { Domain, type DomainDocument } from '../domains/entities/domain.entity'
+import { Mode } from './projects.controller';
 
 @Injectable()
 export class ProjectsService {
@@ -310,5 +311,69 @@ export class ProjectsService {
         _id: { $in: projectIds },
       })
       .exec();
+  }
+
+  async getRuntime(projectId: string, mode: Mode) {
+    const project = await this.projectModel
+      .findById(projectId)
+      .select({
+        _id: 1,
+        template: 1,
+        theme: 1,
+        seoDefaults: 1,
+      })
+      .lean()
+      .exec();
+
+    if (!project) throw new NotFoundException('Project not found');
+
+    const templateId =
+      mode === 'admin'
+        ? project.template?.admin ?? 'admin-shell'
+        : project.template?.public ?? 'landing-classic';
+
+    const themeId =
+      mode === 'admin'
+        ? project.theme?.admin ?? 'default-light'
+        : project.theme?.public ?? 'default-light';
+
+    return {
+      projectId: project._id.toString(),
+      templateId,
+      themeId,
+      seoDefaults: project.seoDefaults ?? {},
+    };
+  }
+
+  async getSchema(projectId: string, mode: Mode) {
+    const project = await this.projectModel
+      .findById(projectId)
+      .select({ _id: 1, site: 1 })
+      .lean()
+      .exec();
+
+    if (!project) throw new NotFoundException('Project not found');
+
+    const schema =
+      mode === 'admin'
+        ? project.site?.admin
+        : project.site?.public;
+
+    if (!schema) {
+      // дефолт, чтобы проект хоть рендерился
+      return mode === 'admin'
+        ? {
+            version: '1.0.0',
+            layout: { id: 'l-admin', type: 'layout', layoutKey: 'admin.shell', slots: {} },
+            pages: [{ id: 'p-admin', path: '/admin', kind: 'static', blocks: [] }],
+          }
+        : {
+            version: '1.0.0',
+            layout: { id: 'l-public', type: 'layout', layoutKey: 'public.default', slots: {} },
+            pages: [{ id: 'home', path: '/', kind: 'static', blocks: [] }],
+          };
+    }
+
+    return schema;
   }
 }

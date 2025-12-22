@@ -5,29 +5,40 @@ const H_PROJECT_MODE = 'x-project-mode';
 const H_PROJECT_HOST = 'x-project-host';
 
 function getHost(req: NextRequest) {
-  return (req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? '')
+  const raw = (req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? '')
     .split(',')[0]
-    .trim();
+    .trim()
+    .toLowerCase();
+
+  // strip port if present
+  return raw.replace(/:\d+$/, '');
 }
 
 function isSkip(pathname: string) {
   if (pathname.startsWith('/_next')) return true;
+  if (pathname.startsWith('/_system')) return true; // важно
   if (pathname === '/favicon.ico') return true;
+  if (pathname === '/robots.txt') return true;
+  if (pathname === '/sitemap.xml') return true;
   if (/\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|map|woff|woff2|ttf|eot)$/i.test(pathname)) return true;
   return false;
 }
 
 async function resolveProject(host: string) {
   const base = process.env.CORE_API_URL ?? 'https://api.igoshev.pro';
+  const token = process.env.CORE_INTERNAL_TOKEN ?? 'redis-sst';
+  if (!token) return null;
+
   const url = new URL('/core/domains/resolve', base);
   url.searchParams.set('host', host);
 
   const res = await fetch(url.toString(), {
     headers: {
       accept: 'application/json',
-      'x-internal-token': process.env.CORE_INTERNAL_TOKEN ?? 'redis-sst',
+      'x-internal-token': token,
     },
-    cache: 'force-cache',
+    // лучше управляемое кеширование
+    next: { revalidate: 60 }, // или 300
   });
 
   if (!res.ok) return null;
@@ -44,6 +55,7 @@ export async function middleware(req: NextRequest) {
   const mode = pathname.startsWith('/admin') ? 'admin' : 'public';
 
   const resolved = await resolveProject(host);
+
   if (!resolved || resolved.ok === false) {
     const url = req.nextUrl.clone();
     url.pathname = '/_system/not-found';

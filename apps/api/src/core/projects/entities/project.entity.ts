@@ -5,6 +5,27 @@ import { Client } from '../../clients/entities/client.entity';
 
 export type ProjectDocument = Project & Document;
 
+export type ProjectTemplate = {
+  public: string
+  admin: string
+}
+
+export type ProjectTheme = {
+  public: string;
+  admin: string;
+}
+
+export type ProjectSiteSchema = {
+  public: any; // SiteSchema
+  admin: any;  // SiteSchema
+}
+
+export type ProjectSeoDefaults = {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
 @Schema({ timestamps: true })
 export class Project {
   @Prop({ required: true })
@@ -13,7 +34,7 @@ export class Project {
   @Prop({ required: false, type: String })
   domainCustom?: string;
 
-  @Prop({ required: true }) 
+  @Prop({ required: true })
   name: string;
 
   @Prop({ required: true, enum: Object.values(ProjectType) })
@@ -22,13 +43,27 @@ export class Project {
   @Prop({ default: ProjectStatus.ACTIVE, enum: Object.values(ProjectStatus) })
   status?: ProjectStatus;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: false }) 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: false })
   owner?: Client;
 
   @Prop({ type: Object, default: {} })
   db: {
     mongo?: { uri: string; name: string };
   };
+
+  // Bootstrap & schema
+
+  @Prop({ type: Object, required: false })
+  template?: ProjectTemplate;
+
+  @Prop({ type: Object, required: false })
+  theme?: ProjectTheme;
+
+  @Prop({ type: Object, required: false })
+  site?: ProjectSiteSchema
+
+  @Prop({ type: Object, required: false })
+  seoDefaults?: ProjectSeoDefaults
 
   // @Prop({ required: true, unique: true }) slug: string;
   // @Prop() description?: string;
