@@ -6,6 +6,8 @@ import { matchPage, renderApp, RenderContext } from "@/packages/renderer/src";
 import { getTemplatePack } from "@/packages/templates/src";
 import { getTheme, themeToCssVars } from "@/packages/themes/src";
 
+import { safeLoadProject } from "@/lib/safeProjectLoad";
+
 type PageProps = {
   params: Promise<{
     slug?: string[];
@@ -25,8 +27,9 @@ export default async function PublicPage({ params }: PageProps) {
   const projectId = h.get("x-project-id") ?? "unknown";
   const mode: ProjectMode = "public";
 
-  const runtime = await getProjectRuntime(projectId, mode);
-  const schema = await getSiteSchema(projectId, mode);
+  const { runtime, schema, error } = await safeLoadProject(projectId, mode);
+  // const runtime = await getProjectRuntime(projectId, mode);
+  // const schema = await getSiteSchema(projectId, mode);
 
   const matched = matchPage(schema.pages, path);
   if (!matched) {
@@ -52,6 +55,17 @@ export default async function PublicPage({ params }: PageProps) {
   };
 
   const cssVars = themeToCssVars(theme);
+
+  if (error) {
+    return (
+      <div style={{ padding: 24 }}>
+        <h2>Server render error</h2>
+        <pre style={{ whiteSpace: "pre-wrap" }}>{error}</pre>
+        <div>projectId: {projectId}</div>
+        <div>mode: {mode}</div>
+      </div>
+    );
+  }
 
   return (
     <>
