@@ -28,7 +28,7 @@ export class ProjectsController {
     return this.projectsService.create(createProjectDto);
   }
 
-  @UseGuards(ClientGuard)
+  // @UseGuards(ClientGuard)
   @Get()
   findAll(@Query() query: Record<string, string>, @Me() user: any) {
     if (user.role !== UserRole.SuperAdmin) {
@@ -37,13 +37,13 @@ export class ProjectsController {
     return this.projectsService.findAll(query);
   }
 
-  @UseGuards(ClientGuard)
+  // @UseGuards(ClientGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.projectsService.findOne(id);
   }
 
-  @UseGuards(ClientGuard)
+  // @UseGuards(ClientGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -52,7 +52,7 @@ export class ProjectsController {
     return this.projectsService.update(id, updateProjectDto);
   }
 
-  @UseGuards(ClientGuard)
+  // @UseGuards(ClientGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.projectsService.remove(id);

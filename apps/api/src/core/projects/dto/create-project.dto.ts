@@ -4,7 +4,7 @@ export class CreateProjectDto {
     name?: string;
     type?: string;
     status?: string;
-    owner: string;
+    owner?: string;
     db?: {
       mongo?: { uri: string; name: string };
     };

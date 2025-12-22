@@ -215,18 +215,18 @@ export class ProjectsService {
       throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    await this.clientModel.findOneAndUpdate(
-      { _id: data.owner },
-      { $addToSet: { projects: savedProject._id } },
-      { new: true },
-    );
-
     const newDomain = new this.domainModel({
       host: data.domainTech,
       projectId: savedProject._id.toString(),
       status: ProjectStatus.ACTIVE,
     });
     newDomain.save();
+
+    await this.clientModel.findOneAndUpdate(
+      { _id: data.owner },
+      { $addToSet: { projects: savedProject._id } },
+      { new: true },
+    );
 
     return savedProject;
   }
