@@ -34,31 +34,31 @@ export class DomainsController {
     return this.domainsService.resolve(query.host);
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  // @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Post()
   create(@Body() data: DomainDto) {
     return this.domainsService.create(data);
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  // @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get()
   findAll(@Query() query: Record<string, string>) {
     return this.domainsService.findAll(query);
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  // @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.domainsService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  // @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() data: DomainDto) {
     return this.domainsService.update(id, data);
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  // @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.domainsService.remove(id);

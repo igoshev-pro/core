@@ -4,6 +4,7 @@ import { DomainsService } from './domains.service';
 import { MongooseModule } from '@nestjs/mongoose'
 import { Domain } from 'domain'
 import { DomainSchema } from './entities/domain.entity'
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard'
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { DomainSchema } from './entities/domain.entity'
   ],
   controllers: [DomainsController],
   providers: [DomainsService],
-  exports: [DomainsService],
+  exports: [DomainsService, MongooseModule],
 })
 export class DomainsModule {}
