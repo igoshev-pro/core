@@ -6,20 +6,22 @@ import { matchPage, renderApp, RenderContext } from "@/packages/renderer/src";
 import { getTemplatePack } from "@/packages/templates/src";
 import { getTheme, themeToCssVars } from "@/packages/themes/src";
 
+type PageProps = {
+  params: Promise<{
+    slug?: string[];
+  }>;
+};
+
 function toPath(slug?: string[]) {
   if (!slug?.length) return "/";
   return "/" + slug.join("/");
 }
 
-export default async function PublicPage({
-  params,
-}: {
-  params: { slug?: string[] };
-}) {
-  const path = toPath(params.slug);
+export default async function PublicPage({ params }: PageProps) {
+  const { slug } = await params;
+  const path = toPath(slug);
 
-  const h = headers(); // без await
-  // @ts-ignore
+  const h = await headers(); // Next 15: headers() async
   const projectId = h.get("x-project-id") ?? "unknown";
   const mode: ProjectMode = "public";
 
@@ -44,8 +46,8 @@ export default async function PublicPage({
     theme,
     data: { page: undefined, blocks: {} },
     helpers: {
-      assetUrl: (key) => `https://your-s3/${projectId}/${key}`,
-      linkTo: (p) => p,
+      assetUrl: (key: string) => `https://your-s3/${projectId}/${key}`,
+      linkTo: (p: string) => p,
     },
   };
 

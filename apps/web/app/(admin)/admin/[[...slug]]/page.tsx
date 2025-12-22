@@ -1,26 +1,30 @@
+import React from "react";
 import { headers } from "next/headers";
+
+import { getProjectRuntime, getSiteSchema } from "@/lib/project-api";
 import { ProjectMode } from "@/packages/schema/src/site-schema";
 import { matchPage, renderApp, RenderContext } from "@/packages/renderer/src";
 import { getTemplatePack } from "@/packages/templates/src";
 import { getTheme, themeToCssVars } from "@/packages/themes/src";
-import { getProjectRuntime, getSiteSchema } from "@/lib/project-api";
+
+type PageProps = {
+  params: Promise<{
+    slug?: string[];
+  }>;
+};
 
 function toAdminPath(slug?: string[]) {
   if (!slug?.length) return "/admin";
   return "/admin/" + slug.join("/");
 }
 
-export default async function AdminPage({
-  params,
-}: {
-  params: { slug?: string[] };
-}) {
-  const path = toAdminPath(params.slug);
+export default async function AdminPage({ params }: PageProps) {
+  const { slug } = await params;
+  const path = toAdminPath(slug);
 
-  const h = headers();
-  // @ts-ignore
+  const h = await headers(); // Next 15: headers() async
   const projectId = h.get("x-project-id") ?? "unknown";
-  const mode: ProjectMode = "admin";
+  const mode: ProjectMode = "public";
 
   const runtime = await getProjectRuntime(projectId, mode);
   const schema = await getSiteSchema(projectId, mode);
