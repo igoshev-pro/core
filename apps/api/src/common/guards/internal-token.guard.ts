@@ -6,7 +6,7 @@ export class InternalTokenGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest<Request>();
     const token = (req.headers as any)['x-internal-token'] as string | undefined;
 
-    const expected = process.env.CORE_INTERNAL_TOKEN ?? 'next-sst';
+    const expected = process.env.CORE_INTERNAL_TOKEN;
     if (!expected) return false;
 
     return token === expected;
