@@ -34,6 +34,8 @@ services:
       S3_SECRET_KEY: pq1n4q220WeDRJXSBGjCxjanOsI6DZ1fpKDGVGn4
       S3_BUCKET: 87256dd2-5c833240-a13a-40bb-9b9c-641734629be3
       S3_FORCE_PATH_STYLE: true
+      REDIS_URL: redis://redis:6379
+      CORE_INTERNAL_TOKEN: redis-sst
     volumes:
       - ./apps/api:/app
       - pnpm_store_api:/pnpm-store
@@ -60,9 +62,20 @@ services:
     depends_on:
       - api
 
+  redis:
+    image: redis:7-alpine
+    container_name: saas_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
 volumes:
   mongo_data_dev:
   pnpm_store_api:
   pnpm_store_web:
   node_modules_api:
   node_modules_web:
+  redis_data:

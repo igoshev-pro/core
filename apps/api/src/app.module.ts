@@ -9,6 +9,8 @@ import { MailModule } from "./core/mail/mail.module"
 import { TenantMiddleware } from "./tenant/tenant.middleware"
 import { UsersModule } from './feature/users/users.module';
 import { StorageModule } from './feature/storage/storage.module';
+import { RedisModule } from './redis/redis.module';
+import { DomainsModule } from './core/domains/domains.module';
 
 @Module({
   imports: [
@@ -22,13 +24,17 @@ import { StorageModule } from './feature/storage/storage.module';
       }),
       inject: [ConfigService],
     }),
+    RedisModule,
+    DomainsModule,
     SuperAdminsModule,
     AuthModule,
     MailModule,
     ClientsModule,
     ProjectsModule,
     UsersModule,
-    StorageModule
+    StorageModule,
+    RedisModule,
+    DomainsModule
   ]
 })
 export class AppModule implements NestModule {
