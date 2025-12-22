@@ -19,7 +19,7 @@ import type { DomainDto } from './dto/domain.dto'
 
 @Controller('core/domains')
 export class DomainsController {
-  constructor(private readonly service: DomainsService) {}
+  constructor(private readonly domainsService: DomainsService) {}
 
   @Get('resolve')
   async resolve(
@@ -55,7 +55,7 @@ export class DomainsController {
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() data: DomainDto) {
-    return this.domainsService.update(id, updateClientDto);
+    return this.domainsService.update(id, data);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
