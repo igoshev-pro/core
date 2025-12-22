@@ -15,7 +15,12 @@ type PageProps = {
 
 function toAdminPath(slug?: string[]) {
   if (!slug?.length) return "/admin";
-  return "/admin/" + slug.join("/");
+
+  // если Next уже положил "admin" в slug — не префиксим второй раз
+  const normalized = slug[0] === "admin" ? slug : ["admin", ...slug];
+
+  // normalized сейчас гарантированно начинается с "admin"
+  return "/" + normalized.join("/");
 }
 
 export default async function AdminPage({ params }: PageProps) {
