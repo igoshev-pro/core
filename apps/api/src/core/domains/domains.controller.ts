@@ -31,13 +31,13 @@ export class DomainsController {
       throw new UnauthorizedException('Invalid internal token');
     }
 
-    return this.service.resolve(query.host);
+    return this.domainsService.resolve(query.host);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Post()
   create(@Body() data: DomainDto) {
-    return this.domainsService.create(domainDto);
+    return this.domainsService.create(data);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
