@@ -8,7 +8,7 @@ export type ProjectDocument = Project & Document;
 @Schema({ timestamps: true })
 export class Project {
   @Prop({ required: true })
-  domainTech: string;
+  domainTech?: string;
 
   @Prop({ required: false, type: String })
   domainCustom?: string;
@@ -17,10 +17,10 @@ export class Project {
   name: string;
 
   @Prop({ required: true, enum: Object.values(ProjectType) })
-  type: ProjectType;
+  type?: ProjectType;
 
   @Prop({ default: ProjectStatus.ACTIVE, enum: Object.values(ProjectStatus) })
-  status: ProjectStatus;
+  status?: ProjectStatus;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Client' }) 
   owner: Client;
