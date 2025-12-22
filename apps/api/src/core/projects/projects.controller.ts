@@ -17,12 +17,12 @@ import { Me } from '../auth/me.decorator'
 import { UserRole } from 'src/common/enums/user.unum'
 import { ClientGuard } from '../clients/client.guard';
 
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('core/projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
-  @UseGuards(ClientGuard)
+  // @UseGuards(ClientGuard)
   @Post()
   create(@Body() createProjectDto: CreateProjectDto) {
     return this.projectsService.create(createProjectDto);
