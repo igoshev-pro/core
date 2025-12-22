@@ -2,8 +2,9 @@ import React from "react";
 import { headers } from "next/headers";
 
 import { getProjectRuntime, getSiteSchema } from "@/lib/project-api";
-import { ProjectMode } from "@/packages/schema/src/site-schema";
-import { matchPage, renderApp, RenderContext } from "@/packages/renderer/src";
+import type { ProjectMode } from "@/packages/schema/src/site-schema";
+import { matchPage, renderApp } from "@/packages/renderer/src";
+import type { RenderContext } from "@/packages/renderer/src/types";
 import { getTemplatePack } from "@/packages/templates/src";
 import { getTheme, themeToCssVars } from "@/packages/themes/src";
 
@@ -15,11 +16,7 @@ type PageProps = {
 
 function toAdminPath(slug?: string[]) {
   if (!slug?.length) return "/admin";
-
-  // если Next уже положил "admin" в slug — не префиксим второй раз
   const normalized = slug[0] === "admin" ? slug : ["admin", ...slug];
-
-  // normalized сейчас гарантированно начинается с "admin"
   return "/" + normalized.join("/");
 }
 
@@ -27,16 +24,22 @@ export default async function AdminPage({ params }: PageProps) {
   const { slug } = await params;
   const path = toAdminPath(slug);
 
-  const h = await headers(); // Next 15: headers() async
+  const h = await headers();
   const projectId = h.get("x-project-id") ?? "unknown";
-  const mode: ProjectMode = "public";
+  const mode: ProjectMode = "admin"; // ✅ ВОТ КЛЮЧЕВОЕ
 
   const runtime = await getProjectRuntime(projectId, mode);
   const schema = await getSiteSchema(projectId, mode);
 
   const matched = matchPage(schema.pages, path);
   if (!matched) {
-    return <div style={{ padding: 24 }}>404 admin (no page in schema): {path}</div>;
+    return (
+      <div style={{ padding: 24 }}>
+        <div>404 admin (no page in schema): {path}</div>
+        <div>slug: {JSON.stringify(slug)}</div>
+        <div>schema pages: {schema.pages?.map((p) => p.path).join(", ")}</div>
+      </div>
+    );
   }
 
   const pack = getTemplatePack(runtime.templateId);
