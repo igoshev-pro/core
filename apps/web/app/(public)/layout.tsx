@@ -1,12 +1,14 @@
-import React from "react";
 import "../../styles/globals.css";
+import { Providers } from "../providers";
 
 export default function PublicRootLayout({ children }: { children: React.ReactNode }) {
   // Global public wrapper; keep it light for SEO
   return (
-    <html lang="ru">
+    <html suppressHydrationWarning lang="ru">
       <body>
-        {children}
+        <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
+          <main>{children}</main>
+        </Providers>
       </body>
     </html>
   );
