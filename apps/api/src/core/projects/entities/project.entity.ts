@@ -22,8 +22,8 @@ export class Project {
   @Prop({ default: ProjectStatus.ACTIVE, enum: Object.values(ProjectStatus) })
   status?: ProjectStatus;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Client' }) 
-  owner: Client;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: false }) 
+  owner?: Client;
 
   @Prop({ type: Object, default: {} })
   db: {
