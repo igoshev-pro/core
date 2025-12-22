@@ -6,7 +6,7 @@ import { UsersService } from './users.service';
 import { TenantGuard } from 'src/core/auth/guards/tenant.guard';
 import { ClientGuard } from 'src/core/clients/client.guard';
 
-@UseGuards(JwtAuthGuard, TenantGuard)
+// @UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly UsersService: UsersService) {}
