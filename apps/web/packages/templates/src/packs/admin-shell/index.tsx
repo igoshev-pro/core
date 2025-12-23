@@ -23,6 +23,5 @@ export const adminShellPack: TemplatePack = {
     "admin.dashboard.v1": AdminDashboardSection,
   },
   widgets: {
-    // "admin.logo.v1": AdminLogo
   },
 };

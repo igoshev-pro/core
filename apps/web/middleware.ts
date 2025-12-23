@@ -52,7 +52,7 @@ export async function middleware(req: NextRequest) {
   if (isSkip(pathname)) return NextResponse.next();
 
   const host = getHost(req);
-  const mode = pathname.startsWith('/admin') ? 'admin' : 'public';
+  const mode = pathname.startsWith('/admin') ? 'admin' : pathname.startsWith('/login') ? 'login' : 'public';
 
   // ================================
   // ✅ DEV OVERRIDE ПО projectId

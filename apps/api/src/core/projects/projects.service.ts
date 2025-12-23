@@ -23,7 +23,7 @@ export class ProjectsService {
     private readonly clientModel: Model<ClientDocument>,
     @InjectModel(Domain.name, 'core')
     private readonly domainModel: Model<DomainDocument>,
-  ) {}
+  ) { }
 
   generateReadableRandomDomain() {
     const adjectives = [
@@ -330,12 +330,14 @@ export class ProjectsService {
     const templateId =
       mode === 'admin'
         ? project.template?.admin ?? 'admin-shell'
-        : project.template?.public ?? 'landing-classic';
+        : mode === 'login'
+          ? project.template?.auth ?? 'auth-default' : project.template?.public ?? 'landing-classic';
 
     const themeId =
       mode === 'admin'
         ? project.theme?.admin ?? 'default-light'
-        : project.theme?.public ?? 'default-light';
+        : mode === 'login'
+          ? project.theme?.auth ?? 'default-light' : project.theme?.public ?? 'default-light';
 
     return {
       projectId: project._id.toString(),
@@ -357,21 +359,27 @@ export class ProjectsService {
     const schema =
       mode === 'admin'
         ? project.site?.admin
-        : project.site?.public;
+        : mode === 'login'
+          ? project.site?.login : project.site?.public;
 
     if (!schema) {
       // дефолт, чтобы проект хоть рендерился
       return mode === 'admin'
         ? {
-            version: '1.0.0',
-            layout: { id: 'l-admin', type: 'layout', layoutKey: 'admin.shell', slots: {} },
-            pages: [{ id: 'p-admin', path: '/admin', kind: 'static', blocks: [] }],
-          }
-        : {
-            version: '1.0.0',
-            layout: { id: 'l-public', type: 'layout', layoutKey: 'public.default', slots: {} },
-            pages: [{ id: 'home', path: '/', kind: 'static', blocks: [] }],
-          };
+          version: '1.0.0',
+          layout: { id: 'l-admin', type: 'layout', layoutKey: 'admin.shell', slots: {} },
+          pages: [{ id: 'p-admin', path: '/admin', kind: 'static', blocks: [] }],
+        }
+        : mode === 'login'
+        ? {
+          version: '1.0.0',
+          layout: { id: 'l-login', type: 'layout', layoutKey: 'auth.default', slots: {} },
+          pages: [{ id: 'p-login', path: '/login', kind: 'static', blocks: [] }],
+        } : {
+          version: '1.0.0',
+          layout: { id: 'l-public', type: 'layout', layoutKey: 'public.default', slots: {} },
+          pages: [{ id: 'home', path: '/', kind: 'static', blocks: [] }],
+        };
     }
 
     return schema;

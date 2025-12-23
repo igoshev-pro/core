@@ -8,47 +8,49 @@ export type ProjectDocument = Project & Document;
 export type ProjectTemplate = {
   public: string
   admin: string
+  auth: string
 }
 
 export type ProjectTheme = {
   public: string;
   admin: string;
+  auth: string
 }
 
 export type SiteLayout = {
   _id: string
-	type: string
-	layoutKey: string // идентификатор лейаута для регистри public.default
-	slots?: {
-		sidebar?: any[]
-	}
+  type: string
+  layoutKey: string // идентификатор лейаута для регистри public.default
+  slots?: {
+    sidebar?: any[]
+  }
 }
 
 export type SiteBlock = {
   _id: string
-	type: "widget" | "section"
-	key: string, // идентификатор 404.v1
-	props: any
+  type: "widget" | "section"
+  key: string, // идентификатор 404.v1
+  props: any
 }
 
 export type PageAccess = {
   auth?: boolean;                 // требуется логин
   roles?: string[];               // роли (любой из списка)
-  features?: string[];   
+  features?: string[];
   redirectTo?: string;            // куда при запрете (по умолчанию /login)
-  
+
   permissions?: string[];         // пермишены (любой из списка)// фичи проекта (включены)
   all?: boolean;                  // если true: roles/permissions/features должны выполняться ВСЕ (AND),
-                                  // иначе по умолчанию: внутри каждого массива - OR, а массивы между собой - AND
+  // иначе по умолчанию: внутри каждого массива - OR, а массивы между собой - AND
   hideInMenuIfNoAccess?: boolean; // чтобы меню не показывало
 };
 
 export type SitePage = {
   _id: string,
-	path: string,
-	kind: "static" | "dynamic"
+  path: string,
+  kind: "static" | "dynamic"
   access: PageAccess
-	blocks: SiteBlock[]
+  blocks: SiteBlock[]
 }
 
 export type ProjectSiteSchema = {
@@ -62,6 +64,11 @@ export type ProjectSiteSchema = {
     layout: SiteLayout
     pages: SitePage[]
   }  // SiteSchema
+  login: {
+    version?: string
+    layout: SiteLayout
+    pages: SitePage[]
+  }; // SiteSchema
 }
 
 export type ProjectSeoDefaults = {

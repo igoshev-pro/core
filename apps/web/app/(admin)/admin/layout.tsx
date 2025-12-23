@@ -1,19 +1,68 @@
 import React from "react";
-import "../../../styles/globals.css";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { withProjectId } from "@/api/utils/withProjectId";
+import { headers } from "next/headers";
+import "../../../styles/globals.css";
 
-type MeCheckResult =
-  | { ok: true; role: "user" | "client" | "superadmin" }
+async function isCoreAdmin() {
+  const h = await headers()
+  const host = h.get("host") ?? "";
+
+  return (
+    host === "core.igoshev.pro"
+  );
+}
+
+type Role = "client" | "superAdmin";
+
+type AnyMe = {
+  role?: string;
+  [key: string]: unknown;
+};
+
+type MeResolved =
+  | { ok: true; role: Role; raw: AnyMe }
   | { ok: false };
 
-async function checkMe(url: string, token: string) {
-  return fetch(url, {
+const ROLE_PRIORITY: Role[] = ["superAdmin", "client"];
+
+// маппинг строк с бэка -> Role
+function normalizeRole(v: unknown): Role | null {
+  if (typeof v !== "string") return null;
+
+  const s = v.toLowerCase();
+
+  if (s === "superadmin" || s === "super_admin" || s === "super-admin") return "superAdmin";
+  if (s === "client") return "client";
+
+  return null;
+}
+
+async function fetchMe(url: string, token: string): Promise<AnyMe | null> {
+  const res = await fetch(url, {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
+
+  if (!res.ok) return null;
+
+  try {
+    return (await res.json()) as AnyMe;
+  } catch {
+    return null;
+  }
+}
+
+function extractRole(me: AnyMe): Role | null {
+  // пробуем разные поля
+  return (
+    normalizeRole(me.role) ??
+    normalizeRole(me.userRole) ??
+    normalizeRole(me.type) ??
+    null
+  );
 }
 
 export default async function AdminRootLayout({
@@ -26,37 +75,45 @@ export default async function AdminRootLayout({
 
   if (!token) redirect(`/login${withProjectId()}`);
 
-  // ВАЖНО: убедись что эти env есть именно на сервере (без NEXT_PUBLIC)
-  const userUrl = `${process.env.API_URL}/user/get/me`;
   const clientUrl = `${process.env.CORE_API_URL}/clients/get/me`;
-  const superAdminUrl = `${process.env.CORE_API_URL}/superadmins/get/me`;
+  const superAdminUrl = `${process.env.CORE_API_URL}/super-admins/get/me`;
 
-  // Проверяем по очереди, кто это
-  const [userRes, clientRes, superRes] = await Promise.allSettled([
-    checkMe(userUrl, token),
-    checkMe(clientUrl, token),
-    checkMe(superAdminUrl, token),
+  // получаем все ответы
+  const [clientMe, superMe] = await Promise.all([
+    fetchMe(clientUrl, token),
+    fetchMe(superAdminUrl, token),
   ]);
 
-  const isOk = (r: PromiseSettledResult<Response>) =>
-    r.status === "fulfilled" && r.value.ok;
+  // собираем найденные роли
+  const candidates: Array<{ role: Role; raw: AnyMe }> = [];
 
-  const result: MeCheckResult =
-    isOk(userRes)
-      ? { ok: true, role: "user" }
-      : isOk(clientRes)
-        ? { ok: true, role: "client" }
-        : isOk(superRes)
-          ? { ok: true, role: "superadmin" }
-          : { ok: false };
+  if (clientMe) {
+    const r = extractRole(clientMe) ?? "client";
+    candidates.push({ role: r, raw: clientMe });
+  }
+  if (superMe) {
+    const r = extractRole(superMe) ?? "superAdmin";
+    candidates.push({ role: r, raw: superMe });
+  }
+
+  // выбираем по приоритету
+  const chosen = ROLE_PRIORITY
+    .map((role) => candidates.find((c) => c.role === role))
+    .find(Boolean);
+
+  const result: MeResolved = chosen
+    ? { ok: true, role: chosen.role, raw: chosen.raw }
+    : { ok: false };
 
   if (!result.ok) {
-    // токен не подошёл ни к одному me-эндпоинту — чистим и на логин
     cookieStore.delete("access_token");
     redirect(`/login${withProjectId()}`);
   }
 
-  // (опционально) можно прокинуть роль дальше через контекст/props, если надо
+  if (await isCoreAdmin() && result.role !== "superAdmin") {
+    redirect(`/login${withProjectId()}`);
+  }
+
   return (
     <html lang="ru">
       <body>{children}</body>

@@ -19,7 +19,7 @@ import { ClientGuard } from '../clients/client.guard';
 import { InternalTokenGuard } from 'src/common/guards/internal-token.guard';
 import { Header } from '@nestjs/common';
 
-export type Mode = 'public' | 'admin';
+export type Mode = 'public' | 'admin' | 'login';
 
 @Controller('core/projects')
 export class ProjectsController {

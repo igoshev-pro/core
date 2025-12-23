@@ -1,4 +1,4 @@
-export type ProjectMode = "public" | "admin";
+export type ProjectMode = "public" | "admin" | "login";
 
 export type ProjectRuntime = {
   projectId: string;
