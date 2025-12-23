@@ -1,9 +1,7 @@
 import { withProjectId } from "../utils/withProjectId";
 
-export type UserDto = { id: string; name: string };
-
-export async function getUsers(): Promise<UserDto[]> {
-  const res = await fetch(`/api/core/users${withProjectId()}`, {
+export async function getSuperAdmins() {
+  const res = await fetch(`/api/core/super-admins${withProjectId()}`, {
     method: "GET",
     credentials: "include",
     headers: { "Content-Type": "application/json" }

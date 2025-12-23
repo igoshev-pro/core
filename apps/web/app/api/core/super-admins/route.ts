@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies, headers } from "next/headers";
 
 export async function GET(req: NextRequest) {
+    const nestUrl = `${process.env.CORE_API_URL}/super-admins`;
+
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
 
@@ -9,11 +11,10 @@ export async function GET(req: NextRequest) {
     const projectId = h.get('x-project-id')!;
     const mode = h.get('x-project-mode')!;
 
-    const nestUrl = `${process.env.API_URL}/users`;
-
     const res = await fetch(nestUrl, {
         method: "GET",
         headers: {
+            "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...(projectId ? { "x-project-id": projectId } : {}),
             ...(mode ? { 'x-project-mode': mode } : {})
