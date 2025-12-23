@@ -35,7 +35,7 @@ services:
       S3_BUCKET: 87256dd2-5c833240-a13a-40bb-9b9c-641734629be3
       S3_FORCE_PATH_STYLE: true
       REDIS_URL: redis://redis:6379
-      CORE_INTERNAL_TOKEN: redis-sst
+      CORE_INTERNAL_TOKEN: X9!rK2@Fq7gMZs4A
     volumes:
       - ./apps/api:/app
       - pnpm_store_api:/pnpm-store
@@ -55,6 +55,10 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:3001
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
+      API_URL: https://api.igoshev.pro
+      CORE_API_URL: https://api.igoshev.pro/core
+      CURRENT_DEV_PROJECT_ID: 694900375118e605d8b89551
+      CORE_INTERNAL_TOKEN: X9!rK2@Fq7gMZs4A
     volumes:
       - ./apps/web:/app
       - pnpm_store_web:/pnpm-store

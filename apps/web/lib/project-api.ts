@@ -2,7 +2,7 @@ import { ProjectMode, ProjectRuntime, SiteSchema } from "@/packages/schema/src/s
 
 
 const CORE_API_URL = process.env.CORE_API_URL ?? "https://api.igoshev.pro";
-const INTERNAL = process.env.CORE_INTERNAL_TOKEN ?? "redis-sst";
+const INTERNAL = process.env.CORE_INTERNAL_TOKEN ?? "";
 
 async function coreFetch<T>(path: string, revalidateSeconds = 60): Promise<T> {
   const url = new URL(path, CORE_API_URL).toString();

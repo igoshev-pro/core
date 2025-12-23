@@ -26,7 +26,7 @@ function isSkip(pathname: string) {
 
 async function resolveProject(host: string) {
   const base = process.env.CORE_API_URL ?? 'https://api.igoshev.pro';
-  const token = process.env.CORE_INTERNAL_TOKEN ?? 'redis-sst';
+  const token = process.env.CORE_INTERNAL_TOKEN ?? '';
   if (!token) return null;
 
   const url = new URL('/core/domains/resolve', base);
