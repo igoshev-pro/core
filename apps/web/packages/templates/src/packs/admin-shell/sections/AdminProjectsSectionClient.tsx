@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 import { ConfirmModal } from "../components/modals/ConfirmModal";
 import { LoaderModal } from "../components/modals/LoaderModal";
-import { getProjects } from "@/api/core/projectsApi";
+import { getProjects, removeProject } from "@/api/core/projectsApi";
 import { ProjectCard } from "../components/widgets/ProjectCard";
 
 export default function AdminProjectsSection() {
@@ -32,44 +32,43 @@ export default function AdminProjectsSection() {
         load()
     }, [])
 
-
     const {
         isOpen: isDelete,
         onOpen: onDelete,
         onClose: closeDelete,
     } = useDisclosure();
 
-    const onRemove = () => {
-        // if (!current?._id) return
+    const onRemove = async () => {
+        if (!current?._id) return
 
-        // setLoading(true);
+        setLoading(true);
 
-        // removeProject(current?._id)
-        //     .unwrap()
-        //     .then(() => {
-        //         addToast({
-        //             color: "success",
-        //             title: "Успешно!",
-        //             description: `Проект успешно удален`,
-        //             variant: "solid",
-        //             radius: "lg",
-        //             timeout: 3000,
-        //             shouldShowTimeoutProgress: true,
-        //         });
-        //         closeDelete();
-        //     })
-        //     .catch((err: any) => {
-        //         addToast({
-        //             color: "danger",
-        //             title: "Ошибка!",
-        //             description: `Произошла ошибка при удалении проекта`,
-        //             variant: "solid",
-        //             radius: "lg",
-        //             timeout: 3000,
-        //             shouldShowTimeoutProgress: true,
-        //         });
-        //     })
-        //     .finally(() => setLoading(false));
+        try {
+            await removeProject(current._id)
+
+            addToast({
+                color: "success",
+                title: "Успешно!",
+                description: `Проект успешно удален`,
+                variant: "solid",
+                radius: "lg",
+                timeout: 3000,
+                shouldShowTimeoutProgress: true,
+            });
+            closeDelete();
+        } catch (err) {
+            addToast({
+                color: "danger",
+                title: "Ошибка!",
+                description: `Произошла ошибка при удалении проекта`,
+                variant: "solid",
+                radius: "lg",
+                timeout: 3000,
+                shouldShowTimeoutProgress: true,
+            });
+        } finally {
+            setLoading(false)
+        }
     };
 
     return (

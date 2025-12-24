@@ -6,7 +6,7 @@ import { FC } from "react";
 import { FaExternalLinkAlt } from "react-icons/fa";
 
 // import { getMedia } from "@/helper/getMedia";
-import { ProjectType, projectTypeOptions } from "../../types/project";
+import { ProjectType, projectTypeOptions } from "../../../../../../../types/project";
 
 type Props = {
   project: any;
@@ -23,7 +23,7 @@ export const ProjectCard: FC<Props> = ({ project, onEdit, onRemove }) => {
 
   const onAction = (key: string) => {
     if (key === "link") {
-      window?.open(`https://${project?.url}`, "_blank");
+      window?.open(`https://${project?.domainCustom ?? project?.domainTech}`, "_blank");
     }
     if (key === "edit") onEdit(project);
     if (key === "remove") {
@@ -71,7 +71,7 @@ export const ProjectCard: FC<Props> = ({ project, onEdit, onRemove }) => {
           <Divider />
           <div className="flex items-center justify-between gap-3 text-xs">
             <p>Ссылка</p>
-            <p>{project?.url}</p>
+            <p>{project?.domainCustom ?? project?.domainTech}</p>
           </div>
           <Divider />
         </div>

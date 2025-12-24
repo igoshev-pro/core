@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 export async function GET(req: NextRequest) {
     const queryString = req.nextUrl.searchParams.toString()
 
-    const nestUrl = `${process.env.CORE_API_URL}/projects?${queryString}`;
+    const nestUrl = `${process.env.CORE_API_URL}/clients?${queryString}`;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
@@ -41,7 +41,7 @@ export async function DELETE(req: NextRequest,
 ) {
     const { id } = params
 
-    const nestUrl = `${process.env.CORE_API_URL}/projects/${id}`;
+    const nestUrl = `${process.env.CORE_API_URL}/clients/${id}`;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
