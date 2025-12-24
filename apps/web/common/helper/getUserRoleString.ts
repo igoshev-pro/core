@@ -1,13 +1,13 @@
 export enum UserRole {
   User = "user",
-  Admin = "admin",
+  Client = "client",
   SuperAdmin = "superAdmin",
 }
 
 export const getUserRoleString = (user: any) => {
   switch (user.role) {
-    case UserRole.Admin:
-      return "Администратор";
+    case UserRole.Client:
+      return "Клиент";
     case UserRole.SuperAdmin:
       return "Суперадминистратор";
     default:
