@@ -16,12 +16,12 @@ const SideMenuAdminShell = () => {
         {
             label: "Проекты",
             icon: <MdWork className="text-[24px]" />,
-            route: `/admin/projects${withProjectId}`,
+            route: `/admin/projects${withProjectId()}`,
         },
         {
             label: "Клиенты",
             icon: <FaUsers className="text-[24px]" />,
-            route: `/admin/clients${withProjectId}`,
+            route: `/admin/clients${withProjectId()}`,
         }
     ]);
 
