@@ -7,6 +7,7 @@ import { matchPage, renderApp } from "@/packages/renderer/src";
 import type { RenderContext } from "@/packages/renderer/src/types";
 import { getTemplatePack } from "@/packages/templates/src";
 import { getTheme, themeToCssVars } from "@/packages/themes/src";
+import { notFound } from "next/navigation";
 
 type PageProps = {
   params: Promise<{
@@ -32,14 +33,18 @@ export default async function AdminPage({ params }: PageProps) {
   const schema = await getSiteSchema(projectId, mode);
 
   const matched = matchPage(schema.pages, path);
+  // if (!matched) {
+  //   return (
+  //     <div style={{ padding: 24 }}>
+  //       <div>404 admin (no page in schema): {path}</div>
+  //       <div>slug: {JSON.stringify(slug)}</div>
+  //       <div>schema pages: {schema.pages?.map((p) => p.path).join(", ")}</div>
+  //     </div>
+  //   );
+  // }
+
   if (!matched) {
-    return (
-      <div style={{ padding: 24 }}>
-        <div>404 admin (no page in schema): {path}</div>
-        <div>slug: {JSON.stringify(slug)}</div>
-        <div>schema pages: {schema.pages?.map((p) => p.path).join(", ")}</div>
-      </div>
-    );
+    notFound(); // ← вот здесь настоящий 404
   }
 
   const pack = getTemplatePack(runtime.templateId);

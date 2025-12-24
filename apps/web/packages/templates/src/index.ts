@@ -1,6 +1,6 @@
 import { TemplatePack } from "@/packages/renderer/src";
 import { landingClassicPack } from "./packs/landing-classic";
-import { adminShellPack } from "./packs/admin-shell";
+import { adminShellPack } from "./packs/pro";
 import { authDefaultPack } from "./packs/auth-default";
 
 const packs: Record<string, TemplatePack> = {
