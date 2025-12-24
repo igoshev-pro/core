@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { withProjectId } from "@/api/utils/withProjectId";
 import { headers } from "next/headers";
 import "../../../styles/globals.css";
+import { Providers } from "@/app/providers";
 
 async function isCoreAdmin() {
   const h = await headers()
@@ -124,7 +125,7 @@ export default async function AdminRootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+     <body className="font-sans"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>{children}</Providers></body>
     </html>
   );
 }

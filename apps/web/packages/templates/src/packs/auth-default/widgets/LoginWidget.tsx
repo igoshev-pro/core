@@ -1,7 +1,7 @@
-import { LoginBlock } from "./LoginWidgetClient";
+import { LoginWidgetClient } from "./LoginWidgetClient";
 
 export const LoginWidget = () => {
   return (
-    <LoginBlock />
+    <LoginWidgetClient />
   );
 };

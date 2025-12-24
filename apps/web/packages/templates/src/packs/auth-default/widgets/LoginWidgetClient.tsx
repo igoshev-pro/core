@@ -18,7 +18,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export const LoginBlock = () => {
+export const LoginWidgetClient = () => {
   const router = useRouter();
 
   const {

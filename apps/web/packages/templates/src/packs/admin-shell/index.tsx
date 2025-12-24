@@ -5,7 +5,7 @@ import AdminLayout from "./layouts/AdminLayout";
 function AdminDashboardSection({ node }: any) {
   return (
     <section>
-      <h2 style={{ margin: 0 }}>Dashboard</h2>
+      <h2 style={{ margin: 0 }}>Проекты</h2>
       <div style={{ marginTop: 8, opacity: 0.8 }}>
         {(node.props?.hint as string) ?? "CRM / Analytics placeholder"}
       </div>

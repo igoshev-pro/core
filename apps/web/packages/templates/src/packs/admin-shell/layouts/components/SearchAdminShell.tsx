@@ -102,7 +102,7 @@ async function defaultFetcher<T>(api: ApiKey, query: string, signal: AbortSignal
   return res.json();
 }
 
-export function Search<T extends SearchItemBase>({
+export function SearchAdminShell<T extends SearchItemBase>({
   value,
   onValueChange,
 
