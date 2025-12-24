@@ -2,8 +2,8 @@ import { TemplatePack } from "@/packages/renderer/src";
 import React from "react";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminProjectsSection from "./sections/AdminProjectsSection";
-import AdminClientsSection from "./sections/AdminClientsSection";
 import ClientUpsertSectionMainS from "./pages/clients/upsert/sections/ClientUpsertSectionMainS";
+import ClientsSectionMainS from "./pages/clients/sections/ClientsSectionMainS";
 
 function AdminDashboardSection({ node }: any) {
   return (
@@ -25,7 +25,7 @@ export const adminShellPack: TemplatePack = {
   sections: {
     "admin.dashboard.v1": AdminDashboardSection,
     "admin.projects.v1": AdminProjectsSection,
-    "admin.clients.v1": AdminClientsSection,
+    "pro.clients.main.v1": ClientsSectionMainS,
     "pro.client.upsert.main.v1": ClientUpsertSectionMainS
   },
   widgets: {

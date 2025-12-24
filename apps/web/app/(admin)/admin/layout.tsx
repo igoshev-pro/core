@@ -3,8 +3,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { withProjectId } from "@/api/utils/withProjectId";
 import { headers } from "next/headers";
-import "../../../styles/globals.css";
-import { Providers } from "@/app/providers";
 import MeClient from "./MeClient";
 
 async function isCoreAdmin() {
@@ -117,16 +115,6 @@ export default async function AdminRootLayout({
   }
 
   return (
-    <html lang="ru" suppressHydrationWarning>
-       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-     <body className="font-sans"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}><MeClient me={superMe ?? clientMe}>{children}</MeClient></Providers></body>
-    </html>
+    <MeClient me={superMe ?? clientMe}>{children}</MeClient>
   );
 }

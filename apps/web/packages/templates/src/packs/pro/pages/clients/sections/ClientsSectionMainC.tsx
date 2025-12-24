@@ -3,13 +3,15 @@
 import { addToast, Button, useDisclosure } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LoaderModal } from "../components/modals/LoaderModal";
+import { LoaderModal } from "../../../components/modals/LoaderModal";
 import { getClients, removeClient } from "@/api/core/clientsApi";
-import { UserCard } from "../components/widgets/UserCard";
-import { ConfirmModal } from "../components/modals/ConfirmModal";
-import { AddMoneyModal } from "../components/modals/AddMoneyModal";
+import { UserCard } from "../../../components/widgets/UserCard";
+import { ConfirmModal } from "../../../components/modals/ConfirmModal";
+import { AddMoneyModal } from "../../../components/modals/AddMoneyModal";
+import { ROUTES } from "@/packages/templates/common/routes";
+import { withProjectId } from "@/api/utils/withProjectId";
 
-export default function AdminClientsSectionClient() {
+export default function ClientsSectionMainC() {
     const router = useRouter();
 
     const [current, setCurrent] = useState<any>();
@@ -88,7 +90,7 @@ export default function AdminClientsSectionClient() {
                         <Button
                             color="primary"
                             radius="full"
-                        // onPress={() => router.push(ROUTES.ENTITY_USER_CREATE)}
+                            onPress={() => router.push(ROUTES.ADMIN_CLIENTS_CREATE + withProjectId())}
                         >
                             Создать
                         </Button>

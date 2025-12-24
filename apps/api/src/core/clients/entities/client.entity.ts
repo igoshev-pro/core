@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { UserRole, UserStatus } from 'src/common/enums/user.unum'
+import { UserPhoto } from 'src/common/types/user';
 import { Project } from 'src/core/projects/entities/project.entity';
 
 @Schema({ timestamps: true })
@@ -14,8 +15,11 @@ export class Client {
   @Prop()
   otp: string;
 
-  @Prop({ type: String })
-  avatar?: string;
+  @Prop()
+  avatarPath?: string | null; // быстрый доступ к главной фотке
+
+  @Prop()
+  photos?: UserPhoto[]; 
 
   @Prop({ default: UserRole.Client, enum: UserRole, required: true })
   role: UserRole;

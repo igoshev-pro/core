@@ -3,12 +3,12 @@ import { UpsertType } from '@/packages/templates/common/enum/main'
 
 export type ClientUpsertSectionMainProps = {
   type: UpsertType
+  projectId: string
 }
 
 const ClientUpsertSectionMainS = ({ node, ctx }: any) => {
-  console.log(4, node, ctx)
   return (
-    <ClientUpsertSectionMainC type={node.props.type} />
+    <ClientUpsertSectionMainC type={node.props.type} projectId={ctx.projectId} />
   )
 }
 

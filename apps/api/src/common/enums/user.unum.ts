@@ -3,6 +3,7 @@ export enum UserStatus {
   Inactive = 'inactive',
   Draft = 'draft',
   Archived = 'archived',
+  Blocked = 'blocked'
 }
 
 export enum UserRole {

@@ -2,6 +2,7 @@ export class UpdateClientDto {
   name?: string;
   email?: string;
   otp?: string;
-  avatar?: string;
+  avatarPath?: string;
+  photos?: any[]
   status?: string;
 }
