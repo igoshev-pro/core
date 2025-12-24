@@ -5,6 +5,7 @@ import { withProjectId } from "@/api/utils/withProjectId";
 import { headers } from "next/headers";
 import "../../../styles/globals.css";
 import { Providers } from "@/app/providers";
+import MeClient from "./MeClient";
 
 async function isCoreAdmin() {
   const h = await headers()
@@ -125,7 +126,7 @@ export default async function AdminRootLayout({
           rel="stylesheet"
         />
       </head>
-     <body className="font-sans"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>{children}</Providers></body>
+     <body className="font-sans"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}><MeClient me={superMe ?? clientMe}>{children}</MeClient></Providers></body>
     </html>
   );
 }
