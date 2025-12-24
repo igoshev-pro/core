@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
 import { cookies, headers } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-    const queryString = req.nextUrl.searchParams.toString()
+export async function DELETE(req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params
 
-    const nestUrl = `${process.env.CORE_API_URL}/clients?${queryString}`;
+    const nestUrl = `${process.env.CORE_API_URL}/projects/${id}`;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;

@@ -1,4 +1,8 @@
-import type { Currency } from "./common";
+export enum Currency {
+	RUB = "RUB",
+	USD = "USD",
+	EUR = "EUR",
+}
 
 export interface User {
   name: string;
