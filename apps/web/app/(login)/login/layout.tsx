@@ -1,10 +1,6 @@
 import React from "react";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { withProjectId } from "@/api/utils/withProjectId";
-import { headers } from "next/headers";
+import { Providers } from "@/app/providers";
 import "../../../styles/globals.css";
-
 
 
 export default async function LoginRootLayout({
@@ -13,8 +9,16 @@ export default async function LoginRootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <body>{children}</body>
+    <html lang="ru" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="font-sans"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>{children}</Providers></body>
     </html>
   );
 }

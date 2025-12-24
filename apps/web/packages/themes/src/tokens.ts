@@ -1,20 +1,31 @@
 import { ThemeTokens } from "@/packages/renderer/src";
 
 export const themes: Record<string, ThemeTokens> = {
+  "default": {
+    _id: "default",
+    vars: {
+      "color-primary": "#22C55E",
+      "color-secondary": "#333F4E",
+      "color-gray": "#F2F4F8",
+      "font-sans": '"Montserrat"',
+    },
+  },
   "default-light": {
     _id: "default-light",
     vars: {
-      "color-bg": "255 255 255",
-      "color-text": "17 24 39",
-      "color-primary": "99 102 241",
+     "color-primary": "#22C55E",
+      "color-secondary": "#333F4E",
+      "color-gray": "#F2F4F8",
+      "font-sans": '"Montserrat"',
     },
   },
   "default-dark": {
     _id: "default-dark",
     vars: {
-      "color-bg": "17 24 39",
-      "color-text": "243 244 246",
-      "color-primary": "129 140 248",
+      "color-primary": "#22C55E",
+      "color-secondary": "#333F4E",
+      "color-gray": "#F2F4F8",
+      "font-sans": '"Montserrat"',
     },
   },
 };

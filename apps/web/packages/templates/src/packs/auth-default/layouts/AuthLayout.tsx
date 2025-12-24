@@ -1,4 +1,4 @@
-import { AuthLogo } from "./AuthLogo";
+import { AuthLogo } from "./components/AuthLogo";
 
 export default function AuthLayout({
   children,
@@ -6,12 +6,12 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[4fr_8fr] w-screen h-screen">
-      <div className="grid col-span-4 bg-secondary dark:bg-primary gap-8 justify-between p-[80px]">
+    <div className="!grid grid-cols-12 w-screen h-screen">
+      <div className="col-span-4 bg-secondary dark:bg-primary flex flex-col gap-8 justify-between p-[80px]">
         <div className="flex justify-center mt-[80px]">
           <AuthLogo />
         </div>
-        <div className="text-5xl font-bold text-white uppercase leading-[72px]">
+        <div className="text-4xl font-bold text-white uppercase leading-[64px]">
           Панель управления вашим
           <span className="text-primary dark:text-secondary"> бизнесом</span>
         </div>
@@ -30,8 +30,8 @@ export default function AuthLayout({
           </p>
         </div>
       </div>
-      <div className="grid col-span-8 justify-center items-center">
-        {children}
+      <div className="col-span-8 flex justify-center items-center">
+        <main>{children}</main>
       </div>
     </div>
   );

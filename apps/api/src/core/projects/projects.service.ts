@@ -360,7 +360,8 @@ export class ProjectsService {
       mode === 'admin'
         ? project.site?.admin
         : mode === 'login'
-          ? project.site?.login : project.site?.public;
+          ? project.site?.login 
+          : project.site?.public;
 
     if (!schema) {
       // дефолт, чтобы проект хоть рендерился
