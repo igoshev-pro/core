@@ -51,7 +51,7 @@ const UserBalanceAdminShell = () => {
             <p className="text-xs">
                 Ваш баланс{' '}
                 <span className="text-primary text-base ml-[3px]">
-                    {formatMoneyStr([{ balance: 0, currency: 'RUB' }], 'RUB')}
+                    {formatMoneyStr([{ balance: 300000, currency: 'RUB' }], 'RUB')}
                 </span>
             </p>
         </button>
