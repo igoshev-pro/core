@@ -1,7 +1,7 @@
 import { TemplatePack } from "@/packages/renderer/src";
 import React from "react";
 import AdminLayout from "./layouts/AdminLayout";
-import AdminProjectsSection from "./sections/AdminProjectsSection";
+import AdminProjectsSection from "./pages/projects/sections/AdminProjectsSection";
 import ClientUpsertSectionMainS from "./pages/clients/upsert/sections/ClientUpsertSectionMainS";
 import ClientsSectionMainS from "./pages/clients/sections/ClientsSectionMainS";
 
@@ -17,14 +17,14 @@ function AdminDashboardSection({ node }: any) {
 }
 
 export const adminShellPack: TemplatePack = {
-  _id: "admin-shell",
+  _id: "pro",
   version: "1.0.0",
   layouts: {
-    "admin.shell": AdminLayout,
+    "pro.layout.main.v1": AdminLayout,
   },
   sections: {
-    "admin.dashboard.v1": AdminDashboardSection,
-    "admin.projects.v1": AdminProjectsSection,
+    "pro.dashboard.main.v1": AdminDashboardSection,
+    "pro.projects.main.v1": AdminProjectsSection,
     "pro.clients.main.v1": ClientsSectionMainS,
     "pro.client.upsert.main.v1": ClientUpsertSectionMainS
   },

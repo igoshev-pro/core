@@ -4,10 +4,10 @@ import { addToast, Button, cn, useDisclosure } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { ConfirmModal } from "../components/modals/ConfirmModal";
-import { LoaderModal } from "../components/modals/LoaderModal";
+import { ConfirmModal } from "../../../components/modals/ConfirmModal";
+import { LoaderModal } from "../../../components/modals/LoaderModal";
 import { getProjects, removeProject } from "@/api/core/projectsApi";
-import { ProjectCard } from "../components/widgets/ProjectCard";
+import { ProjectCard } from "../../../components/widgets/ProjectCard";
 
 import {
   DndContext,
