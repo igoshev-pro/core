@@ -4,13 +4,13 @@ import { getUserRoleString } from "@/common/helper/getUserRoleString";
 import {
 	Button,
 	Card,
-	Image,
 	Divider,
 	cn,
 } from "@heroui/react";
 import { BiSolidMessageSquareEdit } from "react-icons/bi";
 import { MdNoPhotography } from "react-icons/md";
 import { RiDeleteBin5Fill, RiMoneyDollarCircleFill } from "react-icons/ri";
+import Image from 'next/image'
 
 type Props = {
 	item: Record<string, any>;
@@ -33,19 +33,19 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 			<Card className="flex flex-col gap-3 p-3 rounded-4xl">
 				<div
 					className={cn(
-						"relative w-full aspect-[1/1] rounded-[21px] overflow-hidden",
+						"relative w-full aspect-square rounded-[21px] overflow-hidden",
 						{
 							["bg-foreground-100 flex items-center justify-center"]:
-								!item?.avatar,
+								!url,
 						}
 					)}
 				>
 					{url ? (
 						<Image
-							alt=""
-							className="object-cover w-full h-full"
-							radius="none"
 							src={url}
+							alt="Avatar preview"
+							fill
+							className="object-cover"
 						/>
 					) : (
 						<div className="flex flex-col items-center gap-6 text-foreground-500">
