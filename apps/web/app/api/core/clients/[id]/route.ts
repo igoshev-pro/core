@@ -38,44 +38,55 @@ export async function GET(req: NextRequest,
     return NextResponse.json(data);
 }
 
-export async function PATCH(req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-    const { id } = await params;
+  const { id } = params;
 
-    const nestUrl = `${process.env.CORE_API_URL}/clients/${id}`;
+  const nestUrl = `${process.env.CORE_API_URL}/clients/${id}`;
 
-    const cookieStore = await cookies();
-    const token = cookieStore.get("access_token")?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
 
-    const h: any = headers()
-    const projectId = h.get('x-project-id')!;
-    const mode = h.get('x-project-mode')!;
+  const h = await headers();
+  const projectId = h.get("x-project-id") ?? undefined;
+  const mode = h.get("x-project-mode") ?? undefined;
 
-    const body = await req.json();
+  const body = await req.json();
 
-    const res = await fetch(nestUrl, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...(projectId ? { "x-project-id": projectId } : {}),
-            ...(mode ? { 'x-project-mode': mode } : {})
-        },
-        cache: "no-store",
-        body: JSON.stringify(body)
-    });
+  const res = await fetch(nestUrl, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(projectId ? { "x-project-id": projectId } : {}),
+      ...(mode ? { "x-project-mode": mode } : {}),
+    },
+    cache: "no-store",
+    body: JSON.stringify(body),
+  });
 
-    if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        return NextResponse.json(
-            { message: "Nest API error", status: res.status, details: text },
-            { status: 502 }
-        );
-    }
+  const text = await res.text().catch(() => "");
 
-    const data = await res.json();
-    return NextResponse.json(data);
+  if (!res.ok) {
+    return NextResponse.json(
+      { message: "Nest API error", status: res.status, details: text },
+      { status: 502 }
+    );
+  }
+
+  // Nest мог вернуть 204 No Content или пустое тело
+  if (res.status === 204 || !text) {
+    return NextResponse.json({ ok: true });
+  }
+
+  // На всякий случай, если Nest вернул не-JSON
+  try {
+    return NextResponse.json(JSON.parse(text));
+  } catch {
+    return NextResponse.json({ ok: true, raw: text });
+  }
 }
 
 export async function DELETE(req: NextRequest,
