@@ -102,7 +102,7 @@ export default function ClientsSectionMainC() {
                                 item={item}
                                 onEdit={(i: any) => {
                                     setCurrent(i),
-                                        router.push('/' + `/${i?._id}`);
+                                        router.push(`${ROUTES.ADMIN_CLIENTS_EDIT}/${i?._id}/${withProjectId()}`);
                                 }}
                                 onRemove={(i: any) => {
                                     setCurrent(i), onDelete();
