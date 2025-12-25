@@ -71,9 +71,10 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 					{url ? (
 						<Image
 							alt=""
-							className="object-cover w-full h-full"
-							radius="none"
 							src={url}
+							radius="none"
+							removeWrapper
+							className="absolute inset-0 w-full h-full object-cover"
 						/>
 					) : (
 						<div className="flex flex-col items-center gap-6 text-foreground-500">
