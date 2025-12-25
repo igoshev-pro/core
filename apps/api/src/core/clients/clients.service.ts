@@ -21,13 +21,14 @@ export class ClientsService {
   }
 
   findAll(query: Record<string, any>) {
-    const { limit } = query;
+    const { limit, offset } = query;
 
     const limitValue = Number.parseInt(limit ?? '', 10);
 
     return this.clientModel
       .find()
       .sort({ sortOrder: 1 })
+      .skip(offset)
       .limit(Number.isNaN(limitValue) ? 10 : limitValue)
       .populate('projects')
       .exec();

@@ -2,7 +2,7 @@
 
 import { addToast, Button, useDisclosure } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { LoaderModal } from "../../../components/modals/LoaderModal";
 import { getClients, removeClient, updateClient } from "@/api/core/clientsApi";
 import { UserCard } from "../../../components/widgets/UserCard";
@@ -28,7 +28,6 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableUserCard } from "../../../components/widgets/SortableUserCard";
 
-// тип можно заменить на твой нормальный
 type Client = {
   _id: string;
   name?: string;
@@ -38,28 +37,58 @@ type Client = {
 
 const ORDER_STEP = 1000;
 
+function getBatchSizeByCols(cols: number) {
+  if (cols >= 5) return 20;
+  if (cols === 4) return 16;
+  if (cols === 3) return 12;
+  return 10; // 1 или 2
+}
+
+/**
+ * Определяем кол-во колонок по tailwind breakpoint’ам
+ * grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5
+ */
+function useGridColumns() {
+  const [cols, setCols] = useState(3);
+
+  useEffect(() => {
+    const calc = () => {
+      // tailwind default breakpoints:
+      // sm: 640, lg: 1024, xl: 1280, 2xl: 1536
+      const w = window.innerWidth;
+      if (w >= 1536) return 5;
+      if (w >= 1280) return 4;
+      if (w >= 1024) return 3;
+      if (w >= 640) return 2;
+      return 1;
+    };
+
+    const update = () => setCols(calc());
+    update();
+
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return cols;
+}
+
 export default function ClientsSectionMainC() {
   const router = useRouter();
 
   const [current, setCurrent] = useState<Client | undefined>();
-  const [loading, setLoading] = useState(false);
 
   const [clients, setClients] = useState<Client[]>([]);
+  const [initialLoading, setInitialLoading] = useState(false);
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const res = await getClients(20);
-      // ожидаем что бек уже сортирует по sortOrder
-      setClients(res);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => {
-    load();
-  }, []);
+  const cols = useGridColumns();
+  const batchSize = useMemo(() => getBatchSizeByCols(cols), [cols]);
+
+  // sentinel для IntersectionObserver
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const ids = useMemo(() => clients.map((c) => c._id), [clients]);
 
@@ -80,13 +109,88 @@ export default function ClientsSectionMainC() {
     onClose: closeAddMoney,
   } = useDisclosure();
 
+  const loadInitial = async () => {
+    setInitialLoading(true);
+    try {
+      const res = await getClients(batchSize, 0); // <-- обнови сигнатуру getClients
+      setClients(res);
+      setHasMore(res.length === batchSize);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+
+    try {
+      const offset = clients.length;
+      const res = await getClients(batchSize, offset); // <-- обнови сигнатуру getClients
+      setClients((prev) => [...prev, ...res]);
+      setHasMore(res.length === batchSize);
+    } catch (e) {
+      addToast({
+        color: "danger",
+        title: "Ошибка!",
+        description: "Не удалось догрузить клиентов",
+        variant: "solid",
+        radius: "lg",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // 1) первая загрузка
+  useEffect(() => {
+    loadInitial();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 2) если изменилось кол-во колонок -> меняется batchSize -> перезагружаем,
+  // чтобы пачки соответствовали текущей сетке (как ты просил).
+  useEffect(() => {
+    // если уже что-то было загружено — перезагрузим под новый batchSize
+    if (clients.length > 0) {
+      loadInitial();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [batchSize]);
+
+  // 3) IntersectionObserver для infinite scroll
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first?.isIntersecting) {
+          void loadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "800px", // заранее догружаем, чтобы не было пустоты
+        threshold: 0,
+      }
+    );
+
+    obs.observe(el);
+    return () => obs.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sentinelRef.current, hasMore, loadingMore, clients.length, batchSize]);
+
   const onRemove = async () => {
     if (!current?._id) return;
 
-    setLoading(true);
+    setInitialLoading(true);
     try {
       await removeClient(current._id);
-      await load();
+      await loadInitial();
 
       addToast({
         color: "success",
@@ -109,18 +213,17 @@ export default function ClientsSectionMainC() {
         shouldShowTimeoutProgress: true,
       });
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
   };
 
   const persistOrder = async (next: Client[], prev: Client[]) => {
-    // пересчитываем sortOrder по позиции
+    // пересчитываем sortOrder по позиции (только для уже загруженных)
     const nextWithOrder = next.map((c, index) => ({
       ...c,
       sortOrder: (index + 1) * ORDER_STEP,
     }));
 
-    // сохраняем только изменившиеся
     const prevMap = new Map(prev.map((c) => [c._id, c.sortOrder ?? 0]));
     const changed = nextWithOrder.filter(
       (c) => (prevMap.get(c._id) ?? 0) !== (c.sortOrder ?? 0)
@@ -128,12 +231,10 @@ export default function ClientsSectionMainC() {
 
     if (changed.length === 0) return;
 
-    // параллельно патчим (можно ограничить батчом, но обычно списки небольшие)
     await Promise.all(
       changed.map((c) => updateClient(c._id, { sortOrder: c.sortOrder }))
     );
 
-    // фиксируем локально (на случай если было без sortOrder)
     setClients(nextWithOrder);
   };
 
@@ -149,14 +250,10 @@ export default function ClientsSectionMainC() {
 
       const next = arrayMove(prev, oldIndex, newIndex);
 
-      // optimistic UI: уже переставили
-      // сохраняем порядок асинхронно (без ожидания setState)
-      // важно: берем "prev" и "next" именно из этого замыкания
       void (async () => {
         try {
           await persistOrder(next, prev);
         } catch (e) {
-          // откат
           setClients(prev);
           addToast({
             color: "danger",
@@ -176,7 +273,7 @@ export default function ClientsSectionMainC() {
 
   return (
     <>
-      {loading ? (
+      {initialLoading ? (
         <LoaderModal />
       ) : (
         <>
@@ -198,8 +295,8 @@ export default function ClientsSectionMainC() {
             onDragEnd={onDragEnd}
           >
             <SortableContext items={ids} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-3 gap-6">
-                {clients?.map((item) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                {clients.map((item) => (
                   <SortableUserCard key={item._id} id={item._id}>
                     <UserCard
                       item={item}
@@ -221,6 +318,22 @@ export default function ClientsSectionMainC() {
               </div>
             </SortableContext>
           </DndContext>
+
+          {/* sentinel: как только он близко к экрану — догружаем */}
+          <div ref={sentinelRef} className="h-1" />
+
+          {/* мини-индикатор снизу (по желанию) */}
+          {loadingMore && (
+            <div className="mt-6 flex justify-center opacity-70 text-sm">
+              Загрузка...
+            </div>
+          )}
+
+          {!hasMore && clients.length > 0 && (
+            <div className="mt-6 flex justify-center opacity-60 text-sm">
+              Больше клиентов нет
+            </div>
+          )}
         </>
       )}
 

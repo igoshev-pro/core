@@ -25,8 +25,8 @@ export async function createClient(body: any) {
     return res.json();
 }
 
-export async function getClients(limit?: number) {
-    const query = withProjectId({ limit })
+export async function getClients(limit?: number, offset?: number) {
+    const query = withProjectId({ limit, offset })
 
     const res = await fetch(`/api/core/clients${query}`, {
         method: "GET",
