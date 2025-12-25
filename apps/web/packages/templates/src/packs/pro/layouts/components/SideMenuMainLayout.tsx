@@ -1,14 +1,17 @@
 'use client'
 
-import { withProjectId } from '@/api/utils/withProjectId';
 import { Button } from '@heroui/react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
-import { FaChevronDown, FaChevronRight, FaUsers } from 'react-icons/fa6';
+import { FaChevronDown, FaChevronRight, FaLaptopCode, FaSitemap, FaUsers } from 'react-icons/fa6';
 import { IoRocketSharp } from 'react-icons/io5';
-import { MdWork } from 'react-icons/md';
+import { MdDesignServices, MdFactory, MdWork } from 'react-icons/md';
+import { IoIosColorPalette } from "react-icons/io";
+import { RiLayoutMasonryFill } from 'react-icons/ri';
+import { SiPlatformdotsh } from "react-icons/si";
+import { BiSolidWidget } from 'react-icons/bi';
 
-const SideMenuAdminShell = () => {
+const SideMenuMainLayout = () => {
     const pathname = usePathname();
     const router = useRouter();
 
@@ -16,12 +19,55 @@ const SideMenuAdminShell = () => {
         {
             label: "Проекты",
             icon: <MdWork className="text-[24px]" />,
-            route: `/admin/projects${withProjectId()}`,
+            route: `/admin/projects}`,
         },
         {
             label: "Клиенты",
             icon: <FaUsers className="text-[24px]" />,
-            route: `/admin/clients${withProjectId()}`,
+            route: `/admin/clients}`,
+        },
+        {
+            label: "Фабрика",
+            icon: <MdFactory className="text-[24px]" />,
+            route: `/admin/factory`,
+            isOpen: false,
+            submenu: [
+                // {
+                //     label: "Фичи",
+                //     icon: <FaLaptopCode className="text-[24px]" />,
+                //     route: '/admin/factory/features',
+                // },
+                {
+                    label: "Шаблоны",
+                    icon: <MdDesignServices className="text-[24px] w-[24px] flex justify-center" />,
+                    route: '/admin/factory/templates',
+                },
+                {
+                    label: "Темы",
+                    icon: <IoIosColorPalette  className="text-[24px] w-[24px] flex justify-center" />,
+                    route: '/admin/factory/themes',
+                },
+                {
+                    label: "Лейауты",
+                    icon: <RiLayoutMasonryFill className="text-[21px] w-[24px] flex justify-center" />,
+                    route: '/admin/factory/layouts',
+                },
+                {
+                    label: "Страницы",
+                    icon: <FaSitemap className="text-[18px] w-[24px] flex justify-center" />,
+                    route: '/admin/factory/pages',
+                },
+                {
+                    label: "Секции",
+                    icon: <SiPlatformdotsh className="text-[18px] w-[24px] flex justify-center" />,
+                    route: '/admin/factory/sections',
+                },
+                {
+                    label: "Виджеты",
+                    icon: <BiSolidWidget className="text-[23px] w-[24px] flex justify-center" />,
+                    route: '/admin/factory/widgets',
+                },
+            ],
         }
     ]);
 
@@ -107,4 +153,4 @@ const SideMenuAdminShell = () => {
 
 }
 
-export default SideMenuAdminShell
+export default SideMenuMainLayout

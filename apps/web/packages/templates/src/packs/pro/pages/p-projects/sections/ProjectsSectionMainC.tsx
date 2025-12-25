@@ -105,7 +105,7 @@ export function SortableProjectCard({
 }
 
 
-export default function AdminProjectsSection() {
+export default function ProjectsSectionMainC() {
   const router = useRouter();
 
   const [current, setCurrent] = useState<Project | undefined>();

@@ -5,11 +5,11 @@ import { NotificationsAdminShell } from "./components/NotificationsAdminShell";
 import UserBalanceAdminShell from "./components/UserBalanceAdminShell";
 
 import LogoutAdminShell from "./components/LogoutAdminShell";
-import SideMenuAdminShell from "./components/SideMenuAdminShell";
+import SideMenuMainLayout from "./components/SideMenuMainLayout";
 import SupportAdminShell from "./components/SupportAdminShell";
 
 
-export default function AdminLayout({
+export default function MainLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -36,7 +36,7 @@ export default function AdminLayout({
       <div className="grid grid-cols-5 min-h-[calc(100vh-120px)]">
         {/* Боковое меню */}
         <div className="col-span-1 flex flex-col justify-between pr-9 pb-9 gap-6 transition-all duration-1000 animate-appearance-in">
-          <SideMenuAdminShell />
+          <SideMenuMainLayout />
           <SupportAdminShell />
         </div>
 

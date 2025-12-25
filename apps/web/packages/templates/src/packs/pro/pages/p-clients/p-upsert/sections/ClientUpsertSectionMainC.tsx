@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ClientUpsertSectionMainProps } from "./ClientUpsertSectionMainS";
+import { ClientUpsertSectionMainProps } from "./ClientUpsertSectionMain";
 import { UpsertType } from "@/packages/templates/common/enum/main";
 import {
 	addToast,

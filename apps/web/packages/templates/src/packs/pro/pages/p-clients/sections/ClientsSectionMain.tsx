@@ -1,10 +1,10 @@
 import React from 'react'
 import ClientsSectionMainC from './ClientsSectionMainC'
 
-const ClientsSectionMainS = () => {
+const ClientsSectionMain = () => {
   return (
     <ClientsSectionMainC/>
   )
 }
 
-export default ClientsSectionMainS
+export default ClientsSectionMain

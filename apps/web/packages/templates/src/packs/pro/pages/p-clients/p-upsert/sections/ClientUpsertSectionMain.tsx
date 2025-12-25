@@ -7,7 +7,7 @@ export type ClientUpsertSectionMainProps = {
   id?: string
 }
 
-const ClientUpsertSectionMainS = ({ node, ctx }: any) => {
+const ClientUpsertSectionMain = ({ node, ctx }: any) => {
   const segments = ctx.path.split('/').filter(Boolean)
   const id = segments.at(-1)
 
@@ -16,4 +16,4 @@ const ClientUpsertSectionMainS = ({ node, ctx }: any) => {
   )
 }
 
-export default ClientUpsertSectionMainS
+export default ClientUpsertSectionMain
