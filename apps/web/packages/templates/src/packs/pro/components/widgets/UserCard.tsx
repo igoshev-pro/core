@@ -78,8 +78,8 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 					</div>
 				</div>
 
-				<div className="flex gap-2">
-					<Button
+				<div className="flex justify-between gap-2">
+					{/* <Button
 						isIconOnly
 						color="default"
 						radius="full"
@@ -88,7 +88,7 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 						onPress={() => onAction("balance")}
 					>
 						<RiMoneyDollarCircleFill className="text-[19px]" />
-					</Button>
+					</Button> */}
 					<Button
 						isIconOnly
 						color="danger"
@@ -100,17 +100,14 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 						<RiDeleteBin5Fill className="text-[18px]" />
 					</Button>
 					<Button
-						className={`w-full justify-center`}
+						isIconOnly
 						color="default"
 						radius="full"
 						size="md"
-						startContent={
-							<BiSolidMessageSquareEdit className="text-[20px] min-w-[20px] mx-[2px]" />
-						}
 						variant="solid"
 						onPress={() => onAction("edit")}
 					>
-						Редактировать
+						<BiSolidMessageSquareEdit className="text-[20px] min-w-[20px] mx-[2px]" />
 					</Button>
 				</div>
 			</Card>

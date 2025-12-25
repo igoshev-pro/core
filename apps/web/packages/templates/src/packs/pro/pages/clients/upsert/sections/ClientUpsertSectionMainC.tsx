@@ -27,6 +27,7 @@ import { createClient, getClient, updateClient } from "@/api/core/clientsApi";
 import { uploadFileToStorage } from "@/api/feature/storageApi";
 import { ROUTES } from "@/packages/templates/common/routes";
 import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
+import { withProjectId } from "@/api/utils/withProjectId";
 
 const StatusEnum = ["active", "blocked", "archived"] as const;
 
@@ -233,7 +234,7 @@ export default function ClientUpsertSectionMainC({
 					timeout: 3000,
 					shouldShowTimeoutProgress: true,
 				});
-				router.push(ROUTES.ADMIN_CLIENTS);
+				router.push(`${ROUTES.ADMIN_CLIENTS}${withProjectId}`);
 			} catch {
 				addToast({
 					color: "danger",
