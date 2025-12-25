@@ -15,7 +15,7 @@ export class Client {
   @Prop()
   otp: string;
 
-  @Prop({ type: String, required: false, default: null })
+  @Prop()
   avatarPath?: string | null; // быстрый доступ к главной фотке
 
   @Prop()
