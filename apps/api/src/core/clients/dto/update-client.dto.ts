@@ -5,4 +5,5 @@ export class UpdateClientDto {
   avatarPath?: string;
   photos?: any[]
   status?: string;
+  sortOrder?: number;
 }

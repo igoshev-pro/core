@@ -27,7 +27,7 @@ export class ClientsService {
 
     return this.clientModel
       .find()
-      .sort({ createdAt: -1 })
+      .sort({ sortOrder: 1 })
       .limit(Number.isNaN(limitValue) ? 10 : limitValue)
       .populate('projects')
       .exec();

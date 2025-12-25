@@ -12,6 +12,9 @@ export class Client {
   @Prop({ required: true, unique: true })
   email: string;
 
+  @Prop({ default: 0, index: true })
+  sortOrder: number;
+
   @Prop()
   otp: string;
 
@@ -43,3 +46,5 @@ export class Client {
 
 export type ClientDocument = Client & Document;
 export const ClientSchema = SchemaFactory.createForClass(Client);
+
+ClientSchema.index({ projectId: 1, sortOrder: 1 });
