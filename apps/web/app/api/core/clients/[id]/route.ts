@@ -93,7 +93,7 @@ export async function DELETE(req: NextRequest,
     const mode = h.get('x-project-mode')!;
 
     const res = await fetch(nestUrl, {
-        method: "GET",
+        method: "DELETE",
         headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
