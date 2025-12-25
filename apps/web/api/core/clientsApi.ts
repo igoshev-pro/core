@@ -28,6 +28,8 @@ export async function createClient(body: any) {
 export async function getClients(limit?: number, offset?: number) {
     const query = withProjectId({ limit, offset })
 
+    console.log(limit, offset, query)
+
     const res = await fetch(`/api/core/clients${query}`, {
         method: "GET",
         credentials: "include",
