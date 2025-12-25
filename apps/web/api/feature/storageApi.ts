@@ -46,23 +46,23 @@ export async function uploadFileToStorage(input: any) {
 }
 
 export async function getDownloadUrl(params: {
-    path: string;
-    expiresInSec?: number;
-    apiBaseUrl?: string;
+  path: string;
+  expiresInSec?: number;
 }): Promise<string> {
-    const { path, expiresInSec, apiBaseUrl = "" } = params;
+  const { path, expiresInSec = 300 } = params;
 
-    const res = await fetch(`api/storage/presign/download`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path, expiresInSec: expiresInSec ?? 300 }),
-    });
+  const res = await fetch(`/api/storage/presign/download`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // чтобы куки/сессия дошли до Next API (если нужно)
+    body: JSON.stringify({ path, expiresInSec }),
+  });
 
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Presign download failed: ${res.status} ${text}`);
-    }
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Presign download failed: ${res.status} ${text}`);
+  }
 
-    const data = (await res.json());
-    return data.url;
+  const data = (await res.json()) as { url: string };
+  return data.url;
 }

@@ -1,3 +1,4 @@
+import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
 import { formatMoneyStr } from "@/common/helper/getFormatedMoneyStr";
 import { getUserRoleString } from "@/common/helper/getUserRoleString";
 import {
@@ -25,6 +26,8 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 		if (key === "delete") onRemove(item);
 	};
 
+	const { url } = usePresignedUrl(item.avatarPath);
+
 	return (
 		<>
 			<Card className="flex flex-col gap-3 p-3 rounded-4xl">
@@ -37,12 +40,12 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 						}
 					)}
 				>
-					{item?.avatar ? (
+					{url ? (
 						<Image
 							alt=""
 							className="object-cover w-full h-full"
 							radius="none"
-							// src={getMedia(item.avatar)}
+							src={url}
 						/>
 					) : (
 						<div className="flex flex-col items-center gap-6 text-foreground-500">
