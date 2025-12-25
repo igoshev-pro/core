@@ -3,7 +3,6 @@ import { cookies, headers } from "next/headers";
 
 export async function GET(req: NextRequest) {
     const queryString = req.nextUrl.searchParams.toString()
-
     const nestUrl = `${process.env.CORE_API_URL}/projects?${queryString}`;
 
     const cookieStore = await cookies();

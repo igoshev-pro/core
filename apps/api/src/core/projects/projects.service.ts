@@ -248,7 +248,7 @@ export class ProjectsService {
   }
 
   findAll(query: Record<string, string> = {}) {
-    const { owner, limit } = query;
+    const { owner, limit, offset } = query;
 
     const filter: Record<string, any> = {};
     if (owner) filter.owner = owner;
@@ -257,7 +257,7 @@ export class ProjectsService {
 
     return this.projectModel
       .find(filter)
-      .sort({ createdAt: -1 })
+      .sort({ sortOrder: 1 })
       .limit(Number.isNaN(limitValue) ? 10 : limitValue)
       .exec();
   }

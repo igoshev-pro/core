@@ -1,9 +1,8 @@
+import { buildQuery } from "../utils/buildQuery";
 import { withProjectId } from "../utils/withProjectId";
 
-export async function getProjects(limit?: number) {
-    const query = withProjectId({ limit })
-
-    const res = await fetch(`/api/core/projects${query}`, {
+export async function getProjects(limit?: number, offset?: number) {
+    const res = await fetch(`/api/core/projects${buildQuery({ limit, offset })}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" }
@@ -15,7 +14,7 @@ export async function getProjects(limit?: number) {
 }
 
 export async function removeProject(id: string) {
-    const res = await fetch(`/api/core/projects/${id}${withProjectId()}`, {
+    const res = await fetch(`/api/core/projects/${id}}`, {
         method: "DELETE",
         credentials: "include",
         headers: { "Content-Type": "application/json" }

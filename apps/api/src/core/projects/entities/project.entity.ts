@@ -88,6 +88,9 @@ export class Project {
   @Prop({ required: true })
   name: string;
 
+  @Prop({ default: 0, index: true })
+  sortOrder: number;
+
   @Prop({ required: true, enum: Object.values(ProjectType) })
   type?: ProjectType;
 

@@ -13,7 +13,7 @@ export function SortableUserCard({ id, children }: Props) {
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.7 : 1,
+    // opacity: isDragging ? 0.7 : 1,
     cursor: "grab",
     touchAction: "none",
   };
