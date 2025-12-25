@@ -329,7 +329,7 @@ export class ProjectsService {
 
     const templateId =
       mode === 'admin'
-        ? project.template?.admin ?? 'admin-shell'
+        ? project.template?.admin ?? 'pro'
         : mode === 'login'
           ? project.template?.auth ?? 'auth-default' : project.template?.public ?? 'landing-classic';
 
