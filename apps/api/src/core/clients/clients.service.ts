@@ -23,8 +23,6 @@ export class ClientsService {
   findAll(query: Record<string, any>) {
     const { limit, offset } = query;
 
-    console.log(limit, offset)
-
     const limitValue = Number.parseInt(limit ?? '', 10);
 
     return this.clientModel
