@@ -11,10 +11,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { buildUserPhotoPath, fileExt } from "@/common/helper/photo-path-generator.util";
-import { uploadFileToStorage } from "@/common/helper/storage.client";
 import Image from "next/image"
 import { LoaderModal } from "../../../../components/modals/LoaderModal";
 import { createClient, updateClient } from "@/api/core/clientsApi";
+import { uploadFileToStorage } from "@/api/feature/storageApi";
 
 // const RoleEnum = ["client", "user"] as const;
 const StatusEnum = ["active", "blocked", "archived"] as const;
