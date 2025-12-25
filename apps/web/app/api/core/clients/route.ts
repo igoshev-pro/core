@@ -42,11 +42,7 @@ export async function POST(req: NextRequest
 export async function GET(req: NextRequest) {
     const queryString = req.nextUrl.searchParams.toString()
 
-    console.log(queryString)
-
     const nestUrl = `${process.env.CORE_API_URL}/clients?${queryString}`;
-
-    console.log(nestUrl)
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
