@@ -19,20 +19,18 @@ export default function ClientsSectionMainC() {
 
     const [clients, setClients] = useState([])
 
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true)
-            try {
-                const res = await getClients(20)
-                setClients(res)
-            } finally {
-                setLoading(false)
-            }
-
+    const load = async () => {
+        setLoading(true);
+        try {
+            const res = await getClients(20);
+            setClients(res);
+        } finally {
+            setLoading(false);
         }
+    };
 
-        load()
-    }, [])
+
+    useEffect(() => { load(); }, []);
 
     const {
         isOpen: isDelete,
@@ -52,9 +50,7 @@ export default function ClientsSectionMainC() {
 
         try {
             await removeClient(current._id)
-
-            const res = await getClients(20)
-            setClients(res)
+            await load()
 
             addToast({
                 color: "success",

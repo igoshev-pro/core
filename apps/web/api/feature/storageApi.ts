@@ -30,6 +30,7 @@ export async function uploadFileToStorage(input: any) {
             "Content-Type": file.type || "application/octet-stream",
         },
         body: file,
+        credentials: "omit"
     });
 
     if (!putRes.ok) {

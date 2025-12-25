@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
 
-    const h: any = headers()
+    const h = await headers()
     const projectId = h.get('x-project-id')!;
     const mode = h.get('x-project-mode')!;
 
