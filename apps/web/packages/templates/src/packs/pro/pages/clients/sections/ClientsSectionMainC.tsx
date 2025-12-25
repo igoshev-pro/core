@@ -96,7 +96,7 @@ export default function ClientsSectionMainC() {
                         </Button>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-6">
+                    <div className="grid grid-cols-3 gap-6">
                         {clients?.map((item: any) => (
                             <UserCard
                                 key={item?._id}
