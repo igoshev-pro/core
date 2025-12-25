@@ -42,12 +42,16 @@ export async function POST(req: NextRequest
 export async function GET(req: NextRequest) {
     const queryString = req.nextUrl.searchParams.toString()
 
-    const nestUrl = `${process.env.CORE_API_URL}/clients${queryString}`;
+    console.log(queryString)
+
+    const nestUrl = `${process.env.CORE_API_URL}/clients?${queryString}`;
+
+    console.log(nestUrl)
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
 
-    const h: any = headers()
+    const h = await headers()
     const projectId = h.get('x-project-id')!;
     const mode = h.get('x-project-mode')!;
 

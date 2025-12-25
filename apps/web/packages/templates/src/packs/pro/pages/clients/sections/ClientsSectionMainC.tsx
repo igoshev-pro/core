@@ -44,11 +44,17 @@ function getBatchSizeByCols(cols: number) {
   return 10; // 1 или 2
 }
 
+/**
+ * Определяем кол-во колонок по tailwind breakpoint’ам
+ * grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5
+ */
 function useGridColumns() {
   const [cols, setCols] = useState(3);
 
   useEffect(() => {
     const calc = () => {
+      // tailwind default breakpoints:
+      // sm: 640, lg: 1024, xl: 1280, 2xl: 1536
       const w = window.innerWidth;
       if (w >= 1536) return 5;
       if (w >= 1280) return 4;
@@ -67,9 +73,17 @@ function useGridColumns() {
   return cols;
 }
 
-// ✅ Нормализатор: что бы ни вернул API — на выходе всегда Client[]
-function normalizeClients(res: unknown): Client[] {
+// ✅ главное: что бы ни вернул getClients — на выходе всегда Client[]
+function unwrapClients(res: unknown): Client[] {
+  // вариант 1: API сразу вернул массив
   if (Array.isArray(res)) return res as Client[];
+
+  // вариант 2: axios/fetch wrapper: { data: [...] }
+  if (res && typeof res === "object") {
+    const anyRes = res as any;
+    if (Array.isArray(anyRes.data)) return anyRes.data as Client[];
+  }
+
   return [];
 }
 
@@ -93,6 +107,7 @@ export default function ClientsSectionMainC() {
   const cols = useGridColumns();
   const batchSize = useMemo(() => getBatchSizeByCols(cols), [cols]);
 
+  // sentinel для IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const ids = useMemo(() => clients.map((c) => c._id), [clients]);
@@ -114,32 +129,40 @@ export default function ClientsSectionMainC() {
     onClose: closeAddMoney,
   } = useDisclosure();
 
-  // ✅ useCallback + normalize + reset hasMore корректно
   const loadInitial = useCallback(async () => {
     setInitialLoading(true);
     try {
       const resRaw = await getClients(batchSize, 0);
-      const res = normalizeClients(resRaw); // ✅ всегда массив
+      const res = unwrapClients(resRaw);
+
       setClients(res);
       setHasMore(res.length === batchSize);
     } catch (e) {
-      // (опционально) можно тост как у loadMore, но не навязываю
-      setClients([]); // ✅ на всякий — не оставляем null
+      setClients([]);
       setHasMore(false);
+
+      addToast({
+        color: "danger",
+        title: "Ошибка!",
+        description: "Не удалось загрузить клиентов",
+        variant: "solid",
+        radius: "lg",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     } finally {
       setInitialLoading(false);
     }
   }, [batchSize]);
 
-  // ✅ offset берём из ref, чтобы не словить stale-closure на проде
   const loadMore = useCallback(async () => {
     if (loadingMore || initialLoading || !hasMore) return;
-
     setLoadingMore(true);
+
     try {
       const offset = clientsRef.current.length;
       const resRaw = await getClients(batchSize, offset);
-      const res = normalizeClients(resRaw); // ✅ всегда массив
+      const res = unwrapClients(resRaw);
 
       if (res.length === 0) {
         setHasMore(false);
@@ -168,14 +191,14 @@ export default function ClientsSectionMainC() {
     void loadInitial();
   }, [loadInitial]);
 
-  // 2) если изменилось batchSize — перезагружаем
+  // 2) если изменилось кол-во колонок -> batchSize -> перезагружаем
   useEffect(() => {
     if (clientsRef.current.length > 0) {
       void loadInitial();
     }
   }, [batchSize, loadInitial]);
 
-  // 3) IntersectionObserver
+  // 3) IntersectionObserver для infinite scroll
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
@@ -196,7 +219,7 @@ export default function ClientsSectionMainC() {
 
     obs.observe(el);
     return () => obs.disconnect();
-  }, [loadMore]); // ✅ больше не зависим от sentinelRef.current и clients.length
+  }, [loadMore]);
 
   const onRemove = async () => {
     if (!current?._id) return;
@@ -232,6 +255,7 @@ export default function ClientsSectionMainC() {
   };
 
   const persistOrder = async (next: Client[], prev: Client[]) => {
+    // пересчитываем sortOrder по позиции (только для уже загруженных)
     const nextWithOrder = next.map((c, index) => ({
       ...c,
       sortOrder: (index + 1) * ORDER_STEP,
@@ -336,6 +360,7 @@ export default function ClientsSectionMainC() {
             </SortableContext>
           </DndContext>
 
+          {/* sentinel: как только он близко к экрану — догружаем */}
           <div ref={sentinelRef} className="h-1" />
 
           {loadingMore && (
@@ -352,6 +377,7 @@ export default function ClientsSectionMainC() {
         </>
       )}
 
+      {/* Modals */}
       <ConfirmModal
         isOpen={isDelete}
         onClose={closeDelete}
