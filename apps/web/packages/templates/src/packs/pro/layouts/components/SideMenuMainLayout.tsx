@@ -19,12 +19,12 @@ const SideMenuMainLayout = () => {
         {
             label: "Проекты",
             icon: <MdWork className="text-[24px]" />,
-            route: `/admin/projects}`,
+            route: `/admin/projects`,
         },
         {
             label: "Клиенты",
             icon: <FaUsers className="text-[24px]" />,
-            route: `/admin/clients}`,
+            route: `/admin/clients`,
         },
         {
             label: "Фабрика",
