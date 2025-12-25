@@ -2,7 +2,7 @@
 
 import { addToast, Button, useDisclosure } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { LoaderModal } from "../../../components/modals/LoaderModal";
 import { getClients, removeClient, updateClient } from "@/api/core/clientsApi";
 import { UserCard } from "../../../components/widgets/UserCard";
@@ -44,17 +44,11 @@ function getBatchSizeByCols(cols: number) {
   return 10; // 1 или 2
 }
 
-/**
- * Определяем кол-во колонок по tailwind breakpoint’ам
- * grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5
- */
 function useGridColumns() {
   const [cols, setCols] = useState(3);
 
   useEffect(() => {
     const calc = () => {
-      // tailwind default breakpoints:
-      // sm: 640, lg: 1024, xl: 1280, 2xl: 1536
       const w = window.innerWidth;
       if (w >= 1536) return 5;
       if (w >= 1280) return 4;
@@ -73,12 +67,24 @@ function useGridColumns() {
   return cols;
 }
 
+// ✅ Нормализатор: что бы ни вернул API — на выходе всегда Client[]
+function normalizeClients(res: unknown): Client[] {
+  if (Array.isArray(res)) return res as Client[];
+  return [];
+}
+
 export default function ClientsSectionMainC() {
   const router = useRouter();
 
   const [current, setCurrent] = useState<Client | undefined>();
 
+  // ✅ clients всегда массив
   const [clients, setClients] = useState<Client[]>([]);
+  const clientsRef = useRef<Client[]>([]);
+  useEffect(() => {
+    clientsRef.current = clients;
+  }, [clients]);
+
   const [initialLoading, setInitialLoading] = useState(false);
 
   const [loadingMore, setLoadingMore] = useState(false);
@@ -87,7 +93,6 @@ export default function ClientsSectionMainC() {
   const cols = useGridColumns();
   const batchSize = useMemo(() => getBatchSizeByCols(cols), [cols]);
 
-  // sentinel для IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const ids = useMemo(() => clients.map((c) => c._id), [clients]);
@@ -109,24 +114,38 @@ export default function ClientsSectionMainC() {
     onClose: closeAddMoney,
   } = useDisclosure();
 
-  const loadInitial = async () => {
+  // ✅ useCallback + normalize + reset hasMore корректно
+  const loadInitial = useCallback(async () => {
     setInitialLoading(true);
     try {
-      const res = await getClients(batchSize, 0); // <-- обнови сигнатуру getClients
+      const resRaw = await getClients(batchSize, 0);
+      const res = normalizeClients(resRaw); // ✅ всегда массив
       setClients(res);
       setHasMore(res.length === batchSize);
+    } catch (e) {
+      // (опционально) можно тост как у loadMore, но не навязываю
+      setClients([]); // ✅ на всякий — не оставляем null
+      setHasMore(false);
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [batchSize]);
 
-  const loadMore = async () => {
-    if (loadingMore || !hasMore) return;
+  // ✅ offset берём из ref, чтобы не словить stale-closure на проде
+  const loadMore = useCallback(async () => {
+    if (loadingMore || initialLoading || !hasMore) return;
+
     setLoadingMore(true);
-
     try {
-      const offset = clients.length;
-      const res = await getClients(batchSize, offset); // <-- обнови сигнатуру getClients
+      const offset = clientsRef.current.length;
+      const resRaw = await getClients(batchSize, offset);
+      const res = normalizeClients(resRaw); // ✅ всегда массив
+
+      if (res.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
       setClients((prev) => [...prev, ...res]);
       setHasMore(res.length === batchSize);
     } catch (e) {
@@ -142,25 +161,21 @@ export default function ClientsSectionMainC() {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [batchSize, hasMore, initialLoading, loadingMore]);
 
   // 1) первая загрузка
   useEffect(() => {
-    loadInitial();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void loadInitial();
+  }, [loadInitial]);
 
-  // 2) если изменилось кол-во колонок -> меняется batchSize -> перезагружаем,
-  // чтобы пачки соответствовали текущей сетке (как ты просил).
+  // 2) если изменилось batchSize — перезагружаем
   useEffect(() => {
-    // если уже что-то было загружено — перезагрузим под новый batchSize
-    if (clients.length > 0) {
-      loadInitial();
+    if (clientsRef.current.length > 0) {
+      void loadInitial();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [batchSize]);
+  }, [batchSize, loadInitial]);
 
-  // 3) IntersectionObserver для infinite scroll
+  // 3) IntersectionObserver
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
@@ -174,15 +189,14 @@ export default function ClientsSectionMainC() {
       },
       {
         root: null,
-        rootMargin: "800px", // заранее догружаем, чтобы не было пустоты
+        rootMargin: "800px",
         threshold: 0,
       }
     );
 
     obs.observe(el);
     return () => obs.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sentinelRef.current, hasMore, loadingMore, clients.length, batchSize]);
+  }, [loadMore]); // ✅ больше не зависим от sentinelRef.current и clients.length
 
   const onRemove = async () => {
     if (!current?._id) return;
@@ -218,7 +232,6 @@ export default function ClientsSectionMainC() {
   };
 
   const persistOrder = async (next: Client[], prev: Client[]) => {
-    // пересчитываем sortOrder по позиции (только для уже загруженных)
     const nextWithOrder = next.map((c, index) => ({
       ...c,
       sortOrder: (index + 1) * ORDER_STEP,
@@ -283,7 +296,9 @@ export default function ClientsSectionMainC() {
             <Button
               color="primary"
               radius="full"
-              onPress={() => router.push(ROUTES.ADMIN_CLIENTS_CREATE + withProjectId())}
+              onPress={() =>
+                router.push(ROUTES.ADMIN_CLIENTS_CREATE + withProjectId())
+              }
             >
               Создать
             </Button>
@@ -300,15 +315,17 @@ export default function ClientsSectionMainC() {
                   <SortableUserCard key={item._id} id={item._id}>
                     <UserCard
                       item={item}
-                      onEdit={(i: any) => {
+                      onEdit={(i: Client) => {
                         setCurrent(i);
-                        router.push(`${ROUTES.ADMIN_CLIENTS_EDIT}/${i?._id}/${withProjectId()}`);
+                        router.push(
+                          `${ROUTES.ADMIN_CLIENTS_EDIT}/${i?._id}/${withProjectId()}`
+                        );
                       }}
-                      onRemove={(i: any) => {
+                      onRemove={(i: Client) => {
                         setCurrent(i);
                         onDelete();
                       }}
-                      onAddMoney={(i: any) => {
+                      onAddMoney={(i: Client) => {
                         setCurrent(i);
                         onAddMoney();
                       }}
@@ -319,10 +336,8 @@ export default function ClientsSectionMainC() {
             </SortableContext>
           </DndContext>
 
-          {/* sentinel: как только он близко к экрану — догружаем */}
           <div ref={sentinelRef} className="h-1" />
 
-          {/* мини-индикатор снизу (по желанию) */}
           {loadingMore && (
             <div className="mt-6 flex justify-center opacity-70 text-sm">
               Загрузка...
@@ -337,7 +352,6 @@ export default function ClientsSectionMainC() {
         </>
       )}
 
-      {/* Modals */}
       <ConfirmModal
         isOpen={isDelete}
         onClose={closeDelete}
@@ -347,7 +361,11 @@ export default function ClientsSectionMainC() {
         actionBtnText="Удалить"
       />
 
-      <AddMoneyModal isOpen={isAddMoney} onClose={closeAddMoney} user={current} />
+      <AddMoneyModal
+        isOpen={isAddMoney}
+        onClose={closeAddMoney}
+        user={current}
+      />
     </>
   );
 }
