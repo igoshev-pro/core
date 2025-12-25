@@ -10,7 +10,7 @@ import { SuperAdminsService } from '../super-admins/super-admins.service';
 import { ClientsService } from '../clients/clients.service';
 import { MailService } from '../mail/mail.service';
 import { jwtConstants } from './constants';
-import { UserRole } from 'src/common/enums/user.unum';
+import { UserRole } from 'src/common/enums/user.enum';
 
 @Injectable()
 export class AuthService {

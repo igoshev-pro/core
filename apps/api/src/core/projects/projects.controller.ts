@@ -14,7 +14,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Me } from '../auth/me.decorator'
-import { UserRole } from 'src/common/enums/user.unum'
+import { UserRole } from 'src/common/enums/user.enum'
 import { ClientGuard } from '../clients/client.guard';
 import { InternalTokenGuard } from 'src/common/guards/internal-token.guard';
 import { Header } from '@nestjs/common';

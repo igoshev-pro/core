@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { UserRole } from 'src/common/enums/user.unum';
+import type { UserRole } from 'src/common/enums/user.enum';
 
 export const TENANT_HEADER = 'x-project-id' as const;
 export const TENANT_PROJECT_ID = 'tenantProjectId' as const;

@@ -5,7 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserRole, UserStatus } from 'src/common/enums/user.unum';
+import { UserRole, UserStatus } from 'src/common/enums/user.enum';
 import { SuperAdminsService } from 'src/core/super-admins/super-admins.service';
 import type { RequestWithAuth } from './auth.types';
 

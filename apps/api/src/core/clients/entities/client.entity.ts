@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { UserRole, UserStatus } from 'src/common/enums/user.unum'
+import { UserRole, UserStatus } from 'src/common/enums/user.enum'
 import { UserPhoto } from 'src/common/types/user';
 import { Project } from 'src/core/projects/entities/project.entity';
 

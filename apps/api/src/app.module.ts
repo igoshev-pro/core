@@ -8,9 +8,13 @@ import { ProjectsModule } from "./core/projects/projects.module"
 import { MailModule } from "./core/mail/mail.module"
 import { TenantMiddleware } from "./tenant/tenant.middleware"
 import { UsersModule } from './feature/users/users.module';
-import { StorageModule } from './feature/storage/storage.module';
+import { StorageModule } from './core/storage/storage.module';
 import { RedisModule } from './redis/redis.module';
 import { DomainsModule } from './core/domains/domains.module';
+import { FactoryModule } from './factory/factory.module';
+import { RequestsModule } from './feature/requests/requests.module';
+import { ProductsModule } from './feature/products/products.module';
+import { CasesModule } from './feature/cases/cases.module';
 
 @Module({
   imports: [
@@ -34,7 +38,11 @@ import { DomainsModule } from './core/domains/domains.module';
     UsersModule,
     StorageModule,
     RedisModule,
-    DomainsModule
+    DomainsModule,
+    FactoryModule,
+    RequestsModule,
+    ProductsModule,
+    CasesModule
   ]
 })
 export class AppModule implements NestModule {

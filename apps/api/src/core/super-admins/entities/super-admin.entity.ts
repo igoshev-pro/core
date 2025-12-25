@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { UserRole, UserStatus } from 'src/common/enums/user.unum'
+import { UserRole, UserStatus } from 'src/common/enums/user.enum'
 
 @Schema({ timestamps: true })
 export class SuperAdmin {

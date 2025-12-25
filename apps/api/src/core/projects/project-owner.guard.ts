@@ -5,7 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserRole } from 'src/common/enums/user.unum';
+import { UserRole } from 'src/common/enums/user.enum';
 import type { RequestWithAuth } from '../auth/guards/auth.types';
 import { ProjectsService } from 'src/core/projects/projects.service';
 import { TENANT_HEADER } from '../auth/guards/guards.types';

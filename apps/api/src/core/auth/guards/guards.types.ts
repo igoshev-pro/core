@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { UserRole } from 'src/common/enums/user.unum';
+import type { UserRole } from 'src/common/enums/user.enum';
 
 /**
  * Header name для tenant/project
