@@ -106,7 +106,7 @@ export default async function AdminRootLayout({
     : { ok: false };
 
   if (!result.ok) {
-    // cookieStore.delete("access_token");
+    cookieStore.delete("access_token");
     redirect(`/login${withProjectId()}`);
   }
 
