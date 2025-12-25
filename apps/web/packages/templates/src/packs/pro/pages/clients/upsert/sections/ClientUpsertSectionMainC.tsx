@@ -15,6 +15,7 @@ import Image from "next/image"
 import { LoaderModal } from "../../../../components/modals/LoaderModal";
 import { createClient, updateClient } from "@/api/core/clientsApi";
 import { uploadFileToStorage } from "@/api/feature/storageApi";
+import { ROUTES } from "@/packages/templates/common/routes";
 
 // const RoleEnum = ["client", "user"] as const;
 const StatusEnum = ["active", "blocked", "archived"] as const;
@@ -62,6 +63,7 @@ export default function ClientUpsertSectionMainC({ type, projectId }: ClientUpse
 		register,
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isSubmitting },
 	} = useForm<RegisterFormData>({
 		resolver: zodResolver(clientSchema),
@@ -72,36 +74,24 @@ export default function ClientUpsertSectionMainC({ type, projectId }: ClientUpse
 	});
 
 	const onSubmit = async (data: RegisterFormData) => {
-		console.log(data)
 		if (type === UpsertType.Create) {
 			setLoading(true)
 
 			try {
 				const user = await createClient(data)
-
-				if (!user?._id) {
-					addToast({
-						color: "danger",
-						title: "Ошибка!",
-						description: `Произошла ошибка при создании клиента`,
-						variant: "solid",
-						radius: "lg",
-						timeout: 3000,
-						shouldShowTimeoutProgress: true,
-					});
-				}
-
+				
 				await upload(user._id)
 
 				addToast({
-                color: "success",
-                title: "Успешно!",
-                description: `Пользователь создан успешно`,
-                variant: "solid",
-                radius: "lg",
-                timeout: 3000,
-                shouldShowTimeoutProgress: true,
-            });
+					color: "success",
+					title: "Успешно!",
+					description: `Пользователь создан успешно`,
+					variant: "solid",
+					radius: "lg",
+					timeout: 3000,
+					shouldShowTimeoutProgress: true,
+				});
+				router.push(ROUTES.ADMIN_CLIENTS)
 			} catch (err) {
 				addToast({
 					color: "danger",
@@ -113,6 +103,7 @@ export default function ClientUpsertSectionMainC({ type, projectId }: ClientUpse
 					shouldShowTimeoutProgress: true,
 				});
 			} finally {
+				reset()
 				setLoading(false)
 			}
 		}
@@ -167,8 +158,9 @@ export default function ClientUpsertSectionMainC({ type, projectId }: ClientUpse
 				});
 			}
 
-			await updateClient( userId, { avatarPath: uploaded.path, photos: [uploaded] })
+			await updateClient(userId, { avatarPath: uploaded.path, photos: [uploaded] })
 		} finally {
+			setFile(null)
 			setIsUploading(false);
 		}
 	};

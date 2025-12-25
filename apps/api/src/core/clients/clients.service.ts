@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,7 +12,10 @@ export class ClientsService {
     private readonly clientModel: Model<ClientDocument>,
   ) { }
 
-  create(data: CreateClientDto) {
+  async create(data: CreateClientDto) {
+    const isExist = await this.findByEmail(data.email)
+    if (isExist) throw new HttpException('Пользователь с таким email уже зарегистрирован', HttpStatus.CONFLICT)
+
     const newClient = new this.clientModel(data);
     return newClient.save();
   }
