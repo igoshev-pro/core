@@ -5,12 +5,12 @@ import {
 	Button,
 	Card,
 	Divider,
+	Image,
 	cn,
 } from "@heroui/react";
 import { BiSolidMessageSquareEdit } from "react-icons/bi";
 import { MdNoPhotography } from "react-icons/md";
 import { RiDeleteBin5Fill, RiMoneyDollarCircleFill } from "react-icons/ri";
-import Image from 'next/image'
 
 type Props = {
 	item: Record<string, any>;
@@ -28,6 +28,34 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 
 	const { url } = usePresignedUrl(item.avatarPath);
 
+	// <div
+	// 							className={cn(
+	// 								"relative w-full aspect-square rounded-2xl overflow-hidden",
+	// 								{
+	// 									["bg-foreground-100 flex items-center justify-center"]:
+	// 										!previewUrl,
+	// 								}
+	// 							)}
+	// 						>
+	// 							{previewUrl ? (
+	// 								<Image
+	// 									src={previewUrl}
+	// 									alt="Avatar preview"
+	// 									fill
+	// 									className="object-cover"
+	// 								/>
+	// 							) : (
+	// 								<div className="flex flex-col gap-3 h-full w-full items-center justify-center text-foreground-500">
+	// 									<MdNoPhotography className="text-[36px]" />
+	// 									<p className="text-xs">Фото не загружено</p>
+	// 								</div>
+	// 							)}
+	// 							<Button className="absolute bottom-6 right-6" color='primary' radius="full" isIconOnly onPress={pick}>
+	// 								<IoCamera className="text-[20px] min-w-[20px] mx-[2px]" />
+	// 							</Button>
+	// 						</div>
+
+
 	return (
 		<>
 			<Card className="flex flex-col gap-3 p-3 rounded-4xl">
@@ -42,10 +70,10 @@ export const UserCard = ({ item, onEdit, onRemove, onAddMoney }: Props) => {
 				>
 					{url ? (
 						<Image
+							alt=""
+							className="object-cover w-full h-full"
+							radius="none"
 							src={url}
-							alt="Avatar preview"
-							fill
-							className="object-cover"
 						/>
 					) : (
 						<div className="flex flex-col items-center gap-6 text-foreground-500">

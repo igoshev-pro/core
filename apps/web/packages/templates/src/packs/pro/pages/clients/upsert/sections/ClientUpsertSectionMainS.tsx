@@ -7,6 +7,7 @@ export type ClientUpsertSectionMainProps = {
 }
 
 const ClientUpsertSectionMainS = ({ node, ctx }: any) => {
+  console.log(node, ctx)
   return (
     <ClientUpsertSectionMainC type={node.props.type} projectId={ctx.projectId} />
   )
