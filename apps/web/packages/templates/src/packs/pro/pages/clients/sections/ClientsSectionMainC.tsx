@@ -53,6 +53,9 @@ export default function ClientsSectionMainC() {
         try {
             await removeClient(current._id)
 
+            const res = await getClients(20)
+            setClients(res)
+
             addToast({
                 color: "success",
                 title: "Успешно!",
