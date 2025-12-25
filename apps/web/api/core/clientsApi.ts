@@ -1,7 +1,8 @@
+import { buildQuery } from "../utils/buildQuery";
 import { withProjectId } from "../utils/withProjectId";
 
 export async function getMeClient() {
-    const res = await fetch(`/api/core/clients/get/me${withProjectId()}`, {
+    const res = await fetch(`/api/core/clients/get/me`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" }
@@ -13,7 +14,7 @@ export async function getMeClient() {
 }
 
 export async function createClient(body: any) {
-    const res = await fetch(`/api/core/clients${withProjectId()}`, {
+    const res = await fetch(`/api/core/clients`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -26,9 +27,7 @@ export async function createClient(body: any) {
 }
 
 export async function getClients(limit?: number, offset?: number) {
-    const query = withProjectId({ limit, offset })
-
-    const res = await fetch(`/api/core/clients${query}`, {
+    const res = await fetch(`/api/core/clients${buildQuery({ limit, offset })}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" }
@@ -40,7 +39,7 @@ export async function getClients(limit?: number, offset?: number) {
 }
 
 export async function getClient(id: string) {
-    const res = await fetch(`/api/core/clients/${id}${withProjectId()}`, {
+    const res = await fetch(`/api/core/clients/${id}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" }
@@ -52,7 +51,7 @@ export async function getClient(id: string) {
 }
 
 export async function updateClient(id: string, body: any) {
-    const res = await fetch(`/api/core/clients/${id}${withProjectId()}`, {
+    const res = await fetch(`/api/core/clients/${id}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -65,7 +64,7 @@ export async function updateClient(id: string, body: any) {
 }
 
 export async function removeClient(id: string) {
-    const res = await fetch(`/api/core/clients/${id}${withProjectId()}`, {
+    const res = await fetch(`/api/core/clients/${id}`, {
         method: "DELETE",
         credentials: "include",
         headers: { "Content-Type": "application/json" }
