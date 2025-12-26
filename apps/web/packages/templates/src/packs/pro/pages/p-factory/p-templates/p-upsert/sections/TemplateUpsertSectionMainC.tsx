@@ -13,7 +13,7 @@ import {
 	Image,
 } from "@heroui/react";
 import { MdNoPhotography } from "react-icons/md";
-import { IoCamera } from "react-icons/io5";
+import { IoCamera, IoChevronBack } from "react-icons/io5";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -309,20 +309,22 @@ export default function TemplateUpsertSectionMainC({
 				<LoaderModal />
 			) : (
 				<>
-					<div className="flex justify-between items-center mb-9">
+					<div className="flex items-center gap-6 mb-9">
+						<Button isIconOnly radius="full" onPress={() => router.back()}><IoChevronBack className="text-[20px]" /></Button>
 						<h1 className="text-3xl font-bold">
 							{type === UpsertType.Create ? "Создание шаблона" : "Редактирование шаблона"}{" "}
 							{type === UpsertType.Update ? (
 								<span className="text-primary">{item?.name?.ru ?? ""}</span>
 							) : null}
 						</h1>
+						
 					</div>
 
 					<div className="grid grid-cols-3 gap-6">
-						<div className="bg-background p-6 rounded-3xl">
+						<div className="rounded-3xl">
 							<div
-								className={cn("relative w-full aspect-square rounded-2xl overflow-hidden", {
-									["bg-foreground-100 flex items-center justify-center"]: !avatarSrc,
+								className={cn("relative w-full h-full rounded-3xl overflow-hidden", {
+									["bg-background flex items-center justify-center"]: !avatarSrc,
 								})}
 							>
 								{avatarSrc ? (
@@ -341,7 +343,7 @@ export default function TemplateUpsertSectionMainC({
 								)}
 
 								<Button
-									className="absolute bottom-6 right-6 z-10"
+									className="absolute bottom-3 right-3 z-10"
 									color="primary"
 									radius="full"
 									isIconOnly

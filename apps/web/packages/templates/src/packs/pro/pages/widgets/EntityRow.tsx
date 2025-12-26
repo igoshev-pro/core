@@ -199,10 +199,10 @@ export function EntityRow<T extends Record<string, any>>({
                 className="w-full md:w-auto"
                 radius="full"
                 variant="light"
-                startContent={<BiSolidMessageSquareEdit className="text-[18px]" />}
+                isIconOnly
                 onPress={() => onEdit(item)}
               >
-                Редактировать
+                <BiSolidMessageSquareEdit className="text-[18px]" />
               </Button>
             )}
             {onRemove && (
@@ -211,10 +211,10 @@ export function EntityRow<T extends Record<string, any>>({
                 radius="full"
                 color="danger"
                 variant="light"
-                startContent={<RiDeleteBin5Fill className="text-[18px]" />}
+                isIconOnly
                 onPress={() => onRemove(item)}
               >
-                Удалить
+                <RiDeleteBin5Fill className="text-[18px]" />
               </Button>
             )}
           </>
