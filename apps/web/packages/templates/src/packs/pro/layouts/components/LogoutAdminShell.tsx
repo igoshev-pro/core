@@ -1,17 +1,17 @@
 'use client'
 
 import { logoutAction } from '@/app/api/actions/logout'
+import { Button } from '@heroui/react'
 import React from 'react'
 import { TbLogout2 } from 'react-icons/tb'
 
 const LogoutAdminShell = () => {
     return (
-        <TbLogout2
-            className="text-danger text-[24px] cursor-pointer ml-[3px]"
-            onClick={() => {
-                logoutAction()
-            }}
-        />
+        <Button isIconOnly variant='light' size='lg' color="danger" radius='full' onPress={() => {
+            logoutAction()
+        }}>
+            <TbLogout2 className='text-[34px] pr-1'/>
+        </Button>
     )
 }
 
