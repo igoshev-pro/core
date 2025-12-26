@@ -14,6 +14,9 @@ import { EntityCard } from "../widgets/EntityCard";
 import { EntityRow } from "../widgets/EntityRow";
 import { getThemes, removeTheme, updateTheme } from "@/api/factory/themesApi";
 import { getLayouts, removeLayout, updateLayout } from "@/api/factory/layoutsApi";
+import { getPages, removePage, updatePage } from "@/api/factory/pagesApi";
+import { getSections, removeSection, updateSection } from "@/api/factory/sectionsApi";
+import { getWidgets, removeWidget, updateWidget } from "@/api/factory/widgetsApi";
 
 type Item = { _id: string; name?: any; sortOrder?: number;[k: string]: any };
 const ORDER_STEP = 1000;
@@ -32,9 +35,9 @@ type FactoryApiKey =
   | "templates"
   | "layouts"
   | "themes"
-  // | "pages"
-  // | "sections"
-  // | "widgets"
+  | "pages"
+  | "sections"
+  | "widgets"
   ;
 
 type EntityStrings = {
@@ -111,6 +114,50 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
         },
       };
 
+      case "pages":
+      return {
+        strings: { label: "Страница", labelPlural: "Страницы" },
+        routes: {
+          list: "/admin/factory/pages",
+          create: "/admin/factory/pages/create",
+          edit: (id) => `/admin/factory/pages/edit/${id}`,
+        },
+        methods: {
+          getItems: (limit, offset) => getPages(limit, offset),
+          removeItem: (id) => removePage(id),
+          updateItem: (id, dto) => updatePage(id, dto),
+        },
+      };
+
+      case "sections":
+      return {
+        strings: { label: "Секция", labelPlural: "Секции" },
+        routes: {
+          list: "/admin/factory/sections",
+          create: "/admin/factory/sections/create",
+          edit: (id) => `/admin/factory/sections/edit/${id}`,
+        },
+        methods: {
+          getItems: (limit, offset) => getSections(limit, offset),
+          removeItem: (id) => removeSection(id),
+          updateItem: (id, dto) => updateSection(id, dto),
+        },
+      };
+
+      case "widgets":
+      return {
+        strings: { label: "Виджет", labelPlural: "Виджеты" },
+        routes: {
+          list: "/admin/factory/widgets",
+          create: "/admin/factory/widgets/create",
+          edit: (id) => `/admin/factory/widgets/edit/${id}`,
+        },
+        methods: {
+          getItems: (limit, offset) => getWidgets(limit, offset),
+          removeItem: (id) => removeWidget(id),
+          updateItem: (id, dto) => updateWidget(id, dto),
+        },
+      };
 
     default:
       return assertNever(api);
@@ -127,8 +174,14 @@ function normalizeApi(api: string): FactoryApiKey {
       return "templates";
     case "themes": 
       return "themes";
-      case "layouts": 
+    case "layouts": 
       return "layouts";
+      case "pages": 
+      return "pages";
+      case "sections": 
+      return "sections";
+      case "widgets": 
+      return "widgets";
     default:
       // best-effort: пусть будет templates, чтобы не падать
       return "templates";

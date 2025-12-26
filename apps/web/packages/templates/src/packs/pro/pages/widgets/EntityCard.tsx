@@ -118,7 +118,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
         imagePathKey: "previewPath",
         rows: (item) => [
           { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
-          { label: "Slug", value: (item as any)?.slug ?? "—" },
+          { label: "Ключ макета", value: (item as any)?.layoutKey ?? "—" },
           { label: "Mode", value: (item as any)?.mode ?? "—" },
           { label: "Тип", value: (item as any)?.type ?? "—" },
           { label: "Статус", value: (item as any)?.status ?? "—" },
@@ -143,7 +143,10 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
         imagePathKey: "previewPath",
         rows: (item) => [
           { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
-          { label: "Route", value: (item as any)?.route ?? "—" },
+          { label: "Ключ", value: (item as any)?.key ?? "—" },
+          { label: "Путь", value: (item as any)?.route ?? "—" },
+          { label: "Дочерний путь", value: (item as any)?.kind ?? "—" },
+          { label: "Статус", value: (item as any)?.status ?? "—" },
         ],
       };
 
@@ -152,7 +155,8 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
         imagePathKey: "previewPath",
         rows: (item) => [
           { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
-          { label: "Widget", value: (item as any)?.widgetKey ?? "—" },
+          { label: "Ключ", value: (item as any)?.key ?? "—" },
+          { label: "Статус", value: (item as any)?.status ?? "—" },
         ],
       };
 
@@ -161,7 +165,8 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
         imagePathKey: "previewPath",
         rows: (item) => [
           { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
-          { label: "Key", value: (item as any)?.key ?? "—" },
+          { label: "Ключ", value: (item as any)?.key ?? "—" },
+          { label: "Статус", value: (item as any)?.status ?? "—" },
         ],
       };
 

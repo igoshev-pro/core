@@ -6,14 +6,17 @@ import ClientUpsertSectionMain from "./pages/p-clients/p-upsert/sections/ClientU
 import ClientsSectionMain from "./pages/p-clients/sections/ClientsSectionMain";
 import FactorySectionMain from "./pages/p-factory/sections/FactorySectionMain";
 import FactoryTemplatesSectionMain from "./pages/p-factory/p-templates/FactoryTemplatesSectionMain";
-import FactoryPagesSectionMain from "./pages/p-factory/p-pages/sections/FactoryPagesSectionMain";
-import FactorySectionsSectionMain from "./pages/p-factory/p-sections/sections/FactorySectionsSectionMain";
-import FactoryWidgetsSectionMain from "./pages/p-factory/p-widgets/sections/FactoryWidgetsSectionMain";
+import FactoryPagesSectionMain from "./pages/p-factory/p-pages/FactoryPagesSectionMain";
+import FactorySectionsSectionMain from "./pages/p-factory/p-sections/FactorySectionsSectionMain";
+import FactoryWidgetsSectionMain from "./pages/p-factory/p-widgets/FactoryWidgetsSectionMain";
 import TemplateUpsertSectionMain from "./pages/p-factory/p-templates/p-upsert/sections/TemplateUpsertSectionMain";
 import FactoryThemesSectionMain from "./pages/p-factory/p-themes/FactoryThemesSectionMain";
 import ThemeUpsertSectionMain from "./pages/p-factory/p-themes/p-upset/sections/ThemeUpsertSectionMain";
 import LayoutUpsertSectionMain from "./pages/p-factory/p-layouts/p-upsert/sections/LayoutUpsertSectionMain";
 import FactoryLayoutsSectionMain from "./pages/p-factory/p-layouts/FactoryLayoutsSectionMain";
+import PageUpsertSectionMain from "./pages/p-factory/p-pages/p-upsert/sections/PageUpsertSectionMain";
+import SectionUpsertSectionMain from "./pages/p-factory/p-sections/p-upsert/sections/SectionUpsertSectionMain";
+import WidgetUpsertSectionMain from "./pages/p-factory/p-widgets/WidgetUpsertSectionMainC";
 
 function DashboardSectionMain({ node }: any) {
   return (
@@ -45,8 +48,11 @@ export const adminShellPack: TemplatePack = {
     "pro.factory.layouts.main.v1": FactoryLayoutsSectionMain,
     "pro.factory.layouts.upsert.main.v1": LayoutUpsertSectionMain,
     "pro.factory.pages.main.v1": FactoryPagesSectionMain,
+    "pro.factory.pages.upsert.main.v1": PageUpsertSectionMain,
     "pro.factory.sections.main.v1": FactorySectionsSectionMain,
+    "pro.factory.sections.upsert.main.v1": SectionUpsertSectionMain,
     "pro.factory.widgets.main.v1": FactoryWidgetsSectionMain,
+    "pro.factory.widgets.upsert.main.v1": WidgetUpsertSectionMain,
   },
   widgets: {
   },
