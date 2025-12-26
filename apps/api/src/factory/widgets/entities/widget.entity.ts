@@ -1,7 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 import { EntityStatus } from 'src/common/enums/status.enum';
 import { FileObject } from 'src/common/types/file-object';
 import type { I18nString } from 'src/common/types/i18n';
+import { Template } from 'src/factory/templates/entities/template.entity';
 
 @Schema({ timestamps: true })
 export class Widget {
@@ -10,6 +12,13 @@ export class Widget {
 
     @Prop({ required: true, type: String })
     key: String;
+
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Template',
+        default: null,
+    })
+    template: Template
 
     @Prop({ required: false, type: String, default: 'widget' })
     type: 'widget';

@@ -4,6 +4,7 @@ import { Mode } from 'src/common/enums/mod.enum';
 import { EntityStatus } from 'src/common/enums/status.enum';
 import { FileObject } from 'src/common/types/file-object';
 import type { I18nString } from 'src/common/types/i18n';
+import { Template } from 'src/factory/templates/entities/template.entity';
 
 @Schema()
 export class SlotRef {
@@ -29,6 +30,13 @@ export class Layout {
 
     @Prop({ required: true, type: String })
     layoutKey: String;
+
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Template',
+        default: null,
+    })
+    template: Template
 
     @Prop({ required: false, type: String, default: 'layout' })
     type: String;

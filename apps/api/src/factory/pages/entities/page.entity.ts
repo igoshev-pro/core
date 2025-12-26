@@ -5,23 +5,24 @@ import { EntityStatus } from 'src/common/enums/status.enum';
 import { FileObject } from 'src/common/types/file-object';
 import type { I18nString } from 'src/common/types/i18n';
 import { Section } from 'src/factory/sections/entities/section.entity';
+import { Template } from 'src/factory/templates/entities/template.entity';
 import { Widget } from 'src/factory/widgets/entities/widget.entity';
 
 @Schema()
 export class BlockRef {
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    refPath: "blocks.kind",
-  })
-  ref!: mongoose.Types.ObjectId;
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "blocks.kind",
+    })
+    ref!: mongoose.Types.ObjectId;
 
-  @Prop({
-    type: String,
-    required: true,
-    enum: ["Widget", "Section"],
-  })
-  kind!: "Widget" | "Section";
+    @Prop({
+        type: String,
+        required: true,
+        enum: ["Widget", "Section"],
+    })
+    kind!: "Widget" | "Section";
 }
 
 @Schema({ timestamps: true })
@@ -30,7 +31,17 @@ export class Page {
     name: I18nString;
 
     @Prop({ required: true, type: String })
-    key: String;
+    key: string;
+
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Template',
+        default: null,
+    })
+    template: Template
+
+    @Prop({ required: true, type: String })
+    path: string
 
     @Prop({ default: 0, index: true })
     sortOrder: number;

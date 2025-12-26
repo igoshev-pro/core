@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { EntityStatus } from 'src/common/enums/status.enum';
 import { FileObject } from 'src/common/types/file-object';
 import type { I18nString } from 'src/common/types/i18n';
+import { Template } from 'src/factory/templates/entities/template.entity';
 import { Widget } from 'src/factory/widgets/entities/widget.entity';
 
 @Schema({ timestamps: true })
@@ -12,6 +13,13 @@ export class Section {
 
     @Prop({ required: true, type: String })
     key: String;
+
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Template',
+        default: null,
+    })
+    template: Template
 
     @Prop({ required: false, type: String, default: 'section' })
     type: 'section';
