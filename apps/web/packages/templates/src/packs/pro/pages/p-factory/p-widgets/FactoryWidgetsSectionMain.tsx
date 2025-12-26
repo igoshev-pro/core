@@ -1,9 +1,9 @@
 import EntityCollection from "../../sections/EntityCollection"
 
-const FactoryWidgetSectionMain = ({ node, ctx }: any) => {
+const FactoryWidgetsSectionMain = ({ node, ctx }: any) => {
   return (
     <EntityCollection api={node.props.api} />
   )
 }
 
-export default FactoryWidgetSectionMain
+export default FactoryWidgetsSectionMain

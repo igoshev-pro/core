@@ -8,7 +8,6 @@ import FactorySectionMain from "./pages/p-factory/sections/FactorySectionMain";
 import FactoryTemplatesSectionMain from "./pages/p-factory/p-templates/FactoryTemplatesSectionMain";
 import FactoryPagesSectionMain from "./pages/p-factory/p-pages/FactoryPagesSectionMain";
 import FactorySectionsSectionMain from "./pages/p-factory/p-sections/FactorySectionsSectionMain";
-import FactoryWidgetsSectionMain from "./pages/p-factory/p-widgets/FactoryWidgetsSectionMain";
 import TemplateUpsertSectionMain from "./pages/p-factory/p-templates/p-upsert/sections/TemplateUpsertSectionMain";
 import FactoryThemesSectionMain from "./pages/p-factory/p-themes/FactoryThemesSectionMain";
 import ThemeUpsertSectionMain from "./pages/p-factory/p-themes/p-upset/sections/ThemeUpsertSectionMain";
@@ -16,6 +15,7 @@ import LayoutUpsertSectionMain from "./pages/p-factory/p-layouts/p-upsert/sectio
 import FactoryLayoutsSectionMain from "./pages/p-factory/p-layouts/FactoryLayoutsSectionMain";
 import PageUpsertSectionMain from "./pages/p-factory/p-pages/p-upsert/sections/PageUpsertSectionMain";
 import SectionUpsertSectionMain from "./pages/p-factory/p-sections/p-upsert/sections/SectionUpsertSectionMain";
+import FactoryWidgetsSectionMain from "./pages/p-factory/p-widgets/FactoryWidgetsSectionMain";
 import WidgetUpsertSectionMain from "./pages/p-factory/p-widgets/p-upsert/sections/WidgetUpsertSectionMain";
 
 function DashboardSectionMain({ node }: any) {

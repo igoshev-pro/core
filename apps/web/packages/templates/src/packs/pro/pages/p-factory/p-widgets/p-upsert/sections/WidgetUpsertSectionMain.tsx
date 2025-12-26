@@ -1,5 +1,6 @@
-import WidgetUpsertSectionMainC from './WidgetUpsertSectionMain'
+
 import { UpsertType } from '@/packages/templates/common/enum/main'
+import WidgetUpsertSectionMainC from './WidgetUpsertSectionMainC'
 
 export type WidgetUpsertSectionMainProps = {
   type: UpsertType
@@ -8,7 +9,6 @@ export type WidgetUpsertSectionMainProps = {
 }
 
 const WidgetUpsertSectionMain = ({ node, ctx }: any) => {
-  console.log(333, node, ctx)
   const segments = ctx.path.split('/').filter(Boolean)
   const id = segments.at(-1)
 
