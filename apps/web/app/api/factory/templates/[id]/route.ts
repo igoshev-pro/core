@@ -6,7 +6,7 @@ export async function GET(req: NextRequest,
 ) {
     const { id } = await params;
 
-    const nestUrl = `${process.env.CORE_API}/factory/templates/${id}`;
+    const nestUrl = `${process.env.API_URL}/factory/templates/${id}`;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest,
 ) {
     const { id } = await params;
 
-    const nestUrl = `${process.env.CORE_API}/factory/templates/${id}`;
+    const nestUrl = `${process.env.API_URL}/factory/templates/${id}`;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
@@ -93,7 +93,7 @@ export async function DELETE(req: NextRequest,
 ) {
     const { id } = await params;
 
-    const nestUrl = `${process.env.CORE_API}/factory/templates/${id}`;
+    const nestUrl = `${process.env.API_URL}/factory/templates/${id}`;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;

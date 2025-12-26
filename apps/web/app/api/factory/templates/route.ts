@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 export async function POST(req: NextRequest
 ) {
 
-    const nestUrl = `${process.env.CORE_API}/factory/templates`;
+    const nestUrl = `${process.env.API_URL}/factory/templates`;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest
 export async function GET(req: NextRequest) {
     const queryString = req.nextUrl.searchParams.toString()
 
-    const nestUrl = `${process.env.CORE_API}/factory/templates?${queryString}`;
+    const nestUrl = `${process.env.API_URL}/factory/templates?${queryString}`;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;

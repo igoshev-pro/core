@@ -272,26 +272,26 @@ export function SmartCollection<T>(props: SmartCollectionProps<T>) {
                 <div className="flex justify-between items-center mb-9">
                     {title ? <h1 className="text-3xl font-bold">{title}</h1> : <div />}
                     {showToggle && canList && (
-                            <div className="flex gap-3">
-                                
-                                <Button
-                                    isIconOnly
-                                    variant={view === "list" ? "bordered" : "light"}
-                                    color={view === "list" ? "primary" : "default"}
-                                    onPress={() => setView("list")}
-                                >
-                                    <IoListOutline className="text-[24px]" />
-                                </Button>
-                                <Button
-                                    isIconOnly
-                                    variant={view === "grid" ? "bordered" : "light"}
-                                    color={view === "grid" ? "primary" : "default"}
-                                    onPress={() => setView("grid")}
-                                >
-                                    <IoGridOutline className="text-[22px]" />
-                                </Button>
-                            </div>
-                        )}
+                        <div className="flex gap-3">
+
+                            <Button
+                                isIconOnly
+                                variant={view === "list" ? "bordered" : "light"}
+                                color={view === "list" ? "primary" : "default"}
+                                onPress={() => setView("list")}
+                            >
+                                <IoListOutline className="text-[24px]" />
+                            </Button>
+                            <Button
+                                isIconOnly
+                                variant={view === "grid" ? "bordered" : "light"}
+                                color={view === "grid" ? "primary" : "default"}
+                                onPress={() => setView("grid")}
+                            >
+                                <IoGridOutline className="text-[22px]" />
+                            </Button>
+                        </div>
+                    )}
                     {/* <div className="flex items-center gap-3">
                         
                         {actions}
