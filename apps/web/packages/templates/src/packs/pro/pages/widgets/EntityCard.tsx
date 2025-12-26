@@ -87,7 +87,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
           { label: "Mode", value: (item as any)?.mode ?? "—" },
         ],
       };
@@ -96,7 +96,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
           { label: "Primary", value: (item as any)?.primaryColor ?? "—" },
         ],
       };
@@ -105,7 +105,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
           { label: "Route", value: (item as any)?.route ?? "—" },
         ],
       };
@@ -114,7 +114,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
           { label: "Widget", value: (item as any)?.widgetKey ?? "—" },
         ],
       };
@@ -123,7 +123,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
           { label: "Key", value: (item as any)?.key ?? "—" },
         ],
       };
@@ -133,7 +133,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
         ],
       };
   }

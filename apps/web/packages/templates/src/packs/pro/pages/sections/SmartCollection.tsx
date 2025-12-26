@@ -326,7 +326,7 @@ export const SmartCollection = forwardRef(function SmartCollectionInner<T>(
           <SortableContext items={ids} strategy={rectSortingStrategy}>
             {view === "grid" ? (
               <div className={`${gridClassName} ${gapClassName}`}>
-                {items.map((item) => renderCard(item))}
+                {items?.map((item) => renderCard(item))}
               </div>
             ) : (
               <div className="flex flex-col gap-3">{items.map((item) => renderRow?.(item))}</div>

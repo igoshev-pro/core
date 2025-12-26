@@ -1,26 +1,46 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Theme, ThemeDocument } from './entities/theme.entity';
 import { CreateThemeDto } from './dto/create-theme.dto';
 import { UpdateThemeDto } from './dto/update-theme.dto';
 
 @Injectable()
 export class ThemesService {
-  create(createThemeDto: CreateThemeDto) {
-    return 'This action adds a new theme';
+  constructor(
+    @InjectModel(Theme.name, 'core')
+    private readonly themeModel: Model<ThemeDocument>,
+  ) { }
+
+  async create(data: CreateThemeDto) {
+    const newClient = new this.themeModel(data);
+    return newClient.save();
   }
 
-  findAll() {
-    return `This action returns all themes`;
+  findAll(query: Record<string, any>) {
+    const { limit, offset } = query;
+
+    const limitValue = Number.parseInt(limit ?? '', 10);
+
+    return this.themeModel
+      .find()
+      .sort({ sortOrder: 1 })
+      .skip(offset)
+      .limit(Number.isNaN(limitValue) ? 10 : limitValue)
+      .exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} theme`;
+  findOne(id: string) {
+    return this.themeModel.findOne({ _id: id }).exec();
   }
 
-  update(id: number, updateThemeDto: UpdateThemeDto) {
-    return `This action updates a #${id} theme`;
+  update(id: string, data: UpdateThemeDto) {
+    return this.themeModel
+      .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })
+      .lean();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} theme`;
+  async remove(id: string) {
+    await this.themeModel.deleteOne({ _id: id }).exec()
   }
 }

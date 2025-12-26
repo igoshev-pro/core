@@ -42,7 +42,7 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
 
     case "layouts":
       return {
-        title: (i) => (i as any)?.name ?? "Без имени",
+        title: (i) => (i as any)?.name?.ru ??  (i as any)?.name ?? "Без имени",
         subtitle: (i) => (i as any)?._id,
         columns: [
           { key: "mode", label: "Mode", value: (i) => (i as any)?.mode ?? "—" },
@@ -52,7 +52,7 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
 
     case "themes":
       return {
-        title: (i) => (i as any)?.name ?? "Без имени",
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
         subtitle: (i) => (i as any)?._id,
         columns: [
           { key: "primary", label: "Primary", value: (i) => (i as any)?.primaryColor ?? "—" },
@@ -62,7 +62,7 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
 
     case "pages":
       return {
-        title: (i) => (i as any)?.name ?? "Без имени",
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
         subtitle: (i) => (i as any)?._id,
         columns: [
           { key: "route", label: "Route", value: (i) => (i as any)?.route ?? "—" },
@@ -72,7 +72,7 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
 
     case "sections":
       return {
-        title: (i) => (i as any)?.name ?? "Без имени",
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
         subtitle: (i) => (i as any)?._id,
         columns: [
           { key: "widget", label: "Widget", value: (i) => (i as any)?.widgetKey ?? "—" },
@@ -82,7 +82,7 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
 
     case "widgets":
       return {
-        title: (i) => (i as any)?.name ?? "Без имени",
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
         subtitle: (i) => (i as any)?._id,
         columns: [
           { key: "key", label: "Key", value: (i) => (i as any)?.key ?? "—" },
@@ -92,7 +92,7 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
 
     default:
       return {
-        title: (i) => (i as any)?.name ?? "Без имени",
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
         subtitle: (i) => (i as any)?._id,
         columns: [],
       };
@@ -168,7 +168,7 @@ export function EntityRow<T extends Record<string, any>>({
               <div
                 key={c.key}
                 className={cn(
-                  "flex-1 min-w-[160px] min-w-0",
+                  "flex-1 min-w-[160px]",
                   c.className
                 )}
               >

@@ -13,6 +13,7 @@ import { FactoryLayoutCard } from "../p-factory/p-layouts/widgets/FactoryLayoutC
 import { getTemplates, removeTemplate, updateTemplate } from "@/api/core/templatesApi";
 import { EntityCard } from "../widgets/EntityCard";
 import { EntityRow } from "../widgets/EntityRow";
+import { getThemes } from "@/api/core/themesApi";
 
 type Item = { _id: string; name?: any; sortOrder?: number;[k: string]: any };
 const ORDER_STEP = 1000;
@@ -30,7 +31,7 @@ function unwrapItems(res: unknown): Item[] {
 type FactoryApiKey =
   | "templates"
   // | "layouts"
-  // | "themes"
+  | "themes"
   // | "pages"
   // | "sections"
   // | "widgets"
@@ -80,20 +81,20 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
         },
       };
 
-    // case "layouts":
-    //   return {
-    //     strings: { label: "Лейаут", labelPlural: "Лейауты" },
-    //     routes: {
-    //       list: "/admin/layouts",
-    //       create: "/admin/layouts/create",
-    //       edit: (id) => `/admin/layouts/edit/${id}`,
-    //     },
-    //     methods: {
-    //       getItems: (limit, offset) => getFactoryLayouts(limit, offset),
-    //       removeItem: (id) => removeFactoryLayout(id),
-    //       updateItem: (id, dto) => updateFactoryLayout(id, dto),
-    //     },
-    //   };
+    case "themes":
+      return {
+        strings: { label: "Тема", labelPlural: "Темы" },
+        routes: {
+          list: "/admin/factory/themes",
+          create: "/admin/factory/themes/create",
+          edit: (id) => `/admin/factory/themes/edit/${id}`,
+        },
+        methods: {
+          getItems: (limit, offset) => getThemes(limit, offset),
+          removeItem: (id) => removeThemes(id),
+          updateItem: (id, dto) => updateThemes(id, dto),
+        },
+      };
 
     default:
       return assertNever(api);
@@ -108,7 +109,8 @@ function normalizeApi(api: string): FactoryApiKey {
   switch (api) {
     case "templates":
       return "templates";
-    // case "layouts": return "layouts";
+    case "themes": 
+      return "themes";
     default:
       // best-effort: пусть будет templates, чтобы не падать
       return "templates";
@@ -248,3 +250,11 @@ export default function EntityCollection({ api }: { api: string }) {
     </>
   );
 }
+function removeThemes(id: string): Promise<unknown> {
+  throw new Error("Function not implemented.");
+}
+
+function updateThemes(id: string, dto: Partial<Item>): Promise<unknown> {
+  throw new Error("Function not implemented.");
+}
+

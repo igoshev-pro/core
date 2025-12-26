@@ -6,12 +6,13 @@ import ClientUpsertSectionMain from "./pages/p-clients/p-upsert/sections/ClientU
 import ClientsSectionMain from "./pages/p-clients/sections/ClientsSectionMain";
 import FactorySectionMain from "./pages/p-factory/sections/FactorySectionMain";
 import FactoryTemplatesSectionMain from "./pages/p-factory/p-templates/FactoryTemplatesSectionMain";
-import FactoryThemesSectionMain from "./pages/p-factory/p-themes/sections/FactoryThemesSectionMain";
 import FactoryLeyoutsSectionMain from "./pages/p-factory/p-layouts/sections/FactoryLeyoutsSectionMain";
 import FactoryPagesSectionMain from "./pages/p-factory/p-pages/sections/FactoryPagesSectionMain";
 import FactorySectionsSectionMain from "./pages/p-factory/p-sections/sections/FactorySectionsSectionMain";
 import FactoryWidgetsSectionMain from "./pages/p-factory/p-widgets/sections/FactoryWidgetsSectionMain";
 import TemplateUpsertSectionMain from "./pages/p-factory/p-templates/p-upsert/sections/TemplateUpsertSectionMain";
+import FactoryThemesSectionMain from "./pages/p-factory/p-themes/FactoryThemesSectionMain";
+import ThemeUpsertSectionMain from "./pages/p-factory/p-themes/p-upset/ThemeUpsertSectionMain";
 
 function DashboardSectionMain({ node }: any) {
   return (
@@ -39,6 +40,7 @@ export const adminShellPack: TemplatePack = {
     "pro.factory.templates.main.v1": FactoryTemplatesSectionMain,
     "pro.factory.templates.upsert.main.v1": TemplateUpsertSectionMain,
     "pro.factory.themes.main.v1": FactoryThemesSectionMain,
+    "pro.factory.themes.upsert.main.v1": ThemeUpsertSectionMain,
     "pro.factory.layouts.main.v1": FactoryLeyoutsSectionMain,
     "pro.factory.pages.main.v1": FactoryPagesSectionMain,
     "pro.factory.sections.main.v1": FactorySectionsSectionMain,

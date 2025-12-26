@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateThemeDto } from './create-theme.dto';
+import { I18nString } from "src/common/types/i18n";
 
-export class UpdateThemeDto extends PartialType(CreateThemeDto) {}
+export class UpdateThemeDto {
+    name?: I18nString;
+    sortOrder?: number;
+    status?: string;
+    slug?: String;
+    colorPrimary?: String;
+    colorSecondary?: String;
+    fontSans?: String;
+}
