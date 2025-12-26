@@ -134,6 +134,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
           { key: "colorPrimary", label: "Основной цвет", value: (item as any)?.colorPrimary ?? "—" },
           { key: "colorSecondary", label: "Второй цвет", value: (item as any)?.colorSecondary ?? "—" },
           { key: "fontSans", label: "Шрифт", value: (item as any)?.fontSans ?? "—" },
+          { label: "Статус", value: (item as any)?.status ?? "—" },
         ],
       };
 
