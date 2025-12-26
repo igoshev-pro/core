@@ -144,7 +144,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
         rows: (item) => [
           { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
           { label: "Ключ", value: (item as any)?.key ?? "—" },
-          { label: "Путь", value: (item as any)?.route ?? "—" },
+          { label: "Путь", value: (item as any)?.path?? "—" },
           { label: "Дочерний путь", value: (item as any)?.kind ?? "—" },
           { label: "Статус", value: (item as any)?.status ?? "—" },
         ],
