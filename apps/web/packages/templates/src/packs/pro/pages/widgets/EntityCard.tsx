@@ -62,6 +62,35 @@ type SmartModeProps<T extends Record<string, any>> = {
   actionsExtend?: EntityCardAction[] | ((item: T) => EntityCardAction[]);
 };
 
+function isHexColor(v: unknown): v is string {
+  if (typeof v !== "string") return false;
+  const s = v.trim();
+  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(s);
+}
+
+function isColorKey(key: string) {
+  // под твой кейс (colorPrimary/colorSecondary) + на будущее
+  return key === "colorPrimary" || key === "colorSecondary" || key.toLowerCase().startsWith("color");
+}
+
+function renderValueWithColorSwatch(key: string, node: React.ReactNode) {
+  // value() у тебя возвращает ReactNode; для swatch нам нужен именно string
+  const str = typeof node === "string" ? node : null;
+
+  if (!isColorKey(key) || !str || !isHexColor(str)) return node;
+
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <span
+        className="inline-block h-4 w-10 rounded-md shadow-sm shrink-0"
+        style={{ backgroundColor: str }}
+        title={str}
+      />
+      {/* <span className="text-xs opacity-60 truncate">{str}</span> */}
+    </div>
+  );
+}
+
 export type EntityCardProps<T extends Record<string, any> = Record<string, any>> =
   | (EntityCardBaseProps & { api?: never; item?: never })
   | (Omit<EntityCardBaseProps, "imageUrl" | "rows" | "actions"> & SmartModeProps<T>);
@@ -96,8 +125,10 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
-          { label: "Primary", value: (item as any)?.primaryColor ?? "—" },
+          { key: "", label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { key: "colorPrimary", label: "Основной цвет", value: (item as any)?.colorPrimary ?? "—" },
+          { key: "colorSecondary", label: "Второй цвет", value: (item as any)?.colorSecondary ?? "—" },
+          { key: "fontSans", label: "Шрифт", value: (item as any)?.fontSans ?? "—" },
         ],
       };
 
@@ -128,7 +159,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
         ],
       };
 
-      default:
+    default:
       // ✅ всегда возвращаем конфиг
       return {
         imagePathKey: "previewPath",
@@ -192,21 +223,21 @@ export function EntityCard<T extends Record<string, any> = Record<string, any>>(
     const baseActions: EntityCardAction[] = [
       ...(p.onRemove
         ? [{
-            key: "delete",
-            icon: <RiDeleteBin5Fill className="text-[18px]" />,
-            color: "danger",
-            variant: "flat",
-            onPress: () => p.onRemove(item),
-          } satisfies EntityCardAction]
+          key: "delete",
+          icon: <RiDeleteBin5Fill className="text-[18px]" />,
+          color: "danger",
+          variant: "flat",
+          onPress: () => p.onRemove(item),
+        } satisfies EntityCardAction]
         : []),
       ...(p.onEdit
         ? [{
-            key: "edit",
-            icon: <BiSolidMessageSquareEdit className="text-[20px] min-w-[20px] mx-[2px]" />,
-            color: "default",
-            variant: "solid",
-            onPress: () => p.onEdit(item),
-          } satisfies EntityCardAction]
+          key: "edit",
+          icon: <BiSolidMessageSquareEdit className="text-[20px] min-w-[20px] mx-[2px]" />,
+          color: "default",
+          variant: "solid",
+          onPress: () => p.onEdit(item),
+        } satisfies EntityCardAction]
         : []),
     ];
 
@@ -228,7 +259,7 @@ export function EntityCard<T extends Record<string, any> = Record<string, any>>(
       {/* ✅ DEBUG: можешь временно оставить, чтобы увидеть, что smart реально включился */}
       {/* <div className="text-[10px] opacity-50">smart={String(isSmart)} api={String(api)} rows={visibleRows.length} actions={visibleActions.length}</div> */}
 
-      <div
+      {api !== "themes" ? (<div
         className={cn(
           "relative w-full aspect-square rounded-[21px] overflow-hidden",
           !imageUrl ? "bg-foreground-100 flex items-center justify-center" : "",
@@ -246,7 +277,7 @@ export function EntityCard<T extends Record<string, any> = Record<string, any>>(
         ) : (
           placeholder
         )}
-      </div>
+      </div>) : null}
 
       {visibleRows.length > 0 && (
         <div className={cn("flex flex-col gap-3 p-4 px-4 rounded-[21px]", props.contentClassName)}>
@@ -254,7 +285,9 @@ export function EntityCard<T extends Record<string, any> = Record<string, any>>(
             <React.Fragment key={idx}>
               <div className="flex items-center justify-between gap-3 text-xs">
                 <p>{row.label}</p>
-                <p className={cn("truncate text-right", row.valueClassName)}>{row.value}</p>
+                <div className={cn("truncate text-right", row.valueClassName)}>
+                  {row?.key ? renderValueWithColorSwatch(row.key, row.value) : row.value}
+                </div>
               </div>
               {idx !== visibleRows.length - 1 && <Divider />}
             </React.Fragment>

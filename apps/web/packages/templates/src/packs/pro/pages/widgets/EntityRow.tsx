@@ -55,8 +55,10 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
         title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
         subtitle: (i) => (i as any)?._id,
         columns: [
-          { key: "primary", label: "Primary", value: (i) => (i as any)?.primaryColor ?? "—" },
-          { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+          { key: "colorPrimary", label: "Основной цвет", value: (i) => (i as any)?.colorPrimary ?? "—" },
+          { key: "colorSecondary", label: "Второй цвет", value: (i) => (i as any)?.colorSecondary ?? "—" },
+          { key: "fontSans", label: "Шрифт", value: (i) => (i as any)?.fontSans ?? "—" },
+          
         ],
       };
 
@@ -97,6 +99,35 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
         columns: [],
       };
   }
+}
+
+function isHexColor(v: unknown): v is string {
+  if (typeof v !== "string") return false;
+  const s = v.trim();
+  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(s);
+}
+
+function isColorKey(key: string) {
+  // под твой кейс (colorPrimary/colorSecondary) + на будущее
+  return key === "colorPrimary" || key === "colorSecondary" || key.toLowerCase().startsWith("color");
+}
+
+function renderValueWithColorSwatch(key: string, node: React.ReactNode) {
+  // value() у тебя возвращает ReactNode; для swatch нам нужен именно string
+  const str = typeof node === "string" ? node : null;
+
+  if (!isColorKey(key) || !str || !isHexColor(str)) return node;
+
+  return (
+    <div className="flex items-center gap-3 min-w-0 p-1 pl-0 -pb-1">
+      <span
+        className="inline-block h-3 w-10 rounded-md shadow-sm shrink-0"
+        style={{ backgroundColor: str }}
+        title={str}
+      />
+      <span className="text-xs opacity-60 truncate">{str}</span>
+    </div>
+  );
 }
 
 type Props<T extends Record<string, any>> = {
@@ -177,7 +208,7 @@ export function EntityRow<T extends Record<string, any>>({
                 </div>
                 <div className="flex items-center justify-between gap-3 min-w-0">
                   <div className="text-sm font-medium truncate">
-                    {c.value(item)}
+                    {renderValueWithColorSwatch(c.key, c.value(item))}
                   </div>
                 </div>
               </div>
