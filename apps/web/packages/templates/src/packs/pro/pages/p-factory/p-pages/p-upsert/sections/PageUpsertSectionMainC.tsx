@@ -26,9 +26,11 @@ import { uploadFileToStorage } from "@/api/feature/storageApi";
 import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
 import { createPage, getPage, updatePage } from "@/api/factory/pagesApi";
 import { PageUpsertSectionMainProps } from "./PageUpsertSectionMain";
+import { getTemplates } from "@/api/factory/templatesApi";
 
 const StatusEnum = ["draft", "published", "archived"] as const;
 const ModeEnum = ["public", "admin", "login"] as const;
+const KindEnum = ["static", "dynamic"] as const;
 
 const STATUS_OPTIONS = [
     { key: StatusEnum[0], label: "Черновик" },
@@ -42,18 +44,41 @@ const MODE_OPTIONS = [
     { key: ModeEnum[2], label: "Авторизация" },
 ] as const;
 
+const KIND_OPTIONS = [
+    { key: KindEnum[0], label: "Статичный" },
+    { key: KindEnum[1], label: "Динамический" },
+] as const;
+
 type Status = (typeof StatusEnum)[number];
 type Mode = (typeof ModeEnum)[number];
+type Kind = (typeof KindEnum)[number];
+
+type TemplateItem = {
+    _id: string;
+    name?: { ru?: string } | string;
+};
 
 const itemSchema = z.object({
     name: z
         .string()
         .nonempty("Название обязательно")
         .min(2, "Название должно содержать минимум 2 символа"),
-    slug: z
+    key: z
         .string()
-        .nonempty("Slug обязателен")
-        .min(2, "Slug должен содержать минимум 2 символа"),
+        .nonempty("Ключ обязателен")
+        .min(2, "Ключ должен содержать минимум 2 символа"),
+    template: z.string().min(1, "Выберите шаблон"),
+    path: z
+        .string()
+        .nonempty("Путь обязателен")
+        .min(2, "Путь должен содержать минимум 2 символа"),
+    kind: z
+        .string()
+        .min(1, "Выберите дочерний путь")
+        .refine(
+            (v): v is Kind => (KindEnum as readonly string[]).includes(v),
+            "Дочерний путь"
+        ),
     mode: z
         .string()
         .min(1, "Выберите режим")
@@ -86,6 +111,10 @@ export default function PageUpsertSectionMainC({
     const [loading, setLoading] = useState(false);
     const [item, setItem] = useState<any>(null);
 
+    // templates
+    const [templates, setTemplates] = useState<TemplateItem[]>([]);
+    const [templatesLoading, setTemplatesLoading] = useState(false);
+
     const {
         register,
         control,
@@ -94,19 +123,44 @@ export default function PageUpsertSectionMainC({
         formState: { errors, isSubmitting, isDirty },
     } = useForm<RegisterFormData>({
         resolver: zodResolver(itemSchema),
-        defaultValues: { status: "draft", mode: "public" },
+        defaultValues: { status: "draft", mode: "public", template: "", path: "", kind: "static" },
     });
 
     const ops = useMemo(() => {
         switch (api) {
             case "pages":
                 return { get: getPage, create: createPage, update: updatePage };
-            // case "superAdmin":
-            // case "user":
             default:
                 return { get: getPage, create: createPage, update: updatePage };
         }
     }, [api]);
+
+    // ===== load templates =====
+    useEffect(() => {
+        let cancelled = false;
+
+        (async () => {
+            try {
+                const data = await getTemplates()
+
+                if (!cancelled) setTemplates(Array.isArray(data) ? data : []);
+            } catch {
+                // можно toast, но не обязательно
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+
+    const TEMPLATE_OPTIONS = useMemo(() => {
+        return templates.map((t) => ({
+            key: t._id,
+            label: (t as any)?.name?.ru ?? (t as any)?.name ?? t._id,
+        }));
+    }, [templates]);
 
     // ===== avatar state =====
     const { url: remoteUrl } = usePresignedUrl(item?.previewPath);
@@ -165,7 +219,6 @@ export default function PageUpsertSectionMainC({
 
             await ops.update(userId, { previewPath: uploaded.path, gallery: [uploaded] });
 
-            // ✅ чтобы сразу обновилось изображение в UI (remoteUrl подтянется по avatarPath)
             setItem((prev: any) => ({
                 ...(prev ?? {}),
                 _id: userId,
@@ -193,7 +246,6 @@ export default function PageUpsertSectionMainC({
                 shouldShowTimeoutProgress: true,
             });
         } finally {
-            // ✅ после аплоада возвращаемся к remoteUrl (и не держим выбранный файл)
             clearPickedFile();
         }
     };
@@ -209,6 +261,10 @@ export default function PageUpsertSectionMainC({
                 setItem(res);
                 reset({
                     name: res?.name?.ru ?? "",
+                    key: res?.key ?? "",
+                    path: res?.path ?? "",
+                    kind: res?.kind ?? "",
+                    template: res?.template?._id ?? res?.template ?? "",
                     mode: res?.mode ?? "public",
                     status: res?.status ?? "draft",
                 });
@@ -235,7 +291,11 @@ export default function PageUpsertSectionMainC({
         if (type === UpsertType.Create) {
             setLoading(true);
             try {
-                const user = await ops.create({ ...data, name: { ru: data.name } });
+                const user = await ops.create({
+                    ...data,
+                    template: data.template, // ✅ id выбранного template
+                    name: { ru: data.name },
+                });
 
                 if (file) {
                     await upload(user._id);
@@ -272,7 +332,11 @@ export default function PageUpsertSectionMainC({
         if (type === UpsertType.Update && id) {
             setLoading(true);
             try {
-                await ops.update(id, { ...data, name: { ru: data.name } });
+                await ops.update(id, {
+                    ...data,
+                    template: data.template, // ✅ id выбранного template
+                    name: { ru: data.name },
+                });
 
                 if (file) {
                     await upload(id);
@@ -288,7 +352,6 @@ export default function PageUpsertSectionMainC({
                     shouldShowTimeoutProgress: true,
                 });
 
-                // остаёмся на странице, просто обновим item + сбросим dirty
                 setItem((prev: any) => ({ ...(prev ?? {}), ...data }));
                 reset(data);
             } catch {
@@ -314,14 +377,15 @@ export default function PageUpsertSectionMainC({
             ) : (
                 <>
                     <div className="flex items-center gap-6 mb-9">
-                        <Button isIconOnly radius="full" onPress={() => router.back()}><IoChevronBack className="text-[20px]" /></Button>
+                        <Button isIconOnly radius="full" onPress={() => router.back()}>
+                            <IoChevronBack className="text-[20px]" />
+                        </Button>
                         <h1 className="text-3xl font-bold">
                             {type === UpsertType.Create ? "Создание страницы" : "Редактирование страницы"}{" "}
                             {type === UpsertType.Update ? (
                                 <span className="text-primary">{item?.name?.ru ?? ""}</span>
                             ) : null}
                         </h1>
-
                     </div>
 
                     <div className="grid grid-cols-3 gap-6">
@@ -380,12 +444,66 @@ export default function PageUpsertSectionMainC({
                                 />
 
                                 <Input
-                                    errorMessage={errors?.slug?.message}
-                                    isInvalid={Boolean(errors.slug)}
-                                    placeholder="Slug"
+                                    errorMessage={errors?.key?.message}
+                                    isInvalid={Boolean(errors.key)}
+                                    placeholder="Ключ"
                                     size="lg"
                                     type="text"
-                                    {...register("slug")}
+                                    {...register("key")}
+                                />
+
+                                <Controller
+                                    name="template"
+                                    control={control}
+                                    render={({ field, fieldState }) => (
+                                        <Select
+                                            label="Шаблон"
+                                            selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                                            isInvalid={!!fieldState.error}
+                                            errorMessage={fieldState.error?.message}
+                                            isDisabled={templatesLoading || TEMPLATE_OPTIONS.length === 0}
+                                            onSelectionChange={(keys) => {
+                                                const value = Array.from(keys)[0] as RegisterFormData["template"];
+                                                field.onChange(value);
+                                            }}
+                                            onBlur={field.onBlur}
+                                        >
+                                            {TEMPLATE_OPTIONS.map((opt) => (
+                                                <SelectItem key={opt.key}>{opt.label}</SelectItem>
+                                            ))}
+                                        </Select>
+                                    )}
+                                />
+
+                                <Input
+                                    errorMessage={errors?.path?.message}
+                                    isInvalid={Boolean(errors.path)}
+                                    placeholder="Путь"
+                                    size="lg"
+                                    type="text"
+                                    {...register("path")}
+                                />
+                                
+                                <Controller
+                                    name="kind"
+                                    control={control}
+                                    render={({ field, fieldState }) => (
+                                        <Select
+                                            label="Дочерний путь"
+                                            selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                                            isInvalid={!!fieldState.error}
+                                            errorMessage={fieldState.error?.message}
+                                            onSelectionChange={(keys) => {
+                                                const value = Array.from(keys)[0] as RegisterFormData["kind"];
+                                                field.onChange(value);
+                                            }}
+                                            onBlur={field.onBlur}
+                                        >
+                                            {KIND_OPTIONS.map((item) => (
+                                                <SelectItem key={item.key}>{item.label}</SelectItem>
+                                            ))}
+                                        </Select>
+                                    )}
                                 />
 
                                 <Controller

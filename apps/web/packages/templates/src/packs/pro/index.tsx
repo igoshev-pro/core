@@ -16,7 +16,7 @@ import LayoutUpsertSectionMain from "./pages/p-factory/p-layouts/p-upsert/sectio
 import FactoryLayoutsSectionMain from "./pages/p-factory/p-layouts/FactoryLayoutsSectionMain";
 import PageUpsertSectionMain from "./pages/p-factory/p-pages/p-upsert/sections/PageUpsertSectionMain";
 import SectionUpsertSectionMain from "./pages/p-factory/p-sections/p-upsert/sections/SectionUpsertSectionMain";
-import WidgetUpsertSectionMain from "./pages/p-factory/p-widgets/WidgetUpsertSectionMainC";
+import WidgetUpsertSectionMain from "./pages/p-factory/p-widgets/p-upsert/sections/WidgetUpsertSectionMain";
 
 function DashboardSectionMain({ node }: any) {
   return (

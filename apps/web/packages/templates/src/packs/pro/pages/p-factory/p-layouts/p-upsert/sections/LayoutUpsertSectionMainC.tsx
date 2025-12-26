@@ -26,6 +26,7 @@ import { uploadFileToStorage } from "@/api/feature/storageApi";
 import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
 import { createLayout, getLayout, updateLayout } from "@/api/factory/layoutsApi";
 import { LayoutUpsertSectionMainProps } from "./LayoutUpsertSectionMain";
+import { getTemplates } from "@/api/factory/templatesApi";
 
 const StatusEnum = ["draft", "published", "archived"] as const;
 const ModeEnum = ["public", "admin", "login"] as const;
@@ -54,6 +55,7 @@ const itemSchema = z.object({
 		.string()
 		.nonempty("Slug обязателен")
 		.min(2, "Slug должен содержать минимум 2 символа"),
+	template: z.string().min(1, "Выберите шаблон"),
 	mode: z
 		.string()
 		.min(1, "Выберите режим")
@@ -94,8 +96,40 @@ export default function LayoutUpsertSectionMainC({
 		formState: { errors, isSubmitting, isDirty },
 	} = useForm<RegisterFormData>({
 		resolver: zodResolver(itemSchema),
-		defaultValues: { status: "draft", mode: "public" },
+		defaultValues: { status: "draft", mode: "public", template: "", name: "", slug: "" },
 	});
+
+	type TemplateItem = {
+		_id: string;
+		name?: { ru?: string } | string;
+	};
+
+	const [templates, setTemplates] = useState<TemplateItem[]>([]);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		(async () => {
+			try {
+				const data = await getTemplates()
+
+				if (!cancelled) setTemplates(Array.isArray(data) ? data : []);
+			} catch {
+				// можно toast, но не обязательно
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const TEMPLATE_OPTIONS = useMemo(() => {
+		return templates.map((t) => ({
+			key: t._id,
+			label: (t as any)?.name?.ru ?? (t as any)?.name ?? t._id,
+		}));
+	}, [templates]);
 
 	const ops = useMemo(() => {
 		switch (api) {
@@ -209,6 +243,8 @@ export default function LayoutUpsertSectionMainC({
 				setItem(res);
 				reset({
 					name: res?.name?.ru ?? "",
+					slug: res?.slug ?? "",
+					template: res?.template?._id ?? res?.template ?? "",
 					mode: res?.mode ?? "public",
 					status: res?.status ?? "draft",
 				});
@@ -235,7 +271,7 @@ export default function LayoutUpsertSectionMainC({
 		if (type === UpsertType.Create) {
 			setLoading(true);
 			try {
-				const user = await ops.create({ ...data, name: { ru: data.name } });
+				const user = await ops.create({ ...data, template: data.template, name: { ru: data.name } });
 
 				if (file) {
 					await upload(user._id);
@@ -272,7 +308,7 @@ export default function LayoutUpsertSectionMainC({
 		if (type === UpsertType.Update && id) {
 			setLoading(true);
 			try {
-				await ops.update(id, { ...data, name: { ru: data.name } });
+				await ops.update(id, { ...data, name: { template: data.template, ru: data.name } });
 
 				if (file) {
 					await upload(id);
@@ -387,6 +423,30 @@ export default function LayoutUpsertSectionMainC({
 									type="text"
 									{...register("slug")}
 								/>
+
+								<Controller
+									name="template"
+									control={control}
+									render={({ field, fieldState }) => (
+										<Select
+											label="Шаблон"
+											selectedKeys={field.value ? new Set([field.value]) : new Set()}
+											isInvalid={!!fieldState.error}
+											errorMessage={fieldState.error?.message}
+											isDisabled={TEMPLATE_OPTIONS.length === 0}
+											onSelectionChange={(keys) => {
+												const value = Array.from(keys)[0] as RegisterFormData["template"];
+												field.onChange(value);
+											}}
+											onBlur={field.onBlur}
+										>
+											{TEMPLATE_OPTIONS.map((opt) => (
+												<SelectItem key={opt.key}>{opt.label}</SelectItem>
+											))}
+										</Select>
+									)}
+								/>
+
 
 								<Controller
 									name="mode"

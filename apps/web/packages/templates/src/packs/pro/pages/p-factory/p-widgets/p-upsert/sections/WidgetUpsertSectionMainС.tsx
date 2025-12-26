@@ -17,24 +17,18 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-	buildUserPhotoPath,
-	fileExt,
-} from "@/common/helper/photo-path-generator.util";
-import { LoaderModal } from "../../../../../components/modals/LoaderModal";
+import { buildUserPhotoPath, fileExt } from "@/common/helper/photo-path-generator.util";
 import { uploadFileToStorage } from "@/api/feature/storageApi";
 import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
-import {
-	createSection,
-	getSection,
-	updateSection,
-} from "@/api/factory/sectionsApi";
-import { SectionUpsertSectionMainProps } from "./SectionUpsertSectionMain";
+import { createWidget, getWidget, updateWidget } from "@/api/factory/widgetsApi";
 import { getTemplates } from "@/api/factory/templatesApi";
+import { LoaderModal } from "../../../../../components/modals/LoaderModal";
+import { WidgetUpsertSectionMainProps } from "./WidgetUpsertSectionMain";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { FiPlus } from "react-icons/fi";
 
 const StatusEnum = ["draft", "published", "archived"] as const;
+const ModeEnum = ["public", "admin", "login"] as const;
 
 const STATUS_OPTIONS = [
 	{ key: StatusEnum[0], label: "Черновик" },
@@ -42,14 +36,21 @@ const STATUS_OPTIONS = [
 	{ key: StatusEnum[2], label: "Архив" },
 ] as const;
 
+const MODE_OPTIONS = [
+	{ key: ModeEnum[0], label: "Публичный" },
+	{ key: ModeEnum[1], label: "Закрытый" },
+	{ key: ModeEnum[2], label: "Авторизация" },
+] as const;
+
 type Status = (typeof StatusEnum)[number];
+type Mode = (typeof ModeEnum)[number];
 
 type TemplateItem = {
 	_id: string;
 	name?: { ru?: string } | string;
 };
 
-// ✅ строгая схема для элемента props
+// ===== props schema (строго) =====
 const propItemSchema = z.object({
 	key: z.string().default(""),
 	value: z.string().default(""),
@@ -60,15 +61,18 @@ const itemSchema = z.object({
 		.string()
 		.nonempty("Название обязательно")
 		.min(2, "Название должно содержать минимум 2 символа"),
-	key: z
+	slug: z
 		.string()
-		.nonempty("Ключ обязателен")
-		.min(2, "Ключ должен содержать минимум 2 символа"),
+		.nonempty("Slug обязателен")
+		.min(2, "Slug должен содержать минимум 2 символа"),
 	template: z.string().min(1, "Выберите шаблон"),
-
-	// ✅ props всегда массив, не optional
-	props: z.array(propItemSchema).default([]),
-
+	mode: z
+		.string()
+		.min(1, "Выберите режим")
+		.refine(
+			(v): v is Mode => (ModeEnum as readonly string[]).includes(v),
+			"Выберите режим"
+		),
 	status: z
 		.string()
 		.min(1, "Выберите статус")
@@ -76,12 +80,15 @@ const itemSchema = z.object({
 			(v): v is Status => (StatusEnum as readonly string[]).includes(v),
 			"Выберите статус"
 		),
+
+	// ✅ props всегда массив
+	props: z.array(propItemSchema).default([]),
 });
 
 type RegisterFormData = z.infer<typeof itemSchema>;
 
-type ApiKind = "sections";
-type ExtendedProps = SectionUpsertSectionMainProps & { api?: ApiKind };
+type ApiKind = "widgets";
+type ExtendedProps = WidgetUpsertSectionMainProps & { api?: ApiKind };
 
 function normalizePropsToArray(input: unknown): Array<{ key: string; value: string }> {
 	if (!input) return [];
@@ -111,11 +118,11 @@ function propsArrayToObject(arr: Array<{ key: string; value: string }>) {
 	return out;
 }
 
-export default function SectionUpsertSectionMainC({
+export default function WidgetUpsertSectionMainC({
 	type,
 	projectId,
 	id,
-	api = "sections",
+	api = "widgets",
 }: ExtendedProps) {
 	const router = useRouter();
 
@@ -136,7 +143,7 @@ export default function SectionUpsertSectionMainC({
 	} = useForm<RegisterFormData>({
         // @ts-ignore
 		resolver: zodResolver(itemSchema),
-		defaultValues: { status: "draft", template: "", props: [] },
+		defaultValues: { status: "draft", mode: "public", template: "", props: [] },
 	});
 
 	const { fields, append, remove } = useFieldArray({
@@ -146,10 +153,10 @@ export default function SectionUpsertSectionMainC({
 
 	const ops = useMemo(() => {
 		switch (api) {
-			case "sections":
-				return { get: getSection, create: createSection, update: updateSection };
+			case "widgets":
+				return { get: getWidget, create: createWidget, update: updateWidget };
 			default:
-				return { get: getSection, create: createSection, update: updateSection };
+				return { get: getWidget, create: createWidget, update: updateWidget };
 		}
 	}, [api]);
 
@@ -208,12 +215,17 @@ export default function SectionUpsertSectionMainC({
 		if (inputRef.current) inputRef.current.value = "";
 	};
 
-	const upload = async (userId: string) => {
+	const upload = async (entityId: string) => {
 		if (!file) return;
 
 		try {
 			const ext = fileExt(file);
-			const path = buildUserPhotoPath({ projectId, userId, kind: "preview", ext });
+			const path = buildUserPhotoPath({
+				projectId,
+				userId: entityId,
+				kind: "preview",
+				ext,
+			});
 
 			const uploaded = await uploadFileToStorage({
 				projectId,
@@ -236,11 +248,11 @@ export default function SectionUpsertSectionMainC({
 				return;
 			}
 
-			await ops.update(userId, { previewPath: uploaded.path, gallery: [uploaded] });
+			await ops.update(entityId, { previewPath: uploaded.path, gallery: [uploaded] });
 
 			setItem((prev: any) => ({
 				...(prev ?? {}),
-				_id: userId,
+				_id: entityId,
 				previewPath: uploaded.path,
 				photos: [uploaded],
 			}));
@@ -278,20 +290,20 @@ export default function SectionUpsertSectionMainC({
 			.get(id)
 			.then((res: any) => {
 				setItem(res);
-
 				reset({
 					name: res?.name?.ru ?? "",
-					key: res?.key ?? "",
+					slug: res?.slug ?? "",
 					template: res?.template?._id ?? res?.template ?? "",
-					props: normalizePropsToArray(res?.props),
+					mode: res?.mode ?? "public",
 					status: res?.status ?? "draft",
+					props: normalizePropsToArray(res?.props),
 				});
 			})
 			.catch(() => {
 				addToast({
 					color: "danger",
 					title: "Ошибка!",
-					description: `Не удалось загрузить секцию`,
+					description: `Не удалось загрузить виджет`,
 					variant: "solid",
 					radius: "lg",
 					timeout: 3000,
@@ -300,8 +312,9 @@ export default function SectionUpsertSectionMainC({
 			})
 			.finally(() => setLoading(false));
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [type, id, ops]);
+	}, [type, id, ops, reset]);
 
+	// ✅ источник картинки: если выбран новый файл — preview, иначе remote
 	const avatarSrc = previewUrl ?? remoteUrl ?? null;
 
 	// ✅ добавить строку props только если последняя полностью заполнена
@@ -325,30 +338,32 @@ export default function SectionUpsertSectionMainC({
 			try {
 				const created = await ops.create(payload);
 
-				if (file) await upload(created._id);
+				if (file) {
+					await upload(created._id);
+				}
 
 				addToast({
 					color: "success",
 					title: "Успешно!",
-					description: `Секция создана успешно`,
+					description: `Виджет создан успешно`,
 					variant: "solid",
 					radius: "lg",
 					timeout: 3000,
 					shouldShowTimeoutProgress: true,
 				});
-				router.push(`/admin/factory/sections`);
+				router.push(`/admin/factory/widgets`);
 			} catch {
 				addToast({
 					color: "danger",
 					title: "Ошибка!",
-					description: `Произошла ошибка при создании секции`,
+					description: `Произошла ошибка при создании виджета`,
 					variant: "solid",
 					radius: "lg",
 					timeout: 3000,
 					shouldShowTimeoutProgress: true,
 				});
 			} finally {
-				reset({ status: "draft", template: "", props: [], name: "", key: "" });
+				reset({ status: "draft", mode: "public", template: "", props: [], name: "", slug: "" });
 				clearPickedFile();
 				setLoading(false);
 			}
@@ -360,7 +375,9 @@ export default function SectionUpsertSectionMainC({
 			try {
 				await ops.update(id, payload);
 
-				if (file) await upload(id);
+				if (file) {
+					await upload(id);
+				}
 
 				addToast({
 					color: "success",
@@ -373,7 +390,7 @@ export default function SectionUpsertSectionMainC({
 				});
 
 				setItem((prev: any) => ({ ...(prev ?? {}), ...payload }));
-				reset(data); // ✅ reset именно формы (props остаются массивом)
+				reset(data); // форма остаётся с props массивом
 			} catch {
 				addToast({
 					color: "danger",
@@ -401,7 +418,7 @@ export default function SectionUpsertSectionMainC({
 							<IoChevronBack className="text-[20px]" />
 						</Button>
 						<h1 className="text-3xl font-bold">
-							{type === UpsertType.Create ? "Создание секции" : "Редактирование секции"}{" "}
+							{type === UpsertType.Create ? "Создание виджета" : "Редактирование виджета"}{" "}
 							{type === UpsertType.Update ? (
 								<span className="text-primary">{item?.name?.ru ?? ""}</span>
 							) : null}
@@ -464,12 +481,12 @@ export default function SectionUpsertSectionMainC({
 								/>
 
 								<Input
-									errorMessage={errors?.key?.message}
-									isInvalid={Boolean(errors.key)}
-									placeholder="Ключ"
+									errorMessage={errors?.slug?.message}
+									isInvalid={Boolean(errors.slug)}
+									placeholder="Slug"
 									size="lg"
 									type="text"
-									{...register("key")}
+									{...register("slug")}
 								/>
 
 								<Controller
@@ -490,6 +507,28 @@ export default function SectionUpsertSectionMainC({
 										>
 											{TEMPLATE_OPTIONS.map((opt) => (
 												<SelectItem key={opt.key}>{opt.label}</SelectItem>
+											))}
+										</Select>
+									)}
+								/>
+
+								<Controller
+									name="mode"
+									control={control}
+									render={({ field, fieldState }) => (
+										<Select
+											label="Режим"
+											selectedKeys={field.value ? new Set([field.value]) : new Set()}
+											isInvalid={!!fieldState.error}
+											errorMessage={fieldState.error?.message}
+											onSelectionChange={(keys) => {
+												const value = Array.from(keys)[0] as RegisterFormData["mode"];
+												field.onChange(value);
+											}}
+											onBlur={field.onBlur}
+										>
+											{MODE_OPTIONS.map((item) => (
+												<SelectItem key={item.key}>{item.label}</SelectItem>
 											))}
 										</Select>
 									)}
