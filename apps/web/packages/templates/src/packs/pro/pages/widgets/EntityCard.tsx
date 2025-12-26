@@ -118,8 +118,9 @@ function getCardConfig<T extends Record<string, any>>(
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: item?.name ?? "—", valueClassName: "font-semibold" },
-          { label: "Тип", value: (item as any)?.type ?? "—" },
+          { label: "Название", value: item?.name?.ru ?? "—", valueClassName: "font-semibold" },
+          { label: "Тип", value: (item as any)?.mode ?? "—" },
+          { label: "Статус", value: (item as any)?.status ?? "—" },
         ],
       };
 
