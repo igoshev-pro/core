@@ -46,8 +46,9 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
         title: (i) => (i as any)?.name?.ru ??  (i as any)?.name ?? "Без имени",
         subtitle: (i) => (i as any)?._id,
         columns: [
-          { key: "mode", label: "Mode", value: (i) => (i as any)?.mode ?? "—" },
-          { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+          { key: "slug", label: "Slug", value: (i) => (i as any)?.slug ?? "—" },
+          { key: "mode", label: "Тип", value: (i) => (i as any)?.mode ?? "—" },
+          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
         ],
       };
 

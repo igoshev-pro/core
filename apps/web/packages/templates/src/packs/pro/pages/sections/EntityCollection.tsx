@@ -13,6 +13,7 @@ import { getTemplates, removeTemplate, updateTemplate } from "@/api/core/templat
 import { EntityCard } from "../widgets/EntityCard";
 import { EntityRow } from "../widgets/EntityRow";
 import { getThemes, removeTheme, updateTheme } from "@/api/core/themesApi";
+import { getLayouts, removeLayout, updateLayout } from "@/api/core/layoutsApi";
 
 type Item = { _id: string; name?: any; sortOrder?: number;[k: string]: any };
 const ORDER_STEP = 1000;
@@ -29,7 +30,7 @@ function unwrapItems(res: unknown): Item[] {
 // ✅ лучше сделать ключи типобезопасными
 type FactoryApiKey =
   | "templates"
-  // | "layouts"
+  | "layouts"
   | "themes"
   // | "pages"
   // | "sections"
@@ -95,6 +96,22 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
         },
       };
 
+      case "layouts":
+      return {
+        strings: { label: "Макет", labelPlural: "Макеты" },
+        routes: {
+          list: "/admin/factory/layouts",
+          create: "/admin/factory/layouts/create",
+          edit: (id) => `/admin/factory/layouts/edit/${id}`,
+        },
+        methods: {
+          getItems: (limit, offset) => getLayouts(limit, offset),
+          removeItem: (id) => removeLayout(id),
+          updateItem: (id, dto) => updateLayout(id, dto),
+        },
+      };
+
+
     default:
       return assertNever(api);
   }
@@ -110,6 +127,8 @@ function normalizeApi(api: string): FactoryApiKey {
       return "templates";
     case "themes": 
       return "themes";
+      case "layouts": 
+      return "layouts";
     default:
       // best-effort: пусть будет templates, чтобы не падать
       return "templates";
@@ -248,12 +267,5 @@ export default function EntityCollection({ api }: { api: string }) {
       />
     </>
   );
-}
-function removeThemes(id: string): Promise<unknown> {
-  throw new Error("Function not implemented.");
-}
-
-function updateThemes(id: string, dto: Partial<Item>): Promise<unknown> {
-  throw new Error("Function not implemented.");
 }
 
