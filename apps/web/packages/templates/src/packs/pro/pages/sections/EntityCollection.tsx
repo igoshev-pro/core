@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { addToast, Button, useDisclosure } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
-import { SmartCollection } from "./SmartCollection";
+import { SmartCollection, SmartCollectionHandle } from "./SmartCollection";
 import { ConfirmModal } from "../../components/modals/ConfirmModal";
 import { LoaderModal } from "../../components/modals/LoaderModal";
 import { SortableCard } from "../widgets/SortableCard";
@@ -69,9 +69,9 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
       return {
         strings: { label: "Шаблон", labelPlural: "Шаблоны" },
         routes: {
-          list: "/admin/templates",
-          create: "/admin/templates/create",
-          edit: (id) => `/admin/templates/edit/${id}`,
+          list: "/admin/factory/templates",
+          create: "/admin/factory/templates/create",
+          edit: (id) => `/admin/factory/templates/edit/${id}`,
         },
         methods: {
           getItems: (limit, offset) => getTemplates(limit, offset),
@@ -119,6 +119,8 @@ export default function EntityCollection({ api }: { api: string }) {
   const router = useRouter();
   const [current, setCurrent] = useState<Item | undefined>();
 
+  const collectionRef = useRef<SmartCollectionHandle>(null);
+
   const { isOpen: isDelete, onOpen: onDelete, onClose: closeDelete } = useDisclosure();
 
   const apiKey = useMemo(() => normalizeApi(api), [api]);
@@ -135,8 +137,10 @@ export default function EntityCollection({ api }: { api: string }) {
   const onRemove = useCallback(async () => {
     if (!current?._id) return;
 
+    const id = current._id;
+
     try {
-      await cfg.methods.removeItem(current._id);
+      await cfg.methods.removeItem(id);
 
       addToast({
         color: "success",
@@ -149,7 +153,15 @@ export default function EntityCollection({ api }: { api: string }) {
       });
 
       closeDelete();
-      router.refresh();
+      setCurrent(undefined);
+
+      // ✅ моментально обновили UI
+      collectionRef.current?.removeLocal(id);
+
+      // ✅ если хочешь 100% консистентность с сервером (например, пагинация/hasMore)
+      void collectionRef.current?.refresh();
+
+      // router.refresh(); // больше не нужен для этого кейса
     } catch {
       addToast({
         color: "danger",
@@ -161,7 +173,7 @@ export default function EntityCollection({ api }: { api: string }) {
         shouldShowTimeoutProgress: true,
       });
     }
-  }, [cfg.methods, cfg.strings.label, closeDelete, current?._id, router]);
+  }, [cfg.methods, cfg.strings.label, closeDelete, current?._id]);
 
   const onPersistOrder = useCallback(
     async (next: Item[], prev: Item[]) => {
@@ -186,6 +198,7 @@ export default function EntityCollection({ api }: { api: string }) {
   return (
     <>
       <SmartCollection<Item>
+        ref={collectionRef}
         title={cfg.strings.labelPlural}
         actions={
           <Button color="primary" radius="full" onPress={() => router.push(cfg.routes.create)}>
@@ -203,7 +216,7 @@ export default function EntityCollection({ api }: { api: string }) {
             <EntityCard
               api={apiKey}
               item={item}
-              onEdit={(i) => router.push(`/admin/${api}/edit/${i._id}`)}
+              onEdit={(i) => router.push(cfg.routes.edit(i._id))}
               onRemove={(i) => { setCurrent(i); onDelete(); }}
             />
           </SortableCard>
@@ -229,7 +242,7 @@ export default function EntityCollection({ api }: { api: string }) {
         onClose={closeDelete}
         onAction={onRemove}
         title="Удаление"
-        text={`Вы действительно хотите удалить ${current?.name ?? cfg.strings.label}?`}
+        text={`Вы действительно хотите удалить ${current?.name?.ru ?? current?.name ?? cfg.strings.label}?`}
         actionBtnText="Удалить"
       />
     </>

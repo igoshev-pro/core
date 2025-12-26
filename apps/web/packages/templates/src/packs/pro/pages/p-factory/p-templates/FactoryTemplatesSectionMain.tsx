@@ -1,4 +1,4 @@
-import EntityCollection from "../../../sections/EntityCollection"
+import EntityCollection from "../../sections/EntityCollection"
 
 const FactoryTemplatesSectionMain = ({ node, ctx }: any) => {
   return (

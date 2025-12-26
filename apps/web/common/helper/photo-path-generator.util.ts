@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 export function buildUserPhotoPath(params: {
   projectId: string;
   userId: string;
-  kind: "avatar" | "photo";
+  kind: "avatar" | "photo" | "preview";
   ext: string; // "jpg" | "png" etc
 }) {
   const { projectId, userId, kind, ext } = params;
