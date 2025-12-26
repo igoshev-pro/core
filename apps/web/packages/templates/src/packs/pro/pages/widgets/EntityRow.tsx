@@ -57,8 +57,7 @@ function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowC
         columns: [
           { key: "colorPrimary", label: "Основной цвет", value: (i) => (i as any)?.colorPrimary ?? "—" },
           { key: "colorSecondary", label: "Второй цвет", value: (i) => (i as any)?.colorSecondary ?? "—" },
-          { key: "fontSans", label: "Шрифт", value: (i) => (i as any)?.fontSans ?? "—" },
-          
+          { key: "fontSans", label: "Шрифт", value: (i) => (i as any)?.fontSans ?? "—" },  
         ],
       };
 

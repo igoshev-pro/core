@@ -9,6 +9,9 @@ export class Template {
     @Prop({ required: true, type: Object })
     name: I18nString;
 
+    @Prop({ required: true, type: String })
+    slug: String;
+
     @Prop({ default: 0, index: true })
     sortOrder: number;
 

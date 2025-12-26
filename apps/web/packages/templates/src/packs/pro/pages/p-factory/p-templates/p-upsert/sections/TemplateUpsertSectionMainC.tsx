@@ -50,6 +50,10 @@ const itemSchema = z.object({
 		.string()
 		.nonempty("Название обязательно")
 		.min(2, "Название должно содержать минимум 2 символа"),
+	slug: z
+		.string()
+		.nonempty("Slug обязателен")
+		.min(2, "Slug должен содержать минимум 2 символа"),
 	mode: z
 		.string()
 		.min(1, "Выберите режим")
@@ -231,7 +235,7 @@ export default function TemplateUpsertSectionMainC({
 		if (type === UpsertType.Create) {
 			setLoading(true);
 			try {
-				const user = await ops.create({...data, name: { ru: data.name }});
+				const user = await ops.create({ ...data, name: { ru: data.name } });
 
 				if (file) {
 					await upload(user._id);
@@ -268,7 +272,7 @@ export default function TemplateUpsertSectionMainC({
 		if (type === UpsertType.Update && id) {
 			setLoading(true);
 			try {
-				await ops.update(id, {...data, name: { ru: data.name }});
+				await ops.update(id, { ...data, name: { ru: data.name } });
 
 				if (file) {
 					await upload(id);
@@ -317,7 +321,7 @@ export default function TemplateUpsertSectionMainC({
 								<span className="text-primary">{item?.name?.ru ?? ""}</span>
 							) : null}
 						</h1>
-						
+
 					</div>
 
 					<div className="grid grid-cols-3 gap-6">
@@ -374,6 +378,16 @@ export default function TemplateUpsertSectionMainC({
 									type="text"
 									{...register("name")}
 								/>
+
+								<Input
+									errorMessage={errors?.slug?.message}
+									isInvalid={Boolean(errors.slug)}
+									placeholder="Slug"
+									size="lg"
+									type="text"
+									{...register("slug")}
+								/>
+
 								<Controller
 									name="mode"
 									control={control}
