@@ -1,11 +1,11 @@
 import React from "react";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { withProjectId } from "@/api/utils/withProjectId";
 import { headers } from "next/headers";
 import "../../../styles/globals.css";
 import { Providers } from "@/app/providers";
 import MeClient from "./MeClient";
+import { loginAction } from "@/app/api/actions/login";
+import { logoutAction } from "@/app/api/actions/logout";
 
 async function isCoreAdmin() {
   const h = await headers()
@@ -72,10 +72,9 @@ export default async function AdminRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
+  const token = await loginAction()
 
-  if (!token) redirect(`/login${withProjectId()}`);
+  if (!token) redirect(`/login`);
 
   const clientUrl = `${process.env.CORE_API_URL}/clients/get/me`;
   const superAdminUrl = `${process.env.CORE_API_URL}/super-admins/get/me`;
@@ -108,12 +107,12 @@ export default async function AdminRootLayout({
     : { ok: false };
 
   if (!result.ok) {
-    cookieStore.delete("access_token");
-    redirect(`/login${withProjectId()}`);
+    logoutAction()
   }
 
+  // @ts-ignore
   if (await isCoreAdmin() && result.role !== "superAdmin") {
-    redirect(`/login${withProjectId()}`);
+    redirect(`/login`);
   }
 
   return (
