@@ -1,13 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 import { Mode } from 'src/common/enums/mod.enum';
 import { EntityStatus } from 'src/common/enums/status.enum';
 import { FileObject } from 'src/common/types/file-object';
 import type { I18nString } from 'src/common/types/i18n';
 
-type Slots = {
-    header?: any
-    footer?: any
-    sidebar?: any
+@Schema()
+export class SlotRef {
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "slots.kind",
+    })
+    ref!: mongoose.Types.ObjectId;
+
+    @Prop({
+        type: String,
+        required: true,
+        enum: ["Widget", "Section"],
+    })
+    kind!: "Widget" | "Section";
 }
 
 @Schema({ timestamps: true })
@@ -16,7 +28,7 @@ export class Layout {
     name: I18nString;
 
     @Prop({ required: true, type: String })
-    slug: String;
+    layoutKey: String;
 
     @Prop({ required: false, type: String, default: 'layout' })
     type: String;
@@ -38,14 +50,14 @@ export class Layout {
     })
     mode: Mode;
 
-    @Prop({ required: false, type: Object })
-    slots: Slots;
-
     @Prop({ type: String, required: false, default: null })
     previewPath?: string | null;
 
     @Prop()
     gallery?: FileObject[];
+
+    @Prop({ type: [SlotRef], default: [] })
+    slots!: SlotRef[];
 }
 
 export type LayoutDocument = Layout & Document;

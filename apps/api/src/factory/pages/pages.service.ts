@@ -1,26 +1,51 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Page, PageDocument } from './entities/page.entity';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class PagesService {
-  create(createPageDto: CreatePageDto) {
-    return 'This action adds a new page';
+  constructor(
+    @InjectModel(Page.name, 'core')
+    private readonly pageModel: Model<PageDocument>,
+  ) { }
+
+  async create(data: CreatePageDto) {
+    const newPage = new this.pageModel(data);
+    return newPage.save();
   }
 
-  findAll() {
-    return `This action returns all pages`;
+  findAll(query: Record<string, any>) {
+    const { limit, offset } = query;
+
+    const limitValue = Number.parseInt(limit ?? '', 10);
+
+    return this.pageModel
+      .find()
+      .sort({ sortOrder: 1 })
+      .skip(offset)
+      .populate({
+        path: "blocks.ref",
+      })
+      .limit(Number.isNaN(limitValue) ? 10 : limitValue)
+      .exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} page`;
+  findOne(id: string) {
+    return this.pageModel.findOne({ _id: id }).populate({
+      path: "blocks.ref",
+    }).exec();
   }
 
-  update(id: number, updatePageDto: UpdatePageDto) {
-    return `This action updates a #${id} page`;
+  update(id: string, data: UpdatePageDto) {
+    return this.pageModel
+      .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })
+      .lean();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} page`;
+  async remove(id: string) {
+    await this.pageModel.deleteOne({ _id: id }).exec()
   }
 }

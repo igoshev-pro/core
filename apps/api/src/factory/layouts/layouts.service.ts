@@ -26,12 +26,15 @@ export class LayoutsService {
       .find()
       .sort({ sortOrder: 1 })
       .skip(offset)
+      .populate({ path: "slots.ref" })
       .limit(Number.isNaN(limitValue) ? 10 : limitValue)
       .exec();
   }
 
   findOne(id: string) {
-    return this.layoutModel.findOne({ _id: id }).exec();
+    return this.layoutModel.findOne({ _id: id }).populate({
+      path: "slots.ref",
+    }).exec();
   }
 
   update(id: string, data: UpdateLayoutDto) {

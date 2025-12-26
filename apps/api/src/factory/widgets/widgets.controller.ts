@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/core/auth/guards/jwt-auth.guard';
+import { SuperAdminGuard } from 'src/core/auth/guards/super-admin.guard';
 import { WidgetsService } from './widgets.service';
 import { CreateWidgetDto } from './dto/create-widget.dto';
 import { UpdateWidgetDto } from './dto/update-widget.dto';
 
-@Controller('widgets')
+@UseGuards(JwtAuthGuard, SuperAdminGuard)
+@Controller('/factory/widgets')
 export class WidgetsController {
   constructor(private readonly widgetsService: WidgetsService) {}
 
@@ -13,22 +16,22 @@ export class WidgetsController {
   }
 
   @Get()
-  findAll() {
-    return this.widgetsService.findAll();
+  findAll(@Query() query: Record<string, string>) {
+    return this.widgetsService.findAll(query);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.widgetsService.findOne(+id);
+    return this.widgetsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateWidgetDto: UpdateWidgetDto) {
-    return this.widgetsService.update(+id, updateWidgetDto);
+    return this.widgetsService.update(id, updateWidgetDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.widgetsService.remove(+id);
+    return this.widgetsService.remove(id);
   }
 }

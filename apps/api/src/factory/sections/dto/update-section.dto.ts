@@ -1,4 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateSectionDto } from './create-section.dto';
+import { I18nString } from "src/common/types/i18n";
 
-export class UpdateSectionDto extends PartialType(CreateSectionDto) {}
+export class UpdateSectionDto {
+    name?: I18nString;
+    key?: string;
+    type?: string;
+    sortOrder?: number;
+    status?: string;
+    previewPath?: string | null;
+    gallery?: any[];
+    props?: any
+    widgets?: any[]
+}

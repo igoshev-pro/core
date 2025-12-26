@@ -3,12 +3,12 @@ import { I18nString } from "src/common/types/i18n";
 
 export class UpdateLayoutDto {
     name?: I18nString;
-    slug?: string;
+    layoutKey?: string;
     type?: string
     sortOrder?: number;
     status?: string;
     mode?: string;
-    slots?: any;
+    slots?: any[];
     previewPath?: string | null;
     gallery?: FileObject[];
 }

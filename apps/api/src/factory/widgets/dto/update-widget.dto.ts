@@ -1,4 +1,12 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateWidgetDto } from './create-widget.dto';
+import { I18nString } from "src/common/types/i18n";
 
-export class UpdateWidgetDto extends PartialType(CreateWidgetDto) {}
+export class UpdateWidgetDto {
+        name?: I18nString;
+        key?: string;
+        type?: string;
+        sortOrder?: number;
+        status?: string;
+        previewPath?: string | null;
+        gallery?: any[];
+        props?: any
+}

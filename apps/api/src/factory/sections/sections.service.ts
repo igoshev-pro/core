@@ -1,26 +1,46 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSectionDto } from './dto/create-section.dto';
 import { UpdateSectionDto } from './dto/update-section.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Section, SectionDocument } from './entities/section.entity';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class SectionsService {
-  create(createSectionDto: CreateSectionDto) {
-    return 'This action adds a new section';
+  constructor(
+    @InjectModel(Section.name, 'core')
+    private readonly sectionModel: Model<SectionDocument>,
+  ) { }
+
+  async create(data: CreateSectionDto) {
+    const newSection = new this.sectionModel(data);
+    return newSection.save();
+  }s
+  findAll(query: Record<string, any>) {
+    const { limit, offset } = query;
+
+    const limitValue = Number.parseInt(limit ?? '', 10);
+
+    return this.sectionModel
+      .find()
+      .sort({ sortOrder: 1 })
+      .skip(offset)
+      .populate('widgets')
+      .limit(Number.isNaN(limitValue) ? 10 : limitValue)
+      .exec();
   }
 
-  findAll() {
-    return `This action returns all sections`;
+  findOne(id: string) {
+    return this.sectionModel.findOne({ _id: id }).populate('widgets').exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} section`;
+  update(id: string, data: UpdateSectionDto) {
+    return this.sectionModel
+      .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })
+      .lean();
   }
 
-  update(id: number, updateSectionDto: UpdateSectionDto) {
-    return `This action updates a #${id} section`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} section`;
+  async remove(id: string) {
+    await this.sectionModel.deleteOne({ _id: id }).exec()
   }
 }
