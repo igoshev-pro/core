@@ -43,7 +43,7 @@ const SideMenuMainLayout = () => {
           route: '/admin/factory/themes',
         },
         {
-          label: "Лейауты",
+          label: "Макеты",
           icon: <RiLayoutMasonryFill className="text-[21px] w-[24px] flex justify-center" />,
           route: '/admin/factory/layouts',
         },
