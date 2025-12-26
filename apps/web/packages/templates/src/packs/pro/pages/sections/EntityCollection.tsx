@@ -7,13 +7,14 @@ import { useRouter } from "next/navigation";
 import { SmartCollection } from "./SmartCollection";
 import { ConfirmModal } from "../../components/modals/ConfirmModal";
 import { LoaderModal } from "../../components/modals/LoaderModal";
-import { SortableCard } from "../../components/widgets/SortableCard";
+import { SortableCard } from "../widgets/SortableCard";
 import { FactoryLayoutCard } from "../p-factory/p-layouts/widgets/FactoryLayoutCard";
 
 import { getTemplates, removeTemplate, updateTemplate } from "@/api/core/templatesApi";
 import { EntityCard } from "../widgets/EntityCard";
+import { EntityRow } from "../widgets/EntityRow";
 
-type Item = { _id: string; name?: string; sortOrder?: number;[k: string]: any };
+type Item = { _id: string; name?: any; sortOrder?: number;[k: string]: any };
 const ORDER_STEP = 1000;
 
 function unwrapItems(res: unknown): Item[] {
@@ -200,7 +201,7 @@ export default function EntityCollection({ api }: { api: string }) {
         renderCard={(item) => (
           <SortableCard key={item._id} id={item._id}>
             <EntityCard
-              api={api as any}
+              api={apiKey}
               item={item}
               onEdit={(i) => router.push(`/admin/${api}/edit/${i._id}`)}
               onRemove={(i) => { setCurrent(i); onDelete(); }}
@@ -208,32 +209,17 @@ export default function EntityCollection({ api }: { api: string }) {
           </SortableCard>
         )}
         renderRow={(item) => (
-          <div
-            key={item._id}
-            className="w-full rounded-2xl shadow-custom p-4 flex justify-between items-center"
-          >
-            <div className="flex flex-col">
-              <div className="font-semibold">{item.name ?? "Без имени"}</div>
-              <div className="text-xs opacity-60">{item._id}</div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button radius="full" variant="light" onPress={() => router.push(cfg.routes.edit(item._id))}>
-                Редактировать
-              </Button>
-              <Button
-                radius="full"
-                color="danger"
-                variant="light"
-                onPress={() => {
-                  setCurrent(item);
-                  onDelete();
-                }}
-              >
-                Удалить
-              </Button>
-            </div>
-          </div>
+          <SortableCard key={item._id} id={item._id}>
+            <EntityRow
+              api={apiKey}
+              item={item}
+              onEdit={(i) => router.push(cfg.routes.edit(i._id))}
+              onRemove={(i) => {
+                setCurrent(i);
+                onDelete();
+              }}
+            />
+          </SortableCard>
         )}
         onPersistOrder={onPersistOrder}
       />

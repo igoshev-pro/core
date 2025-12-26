@@ -1,0 +1,227 @@
+"use client";
+
+import React, { useMemo } from "react";
+import { Button, cn } from "@heroui/react";
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import { BiSolidMessageSquareEdit } from "react-icons/bi";
+
+export type EntityRowApiKey =
+  | "templates"
+  | "themes"
+  | "layouts"
+  | "pages"
+  | "sections"
+  | "widgets";
+
+export type EntityRowColumn<T> = {
+  key: string;
+  label: React.ReactNode;
+  value: (item: T) => React.ReactNode;
+  className?: string;
+  hidden?: (item: T) => boolean;
+};
+
+type RowConfig<T extends Record<string, any>> = {
+  title: (item: T) => React.ReactNode;
+  subtitle?: (item: T) => React.ReactNode;
+  columns: Array<EntityRowColumn<T>>;
+};
+
+function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowConfig<T> {
+  switch (api) {
+    case "templates":
+      return {
+        title: (i) => (i as any)?.name?.ru ?? (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "mode", label: "Тип", value: (i) => (i as any)?.mode ?? "—" },
+          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
+        //   { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+        ],
+      };
+
+    case "layouts":
+      return {
+        title: (i) => (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "mode", label: "Mode", value: (i) => (i as any)?.mode ?? "—" },
+          { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+        ],
+      };
+
+    case "themes":
+      return {
+        title: (i) => (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "primary", label: "Primary", value: (i) => (i as any)?.primaryColor ?? "—" },
+          { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+        ],
+      };
+
+    case "pages":
+      return {
+        title: (i) => (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "route", label: "Route", value: (i) => (i as any)?.route ?? "—" },
+          { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+        ],
+      };
+
+    case "sections":
+      return {
+        title: (i) => (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "widget", label: "Widget", value: (i) => (i as any)?.widgetKey ?? "—" },
+          { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+        ],
+      };
+
+    case "widgets":
+      return {
+        title: (i) => (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "key", label: "Key", value: (i) => (i as any)?.key ?? "—" },
+          { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+        ],
+      };
+
+    default:
+      return {
+        title: (i) => (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [],
+      };
+  }
+}
+
+type Props<T extends Record<string, any>> = {
+  api: EntityRowApiKey;
+  item: T;
+
+  /** grid tuning */
+  className?: string;
+  columnsClassName?: string;
+
+  /** actions */
+  onEdit?: (item: T) => void;
+  onRemove?: (item: T) => void;
+
+  /** optional: override/extend columns */
+  columnsOverride?: Array<EntityRowColumn<T>> | ((item: T) => Array<EntityRowColumn<T>>);
+  columnsExtend?: Array<EntityRowColumn<T>> | ((item: T) => Array<EntityRowColumn<T>>);
+
+  /** optional: custom right block */
+  rightSlot?: React.ReactNode;
+};
+
+function resolveMaybeFn<TItem, TValue>(
+  v: TValue | ((item: TItem) => TValue),
+  item: TItem
+): TValue {
+  return typeof v === "function" ? (v as any)(item) : v;
+}
+
+export function EntityRow<T extends Record<string, any>>({
+  api,
+  item,
+  className,
+  columnsClassName,
+  onEdit,
+  onRemove,
+  columnsOverride,
+  columnsExtend,
+  rightSlot,
+}: Props<T>) {
+  const cfg = useMemo(() => getRowConfig<T>(api), [api]);
+
+  const title = cfg.title(item);
+  const subtitle = cfg.subtitle?.(item);
+
+  const columns = useMemo(() => {
+    let cols = cfg.columns;
+
+    if (columnsOverride) cols = resolveMaybeFn(columnsOverride, item);
+    else if (columnsExtend) cols = [...cols, ...resolveMaybeFn(columnsExtend, item)];
+
+    return cols.filter((c) => !(c.hidden?.(item)));
+  }, [cfg.columns, columnsOverride, columnsExtend, item]);
+
+  return (
+  <div className={cn("w-full bg-background dark:bg-foreground-50 rounded-2xl shadow-custom-light p-4", className)}>
+    <div className="flex flex-row md:items-center gap-9">
+      {/* Left */}
+      <div className="w-[250px] min-w-0">
+        <div className="font-semibold truncate">{title}</div>
+        {subtitle ? <div className="text-xs opacity-60 truncate">{subtitle}</div> : null}
+      </div>
+
+      {/* Middle */}
+      <div className={cn("flex-1 min-w-0 md:border-l md:border-foreground-200 md:pl-4", columnsClassName)}>
+        {columns.length > 0 ? (
+          <div className="flex flex-wrap gap-x-6 gap-y-3">
+            {columns.map((c) => (
+              <div
+                key={c.key}
+                className={cn(
+                  "flex-1 min-w-[160px] min-w-0",
+                  c.className
+                )}
+              >
+                <div className="text-[10px] uppercase tracking-wide opacity-50 whitespace-nowrap">
+                  {c.label}
+                </div>
+                <div className="flex items-center justify-between gap-3 min-w-0">
+                  <div className="text-sm font-medium truncate">
+                    {c.value(item)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-xs opacity-50">—</div>
+        )}
+      </div>
+
+      {/* Right */}
+      <div className="md:border-l md:border-foreground-200 md:pl-4 flex md:justify-end gap-2">
+        {rightSlot ? (
+          rightSlot
+        ) : (
+          <>
+            {onEdit && (
+              <Button
+                className="w-full md:w-auto"
+                radius="full"
+                variant="light"
+                startContent={<BiSolidMessageSquareEdit className="text-[18px]" />}
+                onPress={() => onEdit(item)}
+              >
+                Редактировать
+              </Button>
+            )}
+            {onRemove && (
+              <Button
+                className="w-full md:w-auto"
+                radius="full"
+                color="danger"
+                variant="light"
+                startContent={<RiDeleteBin5Fill className="text-[18px]" />}
+                onPress={() => onRemove(item)}
+              >
+                Удалить
+              </Button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+}
