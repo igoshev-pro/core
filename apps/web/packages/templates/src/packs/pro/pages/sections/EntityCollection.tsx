@@ -1,0 +1,251 @@
+"use client";
+
+import React, { useCallback, useMemo, useState } from "react";
+import { addToast, Button, useDisclosure } from "@heroui/react";
+import { useRouter } from "next/navigation";
+
+import { SmartCollection } from "./SmartCollection";
+import { ConfirmModal } from "../../components/modals/ConfirmModal";
+import { LoaderModal } from "../../components/modals/LoaderModal";
+import { SortableCard } from "../../components/widgets/SortableCard";
+import { FactoryLayoutCard } from "../p-factory/p-layouts/widgets/FactoryLayoutCard";
+
+import { getTemplates, removeTemplate, updateTemplate } from "@/api/core/templatesApi";
+import { EntityCard } from "../widgets/EntityCard";
+
+type Item = { _id: string; name?: string; sortOrder?: number;[k: string]: any };
+const ORDER_STEP = 1000;
+
+function unwrapItems(res: unknown): Item[] {
+  if (Array.isArray(res)) return res as Item[];
+  if (res && typeof res === "object") {
+    const anyRes = res as any;
+    if (Array.isArray(anyRes.data)) return anyRes.data as Item[];
+  }
+  return [];
+}
+
+// ✅ лучше сделать ключи типобезопасными
+type FactoryApiKey =
+  | "templates"
+  // | "layouts"
+  // | "themes"
+  // | "pages"
+  // | "sections"
+  // | "widgets"
+  ;
+
+type EntityStrings = {
+  label: string;
+  labelPlural: string;
+};
+
+type EntityRoutes = {
+  list: string;
+  create: string;
+  edit: (id: string) => string;
+};
+
+type EntityMethods = {
+  getItems: (limit: number, offset: number) => Promise<unknown>;
+  removeItem: (id: string) => Promise<unknown>;
+  updateItem: (id: string, dto: Partial<Item>) => Promise<unknown>;
+};
+
+type EntityConfig = {
+  strings: EntityStrings;
+  routes: EntityRoutes;
+  methods: EntityMethods;
+};
+
+function assertNever(x: never): never {
+  throw new Error(`Unhandled api key: ${String(x)}`);
+}
+
+function getEntityConfig(api: FactoryApiKey): EntityConfig {
+  switch (api) {
+    case "templates":
+      return {
+        strings: { label: "Шаблон", labelPlural: "Шаблоны" },
+        routes: {
+          list: "/admin/templates",
+          create: "/admin/templates/create",
+          edit: (id) => `/admin/templates/edit/${id}`,
+        },
+        methods: {
+          getItems: (limit, offset) => getTemplates(limit, offset),
+          removeItem: (id) => removeTemplate(id),
+          updateItem: (id, dto) => updateTemplate(id, dto),
+        },
+      };
+
+    // case "layouts":
+    //   return {
+    //     strings: { label: "Лейаут", labelPlural: "Лейауты" },
+    //     routes: {
+    //       list: "/admin/layouts",
+    //       create: "/admin/layouts/create",
+    //       edit: (id) => `/admin/layouts/edit/${id}`,
+    //     },
+    //     methods: {
+    //       getItems: (limit, offset) => getFactoryLayouts(limit, offset),
+    //       removeItem: (id) => removeFactoryLayout(id),
+    //       updateItem: (id, dto) => updateFactoryLayout(id, dto),
+    //     },
+    //   };
+
+    default:
+      return assertNever(api);
+  }
+}
+
+/**
+ * Если прилетит неизвестный api (string), мы не падаем "тихо",
+ * а приводим к корректному ключу. Можно по-своему (например, редирект/ошибка).
+ */
+function normalizeApi(api: string): FactoryApiKey {
+  switch (api) {
+    case "templates":
+      return "templates";
+    // case "layouts": return "layouts";
+    default:
+      // best-effort: пусть будет templates, чтобы не падать
+      return "templates";
+  }
+}
+
+export default function EntityCollection({ api }: { api: string }) {
+  const router = useRouter();
+  const [current, setCurrent] = useState<Item | undefined>();
+
+  const { isOpen: isDelete, onOpen: onDelete, onClose: closeDelete } = useDisclosure();
+
+  const apiKey = useMemo(() => normalizeApi(api), [api]);
+  const cfg = useMemo(() => getEntityConfig(apiKey), [apiKey]);
+
+  const loadPage = useCallback(
+    async ({ limit, offset }: { limit: number; offset: number }) => {
+      const raw = await cfg.methods.getItems(limit, offset);
+      return unwrapItems(raw);
+    },
+    [cfg.methods]
+  );
+
+  const onRemove = useCallback(async () => {
+    if (!current?._id) return;
+
+    try {
+      await cfg.methods.removeItem(current._id);
+
+      addToast({
+        color: "success",
+        title: "Успешно!",
+        description: `${cfg.strings.label} успешно удален/а`,
+        variant: "solid",
+        radius: "lg",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
+
+      closeDelete();
+      router.refresh();
+    } catch {
+      addToast({
+        color: "danger",
+        title: "Ошибка!",
+        description: `Произошла ошибка при удалении`,
+        variant: "solid",
+        radius: "lg",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
+    }
+  }, [cfg.methods, cfg.strings.label, closeDelete, current?._id, router]);
+
+  const onPersistOrder = useCallback(
+    async (next: Item[], prev: Item[]) => {
+      const nextWithOrder = next.map((c, index) => ({
+        ...c,
+        sortOrder: (index + 1) * ORDER_STEP,
+      }));
+
+      const prevMap = new Map(prev.map((c) => [c._id, c.sortOrder ?? 0]));
+      const changed = nextWithOrder.filter(
+        (c) => (prevMap.get(c._id) ?? 0) !== (c.sortOrder ?? 0)
+      );
+      if (changed.length === 0) return;
+
+      await Promise.all(
+        changed.map((c) => cfg.methods.updateItem(c._id, { sortOrder: c.sortOrder }))
+      );
+    },
+    [cfg.methods]
+  );
+
+  return (
+    <>
+      <SmartCollection<Item>
+        title={cfg.strings.labelPlural}
+        actions={
+          <Button color="primary" radius="full" onPress={() => router.push(cfg.routes.create)}>
+            Создать
+          </Button>
+        }
+        enableViewToggle
+        defaultView="grid"
+        enableDnd
+        loadPage={loadPage}
+        getId={(c) => c._id}
+        loadingState={<LoaderModal />}
+        renderCard={(item) => (
+          <SortableCard key={item._id} id={item._id}>
+            <EntityCard
+              api={api as any}
+              item={item}
+              onEdit={(i) => router.push(`/admin/${api}/edit/${i._id}`)}
+              onRemove={(i) => { setCurrent(i); onDelete(); }}
+            />
+          </SortableCard>
+        )}
+        renderRow={(item) => (
+          <div
+            key={item._id}
+            className="w-full rounded-2xl shadow-custom p-4 flex justify-between items-center"
+          >
+            <div className="flex flex-col">
+              <div className="font-semibold">{item.name ?? "Без имени"}</div>
+              <div className="text-xs opacity-60">{item._id}</div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button radius="full" variant="light" onPress={() => router.push(cfg.routes.edit(item._id))}>
+                Редактировать
+              </Button>
+              <Button
+                radius="full"
+                color="danger"
+                variant="light"
+                onPress={() => {
+                  setCurrent(item);
+                  onDelete();
+                }}
+              >
+                Удалить
+              </Button>
+            </div>
+          </div>
+        )}
+        onPersistOrder={onPersistOrder}
+      />
+
+      <ConfirmModal
+        isOpen={isDelete}
+        onClose={closeDelete}
+        onAction={onRemove}
+        title="Удаление"
+        text={`Вы действительно хотите удалить ${current?.name ?? cfg.strings.label}?`}
+        actionBtnText="Удалить"
+      />
+    </>
+  );
+}

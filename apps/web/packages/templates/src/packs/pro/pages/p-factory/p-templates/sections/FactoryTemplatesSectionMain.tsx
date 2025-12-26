@@ -1,6 +1,8 @@
-const FactoryTemplatesSectionMain = () => {
+import EntityCollection from "../../../sections/EntityCollection"
+
+const FactoryTemplatesSectionMain = ({ node, ctx }: any) => {
   return (
-    <div>FactoryTemplatesSectionMainC</div>
+    <EntityCollection api={node.props.api} />
   )
 }
 

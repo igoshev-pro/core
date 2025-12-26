@@ -12,6 +12,12 @@ const config = {
     extend: {
       colors: {
         primary: "var(--color-primary)",
+		"primary-50": "var(--color-primary)",
+		"primary-100": "var(--color-primary)",
+		"primary-200": "var(--color-primary)",
+		"primary-300": "var(--color-primary)",
+		"primary-400": "var(--color-primary)",
+		"primary-500": "var(--color-primary)",
         secondary: "var(--color-secondary)",
         gray: "var(--color-gray)",
       },

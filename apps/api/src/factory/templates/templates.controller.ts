@@ -6,7 +6,7 @@ import { JwtAuthGuard } from 'src/core/auth/guards/jwt-auth.guard';
 import { SuperAdminGuard } from 'src/core/auth/guards/super-admin.guard';
 
 @UseGuards(JwtAuthGuard, SuperAdminGuard)
-@Controller('templates')
+@Controller('/factory/templates')
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
