@@ -118,7 +118,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
         imagePathKey: "previewPath",
         rows: (item) => [
           { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
-          { label: "Ключ макета", value: (item as any)?.layoutKey ?? "—" },
+          { label: "Ключ", value: (item as any)?.layoutKey ?? "—" },
           { label: "Mode", value: (item as any)?.mode ?? "—" },
           { label: "Тип", value: (item as any)?.type ?? "—" },
           { label: "Статус", value: (item as any)?.status ?? "—" },

@@ -51,10 +51,10 @@ const itemSchema = z.object({
 		.string()
 		.nonempty("Название обязательно")
 		.min(2, "Название должно содержать минимум 2 символа"),
-	slug: z
+	layoutKey: z
 		.string()
-		.nonempty("Slug обязателен")
-		.min(2, "Slug должен содержать минимум 2 символа"),
+		.nonempty("Ключ обязателен")
+		.min(2, "Ключ должен содержать минимум 2 символа"),
 	template: z.string().min(1, "Выберите шаблон"),
 	mode: z
 		.string()
@@ -96,7 +96,7 @@ export default function LayoutUpsertSectionMainC({
 		formState: { errors, isSubmitting, isDirty },
 	} = useForm<RegisterFormData>({
 		resolver: zodResolver(itemSchema),
-		defaultValues: { status: "draft", mode: "public", template: "", name: "", slug: "" },
+		defaultValues: { status: "draft", mode: "public", template: "", name: "", layoutKey: "" },
 	});
 
 	type TemplateItem = {
@@ -243,7 +243,7 @@ export default function LayoutUpsertSectionMainC({
 				setItem(res);
 				reset({
 					name: res?.name?.ru ?? "",
-					slug: res?.slug ?? "",
+					layoutKey: res?.layoutKey ?? "",
 					template: res?.template?._id ?? res?.template ?? "",
 					mode: res?.mode ?? "public",
 					status: res?.status ?? "draft",
@@ -416,12 +416,12 @@ export default function LayoutUpsertSectionMainC({
 								/>
 
 								<Input
-									errorMessage={errors?.slug?.message}
-									isInvalid={Boolean(errors.slug)}
-									placeholder="Slug"
+									errorMessage={errors?.layoutKey?.message}
+									isInvalid={Boolean(errors.layoutKey)}
+									placeholder="Ключ"
 									size="lg"
 									type="text"
-									{...register("slug")}
+									{...register("layoutKey")}
 								/>
 
 								<Controller
