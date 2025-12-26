@@ -29,7 +29,7 @@ const SideMenuMainLayout = () => {
     {
       label: "Фабрика",
       icon: <MdFactory className="text-[24px]" />,
-      route: `/admin/factory/templates`,
+      route: `/admin/factory`,
       isOpen: false,
       submenu: [
         {
