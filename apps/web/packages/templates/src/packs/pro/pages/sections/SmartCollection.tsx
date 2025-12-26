@@ -338,11 +338,11 @@ export const SmartCollection = forwardRef(function SmartCollectionInner<T>(
       <div ref={sentinelRef} className="h-1" />
 
       {loadingMore && (
-        <div className="mt-6 flex justify-center opacity-70 text-sm">Загрузка...</div>
+        <div className="mt-9 flex justify-center opacity-70 text-sm">Загрузка...</div>
       )}
 
       {!hasMore && items.length > 0 && (
-        <div className="mt-6 flex justify-center opacity-60 text-sm">Больше нет</div>
+        <div className="mt-9 flex justify-center opacity-60 text-sm">Больше нет</div>
       )}
     </div>
   );

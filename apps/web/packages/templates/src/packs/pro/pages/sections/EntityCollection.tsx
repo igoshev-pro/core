@@ -8,12 +8,11 @@ import { SmartCollection, SmartCollectionHandle } from "./SmartCollection";
 import { ConfirmModal } from "../../components/modals/ConfirmModal";
 import { LoaderModal } from "../../components/modals/LoaderModal";
 import { SortableCard } from "../widgets/SortableCard";
-import { FactoryLayoutCard } from "../p-factory/p-layouts/widgets/FactoryLayoutCard";
 
 import { getTemplates, removeTemplate, updateTemplate } from "@/api/core/templatesApi";
 import { EntityCard } from "../widgets/EntityCard";
 import { EntityRow } from "../widgets/EntityRow";
-import { getThemes } from "@/api/core/themesApi";
+import { getThemes, removeTheme, updateTheme } from "@/api/core/themesApi";
 
 type Item = { _id: string; name?: any; sortOrder?: number;[k: string]: any };
 const ORDER_STEP = 1000;
@@ -91,8 +90,8 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
         },
         methods: {
           getItems: (limit, offset) => getThemes(limit, offset),
-          removeItem: (id) => removeThemes(id),
-          updateItem: (id, dto) => updateThemes(id, dto),
+          removeItem: (id) => removeTheme(id),
+          updateItem: (id, dto) => updateTheme(id, dto),
         },
       };
 
