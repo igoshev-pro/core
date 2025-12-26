@@ -8,13 +8,13 @@ export const authDefaultPack: TemplatePack = {
   _id: "auth-default",
   version: "1.0.0",
   layouts: {
-    "auth.default": AuthLayout,
+    "auth.layout.main.v1": AuthLayout,
   },
   sections: {
 
   },
   widgets: {
-    "admin.register.v1": RegisterWidget,
-    "admin.login.v1": LoginWidget
+    "auth.register.main.v1": RegisterWidget,
+    "auth.login.main.v1": LoginWidget
   },
 };
