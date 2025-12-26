@@ -25,7 +25,7 @@ import {
 import { LoaderModal } from "../../../../../components/modals/LoaderModal";
 import { uploadFileToStorage } from "@/api/feature/storageApi";
 import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
-import { createTemplate, getTemplate, updateTemplate } from "@/api/core/templatesApi";
+import { createTemplate, getTemplate, updateTemplate } from "@/api/factory/templatesApi";
 
 const StatusEnum = ["draft", "published", "archived"] as const;
 const ModeEnum = ["public", "admin", "login"] as const;

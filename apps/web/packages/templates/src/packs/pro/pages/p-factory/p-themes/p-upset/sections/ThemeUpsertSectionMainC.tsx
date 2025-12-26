@@ -24,7 +24,7 @@ import {
 } from "@/common/helper/photo-path-generator.util";
 import { uploadFileToStorage } from "@/api/feature/storageApi";
 import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
-import { createTheme, getTheme, updateTheme } from "@/api/core/themesApi";
+import { createTheme, getTheme, updateTheme } from "@/api/factory/themesApi";
 import { LoaderModal } from "../../../../../components/modals/LoaderModal";
 
 const StatusEnum = ["draft", "published", "archived"] as const;

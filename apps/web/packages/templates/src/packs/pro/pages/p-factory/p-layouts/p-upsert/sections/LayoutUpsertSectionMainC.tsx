@@ -24,7 +24,7 @@ import {
 import { LoaderModal } from "../../../../../components/modals/LoaderModal";
 import { uploadFileToStorage } from "@/api/feature/storageApi";
 import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
-import { createLayout, getLayout, updateLayout } from "@/api/core/layoutsApi";
+import { createLayout, getLayout, updateLayout } from "@/api/factory/layoutsApi";
 import { LayoutUpsertSectionMainProps } from "./LayoutUpsertSectionMain";
 
 const StatusEnum = ["draft", "published", "archived"] as const;
