@@ -16,6 +16,7 @@ export function SortableCard({ id, children }: Props) {
     // opacity: isDragging ? 0.7 : 1,
     cursor: "grab",
     touchAction: "none",
+    zIndex: isDragging ? 1000 : "auto",
   };
 
   return (
