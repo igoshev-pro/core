@@ -6,6 +6,7 @@ import { Providers } from "@/app/providers";
 import MeClient from "./MeClient";
 import { loginAction } from "@/app/api/actions/login";
 import { logoutAction } from "@/app/api/actions/logout";
+import { getI18nConfig, getLocale } from "@/lib/i18n/server";
 
 async function isCoreAdmin() {
   const h = await headers()
@@ -72,6 +73,9 @@ export default async function AdminRootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const cfg = await getI18nConfig();
+  const lang = await getLocale();
+
   const token = await loginAction()
 
   if (!token) redirect(`/login`);
@@ -116,8 +120,13 @@ export default async function AdminRootLayout({
   }
 
   return (
-    <html lang="ru" suppressHydrationWarning>
-       <head>
+    <html 
+      suppressHydrationWarning
+      lang={lang}
+      data-locales={cfg.locales.join(",")}
+      data-default-locale={cfg.defaultLocale}
+    >
+      <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
@@ -125,7 +134,7 @@ export default async function AdminRootLayout({
           rel="stylesheet"
         />
       </head>
-     <body className="font-sans"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}><MeClient me={superMe ?? clientMe}>{children}</MeClient></Providers></body>
+      <body className="font-sans"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}><MeClient me={superMe ?? clientMe}>{children}</MeClient></Providers></body>
     </html>
   );
 }
