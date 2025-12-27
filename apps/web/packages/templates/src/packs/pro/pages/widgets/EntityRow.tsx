@@ -11,7 +11,8 @@ export type EntityRowApiKey =
   | "layouts"
   | "pages"
   | "sections"
-  | "widgets";
+  | "widgets"
+  | "projects";
 
 export type EntityRowColumn<T> = {
   key: string;

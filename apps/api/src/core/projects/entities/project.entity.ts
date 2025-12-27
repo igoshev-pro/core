@@ -77,6 +77,11 @@ export type ProjectSeoDefaults = {
   ogImage?: string;
 }
 
+export type I18n = {
+  locales: string[],
+  defaultLocal: string
+}
+
 @Schema({ timestamps: true })
 export class Project {
   @Prop({ required: true })
@@ -87,6 +92,14 @@ export class Project {
 
   @Prop({ required: true })
   name: string;
+
+  @Prop({
+    type: Object, default: {
+      locales: ["ru"],
+      defaultLocal: "ru"
+    }
+  })
+  i18n: I18n
 
   @Prop({ default: 0, index: true })
   sortOrder: number;

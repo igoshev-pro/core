@@ -34,7 +34,8 @@ export type EntityCardApiKey =
   | "layouts"
   | "pages"
   | "sections"
-  | "widgets";
+  | "widgets"
+  | "projects";
 
 type EntityCardBaseProps = {
   imageUrl?: string | null;
@@ -161,6 +162,16 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       };
 
     case "widgets":
+      return {
+        imagePathKey: "previewPath",
+        rows: (item) => [
+          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { label: "Ключ", value: (item as any)?.key ?? "—" },
+          { label: "Статус", value: (item as any)?.status ?? "—" },
+        ],
+      };
+
+      case "projects":
       return {
         imagePathKey: "previewPath",
         rows: (item) => [

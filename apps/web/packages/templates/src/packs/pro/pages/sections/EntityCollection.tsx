@@ -17,6 +17,7 @@ import { getLayouts, removeLayout, updateLayout } from "@/api/factory/layoutsApi
 import { getPages, removePage, updatePage } from "@/api/factory/pagesApi";
 import { getSections, removeSection, updateSection } from "@/api/factory/sectionsApi";
 import { getWidgets, removeWidget, updateWidget } from "@/api/factory/widgetsApi";
+import { getProjects, updateProject, removeProject } from "@/api/core/projectsApi";
 
 type Item = { _id: string; name?: any; sortOrder?: number;[k: string]: any };
 const ORDER_STEP = 1000;
@@ -38,6 +39,7 @@ type FactoryApiKey =
   | "pages"
   | "sections"
   | "widgets"
+  | "projects"
   ;
 
 type EntityStrings = {
@@ -58,7 +60,8 @@ type EntityMethods = {
 };
 
 type EntityConfig = {
-  strings: EntityStrings;
+  strings?: EntityStrings;
+  ui?: any;
   routes: EntityRoutes;
   methods: EntityMethods;
 };
@@ -67,11 +70,10 @@ function assertNever(x: never): never {
   throw new Error(`Unhandled api key: ${String(x)}`);
 }
 
-function getEntityConfig(api: FactoryApiKey): EntityConfig {
+function getEntityConfig(api: FactoryApiKey, ui: any): EntityConfig {
   switch (api) {
     case "templates":
       return {
-        strings: { label: "Шаблон", labelPlural: "Шаблоны" },
         routes: {
           list: "/admin/factory/templates",
           create: "/admin/factory/templates/create",
@@ -86,7 +88,6 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
 
     case "themes":
       return {
-        strings: { label: "Тема", labelPlural: "Темы" },
         routes: {
           list: "/admin/factory/themes",
           create: "/admin/factory/themes/create",
@@ -99,9 +100,8 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
         },
       };
 
-      case "layouts":
+    case "layouts":
       return {
-        strings: { label: "Макет", labelPlural: "Макеты" },
         routes: {
           list: "/admin/factory/layouts",
           create: "/admin/factory/layouts/create",
@@ -114,9 +114,8 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
         },
       };
 
-      case "pages":
+    case "pages":
       return {
-        strings: { label: "Страница", labelPlural: "Страницы" },
         routes: {
           list: "/admin/factory/pages",
           create: "/admin/factory/pages/create",
@@ -129,9 +128,8 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
         },
       };
 
-      case "sections":
+    case "sections":
       return {
-        strings: { label: "Секция", labelPlural: "Секции" },
         routes: {
           list: "/admin/factory/sections",
           create: "/admin/factory/sections/create",
@@ -144,9 +142,8 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
         },
       };
 
-      case "widgets":
+    case "widgets":
       return {
-        strings: { label: "Виджет", labelPlural: "Виджеты" },
         routes: {
           list: "/admin/factory/widgets",
           create: "/admin/factory/widgets/create",
@@ -156,6 +153,21 @@ function getEntityConfig(api: FactoryApiKey): EntityConfig {
           getItems: (limit, offset) => getWidgets(limit, offset),
           removeItem: (id) => removeWidget(id),
           updateItem: (id, dto) => updateWidget(id, dto),
+        },
+      };
+
+    case "projects":
+      return {
+        ui,
+        routes: {
+          list: "/admin/core/projects",
+          create: "/admin/core/projects/create",
+          edit: (id) => `/admin/core/projects/edit/${id}`,
+        },
+        methods: {
+          getItems: (limit, offset) => getProjects(limit, offset),
+          removeItem: (id) => removeProject(id),
+          updateItem: (id, dto) => updateProject(id, dto),
         },
       };
 
@@ -172,23 +184,26 @@ function normalizeApi(api: string): FactoryApiKey {
   switch (api) {
     case "templates":
       return "templates";
-    case "themes": 
+    case "themes":
       return "themes";
-    case "layouts": 
+    case "layouts":
       return "layouts";
-      case "pages": 
+    case "pages":
       return "pages";
-      case "sections": 
+    case "sections":
       return "sections";
-      case "widgets": 
+    case "widgets":
       return "widgets";
+    case "projects":
+      return "projects"
+
     default:
       // best-effort: пусть будет templates, чтобы не падать
       return "templates";
   }
 }
 
-export default function EntityCollection({ api }: { api: string }) {
+export default function EntityCollection({ api, ui }: { api: string, ui?: any }) {
   const router = useRouter();
   const [current, setCurrent] = useState<Item | undefined>();
 
@@ -197,7 +212,7 @@ export default function EntityCollection({ api }: { api: string }) {
   const { isOpen: isDelete, onOpen: onDelete, onClose: closeDelete } = useDisclosure();
 
   const apiKey = useMemo(() => normalizeApi(api), [api]);
-  const cfg = useMemo(() => getEntityConfig(apiKey), [apiKey]);
+  const cfg = useMemo(() => getEntityConfig(apiKey, ui), [apiKey]);
 
   const loadPage = useCallback(
     async ({ limit, offset }: { limit: number; offset: number }) => {
@@ -218,7 +233,7 @@ export default function EntityCollection({ api }: { api: string }) {
       addToast({
         color: "success",
         title: "Успешно!",
-        description: `${cfg.strings.label} успешно удален/а`,
+        description: `Объект успешно удален`,
         variant: "solid",
         radius: "lg",
         timeout: 3000,
@@ -239,14 +254,14 @@ export default function EntityCollection({ api }: { api: string }) {
       addToast({
         color: "danger",
         title: "Ошибка!",
-        description: `Произошла ошибка при удалении`,
+        description: `Произошла ошибка при удалении объекта`,
         variant: "solid",
         radius: "lg",
         timeout: 3000,
         shouldShowTimeoutProgress: true,
       });
     }
-  }, [cfg.methods, cfg.strings.label, closeDelete, current?._id]);
+  }, [cfg.methods, closeDelete, current?._id]);
 
   const onPersistOrder = useCallback(
     async (next: Item[], prev: Item[]) => {
@@ -272,7 +287,7 @@ export default function EntityCollection({ api }: { api: string }) {
     <>
       <SmartCollection<Item>
         ref={collectionRef}
-        title={cfg.strings.labelPlural}
+        title={cfg?.ui?.title?.ru}
         actions={
           <Button color="primary" radius="full" onPress={() => router.push(cfg.routes.create)}>
             Создать
@@ -315,7 +330,7 @@ export default function EntityCollection({ api }: { api: string }) {
         onClose={closeDelete}
         onAction={onRemove}
         title="Удаление"
-        text={`Вы действительно хотите удалить ${current?.name?.ru ?? current?.name ?? cfg.strings.label}?`}
+        text={`Вы действительно хотите удалить объект?`}
         actionBtnText="Удалить"
       />
     </>

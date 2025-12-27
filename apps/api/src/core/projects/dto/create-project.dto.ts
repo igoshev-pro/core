@@ -81,6 +81,9 @@ export class CreateProjectDto {
   name?: string;
 
   @IsOptional()
+  i18n?: any
+
+  @IsOptional()
   @IsString()
   type?: string;
 

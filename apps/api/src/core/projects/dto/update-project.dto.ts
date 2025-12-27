@@ -81,6 +81,9 @@ export class UpdateProjectDto {
   name?: string;
 
   @IsOptional()
+  i18n?: any
+
+  @IsOptional()
   @IsString()
   type?: string;
 

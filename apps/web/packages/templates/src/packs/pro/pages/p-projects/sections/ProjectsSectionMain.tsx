@@ -1,7 +1,7 @@
-import ProjectsSectionMainC from "./ProjectsSectionMainC";
+import EntityCollection from "../../sections/EntityCollection";
 
-export default function ProjectsSectionMain() {
+export default function ProjectsSectionMain({ node, ctx }: any) {
     return (
-        <ProjectsSectionMainC />
+        <EntityCollection api={node.props.api} ui={node.props.ui} />
     );
 }
