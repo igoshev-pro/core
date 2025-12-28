@@ -66,14 +66,22 @@ export const TYPE_OPTIONS = [
 // ===================== types =====================
 type I18nString = Record<string, string> | string;
 
-type TemplateItem = { _id: string; name?: I18nString };
+type TemplateItem = { slug: string; name?: I18nString };
 type ClientItem = { _id: string; name?: I18nString };
 type ThemeItem = { slug: string; name?: I18nString };
 
+// theme: { public, admin, auth }
 type ThemePick = {
   public?: string;
   admin?: string;
   auth?: string;
+};
+
+// template: { public, admin, login }
+type TemplatePick = {
+  public?: string; // template _id
+  admin?: string; // template _id
+  login?: string; // template _id
 };
 
 type ApiKind = "projects";
@@ -109,10 +117,17 @@ const formSchema = z.object({
   status: z
     .string()
     .min(1, "Выберите статус")
-    .refine((v): v is Status => (StatusEnum as readonly string[]).includes(v), "Выберите статус"),
+    .refine(
+      (v): v is Status => (StatusEnum as readonly string[]).includes(v),
+      "Выберите статус"
+    ),
 
   owner: z.string().min(1, "Выберите клиента"),
-  template: z.string().min(1, "Выберите шаблон"),
+
+  // ✅ template split
+  template_public: z.string().min(1, "Выберите Public template"),
+  template_admin: z.string().min(1, "Выберите Admin template"),
+  template_login: z.string().min(1, "Выберите Login template"),
 
   theme_public: z.string().optional().or(z.literal("")),
   theme_admin: z.string().optional().or(z.literal("")),
@@ -142,7 +157,9 @@ function Section({
       {title ? (
         <div className="flex flex-col gap-1 mb-6">
           <h2 className="text-xl font-semibold">{title}</h2>
-          {description ? <p className="text-sm text-foreground-500">{description}</p> : null}
+          {description ? (
+            <p className="text-sm text-foreground-500">{description}</p>
+          ) : null}
         </div>
       ) : null}
       {children}
@@ -209,7 +226,10 @@ export default function ProjectUpsertSectionMainC({
       status: "draft",
 
       owner: "",
-      template: "",
+
+      template_public: "",
+      template_admin: "",
+      template_login: "",
 
       theme_public: "",
       theme_admin: "",
@@ -232,7 +252,10 @@ export default function ProjectUpsertSectionMainC({
     if (isHydratingRef.current) return;
     if (!locales?.length) return;
     if (!defaultLocale || !locales.includes(defaultLocale)) {
-      setValue("i18n_defaultLocale", locales[0], { shouldDirty: false, shouldValidate: true });
+      setValue("i18n_defaultLocale", locales[0], {
+        shouldDirty: false,
+        shouldValidate: true,
+      });
     }
   }, [locales, defaultLocale, setValue]);
 
@@ -294,8 +317,8 @@ export default function ProjectUpsertSectionMainC({
   const TEMPLATE_OPTIONS = useMemo(
     () =>
       templates.map((t) => ({
-        key: t._id,
-        label: getI18nLabel(t.name, "ru") || t._id,
+        key: t.slug,
+        label: getI18nLabel(t.name, "ru") || t.slug,
       })),
     [templates]
   );
@@ -318,9 +341,9 @@ export default function ProjectUpsertSectionMainC({
     [themes]
   );
 
-  // ✅ Когда item уже есть, а справочники догрузились — форс-ремоунтим форму,
-  // чтобы HeroUI Select показал выбранные ключи (это и есть твой баг)
-  const hasListsReady = templates.length > 0 && clients.length > 0 && themes.length > 0;
+  // ✅ ремоунтим форму когда item есть и справочники догрузились
+  const hasListsReady =
+    templates.length > 0 && clients.length > 0 && themes.length > 0;
   const listsRemountDoneRef = useRef(false);
 
   useEffect(() => {
@@ -363,19 +386,28 @@ export default function ProjectUpsertSectionMainC({
 
     try {
       const ext = fileExt(file);
-      const path = buildUserPhotoPath({ projectId, userId: projectEntityId, kind: "preview", ext });
+      const path = buildUserPhotoPath({
+        projectId,
+        userId: projectEntityId,
+        kind: "preview",
+        ext,
+      });
 
       const uploaded = await uploadFileToStorage({
         projectId,
         file,
         path,
         expiresInSec: 60,
-        apiBaseUrl: process.env.CORE_API_URL! || "https://api.igoshev.pro/core",
+        apiBaseUrl:
+          process.env.CORE_API_URL! || "https://api.igoshev.pro/core",
       });
 
       if (!uploaded) throw new Error("upload failed");
 
-      await ops.update(projectEntityId, { previewPath: uploaded.path, gallery: [uploaded] });
+      await ops.update(projectEntityId, {
+        previewPath: uploaded.path,
+        gallery: [uploaded],
+      });
 
       setItem((prev: any) => ({
         ...(prev ?? {}),
@@ -422,16 +454,28 @@ export default function ProjectUpsertSectionMainC({
       .then((res: any) => {
         setItem(res);
 
-        const nameObj = res?.name && typeof res.name === "object" ? res.name : {};
+        const nameObj =
+          res?.name && typeof res.name === "object" ? res.name : {};
         const i18n = res?.i18n ?? {};
         const theme: ThemePick = res?.theme ?? {};
+        // ✅ template can be object or legacy string
+        const template: TemplatePick | string | undefined = res?.template;
+
         const seo = res?.seoDefaults ?? {};
 
         const resLocales: string[] =
-          Array.isArray(i18n?.locales) && i18n.locales.length ? i18n.locales : ["ru"];
+          Array.isArray(i18n?.locales) && i18n.locales.length
+            ? i18n.locales
+            : ["ru"];
 
         const resDefaultLocale: string =
           i18n?.defaultLocale ?? safeDefaultLocale(resLocales);
+
+        // ✅ template normalize
+        const templateObj: TemplatePick =
+          template && typeof template === "object"
+            ? template
+            : { public: (template as string) || "" };
 
         isHydratingRef.current = true;
 
@@ -449,7 +493,11 @@ export default function ProjectUpsertSectionMainC({
             status: res?.status ?? "draft",
 
             owner: res?.owner?._id ?? res?.owner ?? "",
-            template: res?.template?._id ?? res?.template ?? "",
+
+            // ✅ new fields
+            template_public: templateObj?.public ?? "",
+            template_admin: templateObj?.admin ?? "",
+            template_login: templateObj?.login ?? "",
 
             theme_public: theme?.public ?? "",
             theme_admin: theme?.admin ?? "",
@@ -462,7 +510,6 @@ export default function ProjectUpsertSectionMainC({
           { keepDirty: false, keepTouched: false }
         );
 
-        // РЕМОНТ: форсируем ремоунт сразу после reset — Select’ы начинают отображать значения
         setFormKey((k) => k + 1);
 
         queueMicrotask(() => {
@@ -500,7 +547,14 @@ export default function ProjectUpsertSectionMainC({
       type: data.type,
       status: data.status,
       owner: data.owner,
-      template: data.template,
+
+      // ✅ NEW: template object (3 values)
+      template: {
+        public: data.template_public,
+        admin: data.template_admin,
+        login: data.template_login,
+      },
+
       theme: {
         public: data.theme_public || undefined,
         admin: data.theme_admin || undefined,
@@ -533,7 +587,7 @@ export default function ProjectUpsertSectionMainC({
           shouldShowTimeoutProgress: true,
         });
 
-        router.push(`/admin/factory/projects`);
+        router.push(`/admin/core/projects`);
       } catch {
         addToast({
           color: "danger",
@@ -603,7 +657,8 @@ export default function ProjectUpsertSectionMainC({
             <p className="text-sm text-foreground-500 mt-1">
               {item?.name?.ru ? (
                 <>
-                  Текущие данные: <span className="text-primary font-medium">{item?.name?.ru}</span>
+                  Текущие данные:{" "}
+                  <span className="text-primary font-medium">{item?.name?.ru}</span>
                 </>
               ) : null}
             </p>
@@ -611,7 +666,6 @@ export default function ProjectUpsertSectionMainC({
         </div>
       </div>
 
-      {/* key={formKey} — ключевой фикс */}
       <form
         key={formKey}
         onSubmit={handleSubmit(onSubmit)}
@@ -645,13 +699,19 @@ export default function ProjectUpsertSectionMainC({
                 color="primary"
                 radius="full"
                 isIconOnly
-                onPress={pick}
+                onPress={() => inputRef.current?.click()}
                 type="button"
               >
                 <IoCamera className="text-[20px] min-w-[20px] mx-[2px]" />
               </Button>
 
-              <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
+              <input
+                ref={inputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={onFileChange}
+              />
             </div>
           </div>
         </Section>
@@ -717,7 +777,9 @@ export default function ProjectUpsertSectionMainC({
                       selectedKeys={field.value ? new Set([field.value]) : new Set()}
                       isInvalid={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
-                      onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
+                      onSelectionChange={(keys) =>
+                        field.onChange(Array.from(keys)[0] as string)
+                      }
                       onBlur={field.onBlur}
                     >
                       {TYPE_OPTIONS.map((opt) => (
@@ -736,7 +798,9 @@ export default function ProjectUpsertSectionMainC({
                       selectedKeys={field.value ? new Set([field.value]) : new Set()}
                       isInvalid={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
-                      onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
+                      onSelectionChange={(keys) =>
+                        field.onChange(Array.from(keys)[0] as string)
+                      }
                       onBlur={field.onBlur}
                     >
                       {STATUS_OPTIONS.map((opt) => (
@@ -761,7 +825,9 @@ export default function ProjectUpsertSectionMainC({
                     selectedKeys={new Set(field.value ?? [])}
                     isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
-                    onSelectionChange={(keys) => field.onChange(Array.from(keys).map(String))}
+                    onSelectionChange={(keys) =>
+                      field.onChange(Array.from(keys).map(String))
+                    }
                     onBlur={field.onBlur}
                     renderValue={(items) => (
                       <div className="flex flex-wrap gap-2">
@@ -790,7 +856,9 @@ export default function ProjectUpsertSectionMainC({
                     isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
                     isDisabled={!locales?.length}
-                    onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
+                    onSelectionChange={(keys) =>
+                      field.onChange(Array.from(keys)[0] as string)
+                    }
                     onBlur={field.onBlur}
                   >
                     {(locales?.length ? locales : ["ru"]).map((l) => (
@@ -802,7 +870,7 @@ export default function ProjectUpsertSectionMainC({
             </Grid2>
           </Section>
 
-          <Section title="Привязки" description="Клиент, шаблон и темы оформления.">
+          <Section title="Привязки" description="Клиент, templates и themes.">
             <div className="flex flex-col gap-6">
               <Grid2>
                 <Controller
@@ -815,7 +883,9 @@ export default function ProjectUpsertSectionMainC({
                       isInvalid={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       isDisabled={clientsLoading}
-                      onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
+                      onSelectionChange={(keys) =>
+                        field.onChange(Array.from(keys)[0] as string)
+                      }
                       onBlur={field.onBlur}
                     >
                       {CLIENT_OPTIONS.map((opt) => (
@@ -825,27 +895,86 @@ export default function ProjectUpsertSectionMainC({
                   )}
                 />
 
-                <Controller
-                  name="template"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Select
-                      label="Шаблон"
-                      selectedKeys={field.value ? new Set([field.value]) : new Set()}
-                      isInvalid={!!fieldState.error}
-                      errorMessage={fieldState.error?.message}
-                      isDisabled={templatesLoading}
-                      onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
-                      onBlur={field.onBlur}
-                    >
-                      {TEMPLATE_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.key}>{opt.label}</SelectItem>
-                      ))}
-                    </Select>
-                  )}
-                />
+                {/* spacer */}
+                <div className="hidden md:block" />
               </Grid2>
 
+              {/* ✅ TEMPLATES (3 selects) */}
+              <div className="flex flex-col gap-3">
+                <p className="font-medium">Templates</p>
+                <Grid2>
+                  <Controller
+                    name="template_public"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Select
+                        label="Public"
+                        selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                        isInvalid={!!fieldState.error}
+                        errorMessage={fieldState.error?.message}
+                        isDisabled={templatesLoading}
+                        onSelectionChange={(keys) =>
+                          field.onChange((Array.from(keys)[0] as string) ?? "")
+                        }
+                        onBlur={field.onBlur}
+                      >
+                        {TEMPLATE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.key}>{opt.label}</SelectItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+
+                  <Controller
+                    name="template_admin"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Select
+                        label="Admin"
+                        selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                        isInvalid={!!fieldState.error}
+                        errorMessage={fieldState.error?.message}
+                        isDisabled={templatesLoading}
+                        onSelectionChange={(keys) =>
+                          field.onChange((Array.from(keys)[0] as string) ?? "")
+                        }
+                        onBlur={field.onBlur}
+                      >
+                        {TEMPLATE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.key}>{opt.label}</SelectItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+
+                  <Controller
+                    name="template_login"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Select
+                        label="Login"
+                        selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                        isInvalid={!!fieldState.error}
+                        errorMessage={fieldState.error?.message}
+                        isDisabled={templatesLoading}
+                        onSelectionChange={(keys) =>
+                          field.onChange((Array.from(keys)[0] as string) ?? "")
+                        }
+                        onBlur={field.onBlur}
+                      >
+                        {TEMPLATE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.key}>{opt.label}</SelectItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                </Grid2>
+                <p className="text-xs text-foreground-500">
+                  Значения сохраняются как <span className="font-mono">template._id</span>.
+                </p>
+              </div>
+
+              {/* THEMES (3 selects) */}
               <div className="flex flex-col gap-3">
                 <p className="font-medium">Themes</p>
                 <Grid2>
@@ -857,7 +986,9 @@ export default function ProjectUpsertSectionMainC({
                         label="Public"
                         selectedKeys={field.value ? new Set([field.value]) : new Set()}
                         isDisabled={themesLoading}
-                        onSelectionChange={(keys) => field.onChange((Array.from(keys)[0] as string) ?? "")}
+                        onSelectionChange={(keys) =>
+                          field.onChange((Array.from(keys)[0] as string) ?? "")
+                        }
                         onBlur={field.onBlur}
                       >
                         {THEME_OPTIONS.map((opt) => (
@@ -875,7 +1006,9 @@ export default function ProjectUpsertSectionMainC({
                         label="Admin"
                         selectedKeys={field.value ? new Set([field.value]) : new Set()}
                         isDisabled={themesLoading}
-                        onSelectionChange={(keys) => field.onChange((Array.from(keys)[0] as string) ?? "")}
+                        onSelectionChange={(keys) =>
+                          field.onChange((Array.from(keys)[0] as string) ?? "")
+                        }
                         onBlur={field.onBlur}
                       >
                         {THEME_OPTIONS.map((opt) => (
@@ -893,7 +1026,9 @@ export default function ProjectUpsertSectionMainC({
                         label="Auth"
                         selectedKeys={field.value ? new Set([field.value]) : new Set()}
                         isDisabled={themesLoading}
-                        onSelectionChange={(keys) => field.onChange((Array.from(keys)[0] as string) ?? "")}
+                        onSelectionChange={(keys) =>
+                          field.onChange((Array.from(keys)[0] as string) ?? "")
+                        }
                         onBlur={field.onBlur}
                       >
                         {THEME_OPTIONS.map((opt) => (
@@ -910,10 +1045,18 @@ export default function ProjectUpsertSectionMainC({
             </div>
           </Section>
 
-          <Section title="SEO по умолчанию" description="Будет использоваться, если на страницах не задано своё.">
+          <Section
+            title="SEO по умолчанию"
+            description="Будет использоваться, если на страницах не задано своё."
+          >
             <div className="flex flex-col gap-6">
               <Input label="Title" placeholder="SEO Title" size="lg" {...register("seo_title")} />
-              <Textarea label="Description" placeholder="SEO Description" minRows={4} {...register("seo_description")} />
+              <Textarea
+                label="Description"
+                placeholder="SEO Description"
+                minRows={4}
+                {...register("seo_description")}
+              />
               <Input label="OG Image" placeholder="https://..." size="lg" {...register("seo_ogImage")} />
             </div>
           </Section>
