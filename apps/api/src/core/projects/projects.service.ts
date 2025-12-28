@@ -321,7 +321,6 @@ export class ProjectsService {
         template: 1,
         theme: 1,
         seoDefaults: 1,
-        i18n: 1,
       })
       .lean()
       .exec();
@@ -345,14 +344,13 @@ export class ProjectsService {
       templateId,
       themeId,
       seoDefaults: project.seoDefaults ?? {},
-      i18n: project.i18n ?? { locales: ["ru"], defaultLocale: "ru" },
     };
   }
 
   async getSchema(projectId: string, mode: Mode) {
     const project = await this.projectModel
       .findById(projectId)
-      .select({ _id: 1, site: 1, i18n: 1 })
+      .select({ _id: 1, site: 1 })
       .lean()
       .exec();
 
@@ -385,7 +383,7 @@ export class ProjectsService {
         };
     }
 
-    return { schema, i18n: project.i18n };
+    return schema;
   }
 
   async search(projectId: string, q: string) {
