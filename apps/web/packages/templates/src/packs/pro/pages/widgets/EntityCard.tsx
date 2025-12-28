@@ -186,7 +186,7 @@ export function EntityCard<T extends Record<string, any> = Record<string, any>>(
         imagePathKey: "previewPath",
         rows: (item) => [
           { label: "Название", value: tc((item as any)?.name) ?? "—", valueClassName: "font-semibold" },
-          { label: "Ключ", value: (item as any)?.key ?? "—" },
+          { label: "Владелец", value: tc((item as any)?.owner?.name) ?? "—" },
           { label: "Статус", value: (item as any)?.status ?? "—" },
         ],
       };

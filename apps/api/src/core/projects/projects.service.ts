@@ -258,12 +258,13 @@ export class ProjectsService {
     return this.projectModel
       .find(filter)
       .sort({ sortOrder: 1 })
+      .populate('projects')
       .limit(Number.isNaN(limitValue) ? 10 : limitValue)
       .exec();
   }
 
   findOne(id: string) {
-    return this.projectModel.findOne({ _id: id }).exec();
+    return this.projectModel.findOne({ _id: id }).populate('projects').exec();
   }
 
   async update(id: string, data: UpdateProjectDto) {

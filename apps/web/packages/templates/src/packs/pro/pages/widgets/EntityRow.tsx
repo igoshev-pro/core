@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { Button, cn } from "@heroui/react";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { BiSolidMessageSquareEdit } from "react-icons/bi";
+import { useT } from "@/lib/i18n/client";
 
 export type EntityRowApiKey =
   | "templates"
@@ -28,84 +29,7 @@ type RowConfig<T extends Record<string, any>> = {
   columns: Array<EntityRowColumn<T>>;
 };
 
-function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowConfig<T> {
-  switch (api) {
-    case "templates":
-      return {
-        title: (i) => (i as any)?.name?.ru ?? (i as any)?.name ?? "Без имени",
-        subtitle: (i) => (i as any)?._id,
-        columns: [
-          { key: "slug", label: "Slug", value: (i) => (i as any)?.slug ?? "—" },
-          { key: "mode", label: "Тип", value: (i) => (i as any)?.mode ?? "—" },
-          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
-        //   { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
-        ],
-      };
 
-    case "layouts":
-      return {
-        title: (i) => (i as any)?.name?.ru ??  (i as any)?.name ?? "Без имени",
-        subtitle: (i) => (i as any)?._id,
-        columns: [
-          { key: "layoutKey", label: "Ключ макета", value: (i) => (i as any)?.slug ?? "—" },
-          { key: "mode", label: "Тип", value: (i) => (i as any)?.mode ?? "—" },
-          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
-        ],
-      };
-
-    case "themes":
-      return {
-        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
-        subtitle: (i) => (i as any)?._id,
-        columns: [
-          { key: "colorPrimary", label: "Основной цвет", value: (i) => (i as any)?.colorPrimary ?? "—" },
-          { key: "colorSecondary", label: "Второй цвет", value: (i) => (i as any)?.colorSecondary ?? "—" },
-          { key: "fontSans", label: "Шрифт", value: (i) => (i as any)?.fontSans ?? "—" },  
-        ],
-      };
-
-    case "pages":
-      return {
-        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
-        subtitle: (i) => (i as any)?._id,
-        columns: [
-          
-          { key: "key", label: "Ключ", value: (i) => (i as any)?.key ?? "—" },
-          { key: "path", label: "Путь", value: (i) => (i as any)?.path ?? "—" },
-          { key: "kind", label: "Дочерний путь", value: (i) => (i as any)?.kind ?? "—" },
-        ],
-      };
-
-    case "sections":
-      return {
-        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
-        subtitle: (i) => (i as any)?._id,
-        columns: [
-          { key: "key", label: "Ключ", value: (i) => (i as any)?.key ?? "—" },
-          { key: "template", label: "Шаблон", value: (i) => (i as any)?.template?.name ?? "—" },
-          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
-        ],
-      };
-
-    case "widgets":
-      return {
-        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
-        subtitle: (i) => (i as any)?._id,
-        columns: [
-          { key: "key", label: "Ключ", value: (i) => (i as any)?.key ?? "—" },
-          { key: "template", label: "Шаблон", value: (i) => (i as any)?.template?.name ?? "—" },
-          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
-        ],
-      };
-
-    default:
-      return {
-        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
-        subtitle: (i) => (i as any)?._id,
-        columns: [],
-      };
-  }
-}
 
 function isHexColor(v: unknown): v is string {
   if (typeof v !== "string") return false;
@@ -174,7 +98,98 @@ export function EntityRow<T extends Record<string, any>>({
   columnsExtend,
   rightSlot,
 }: Props<T>) {
+  const tc = useT()
   const cfg = useMemo(() => getRowConfig<T>(api), [api]);
+
+  function getRowConfig<T extends Record<string, any>>(api: EntityRowApiKey): RowConfig<T> {
+  switch (api) {
+    case "templates":
+      return {
+        title: (i) => (i as any)?.name?.ru ?? (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "slug", label: "Slug", value: (i) => (i as any)?.slug ?? "—" },
+          { key: "mode", label: "Тип", value: (i) => (i as any)?.mode ?? "—" },
+          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
+        //   { key: "updated", label: "Обновлён", value: (i) => (i as any)?.updatedAt ?? "—" },
+        ],
+      };
+
+    case "layouts":
+      return {
+        title: (i) => (i as any)?.name?.ru ??  (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "layoutKey", label: "Ключ макета", value: (i) => (i as any)?.slug ?? "—" },
+          { key: "mode", label: "Тип", value: (i) => (i as any)?.mode ?? "—" },
+          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
+        ],
+      };
+
+    case "themes":
+      return {
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "colorPrimary", label: "Основной цвет", value: (i) => (i as any)?.colorPrimary ?? "—" },
+          { key: "colorSecondary", label: "Второй цвет", value: (i) => (i as any)?.colorSecondary ?? "—" },
+          { key: "fontSans", label: "Шрифт", value: (i) => (i as any)?.fontSans ?? "—" },  
+        ],
+      };
+
+      case "projects":
+      return {
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "name", label: "Название", value: (i) => tc((i as any)?.name) ?? "—" },
+          { key: "owner", label: "Владелец", value: (i) => tc((i as any)?.owner?.name) ?? "—" },
+          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
+        ],
+      };
+
+    case "pages":
+      return {
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          
+          { key: "key", label: "Ключ", value: (i) => (i as any)?.key ?? "—" },
+          { key: "path", label: "Путь", value: (i) => (i as any)?.path ?? "—" },
+          { key: "kind", label: "Дочерний путь", value: (i) => (i as any)?.kind ?? "—" },
+        ],
+      };
+
+    case "sections":
+      return {
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "key", label: "Ключ", value: (i) => (i as any)?.key ?? "—" },
+          { key: "template", label: "Шаблон", value: (i) => (i as any)?.template?.name ?? "—" },
+          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
+        ],
+      };
+
+    case "widgets":
+      return {
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [
+          { key: "key", label: "Ключ", value: (i) => (i as any)?.key ?? "—" },
+          { key: "template", label: "Шаблон", value: (i) => (i as any)?.template?.name ?? "—" },
+          { key: "status", label: "Статус", value: (i) => (i as any)?.status ?? "—" },
+        ],
+      };
+
+    default:
+      return {
+        title: (i) => (i as any)?.name.ru ??  (i as any)?.name ?? "Без имени",
+        subtitle: (i) => (i as any)?._id,
+        columns: [],
+      };
+  }
+}
 
   const title = cfg.title(item);
   const subtitle = cfg.subtitle?.(item);
