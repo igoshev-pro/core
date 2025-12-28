@@ -29,8 +29,15 @@ export default async function AdminPage({ params }: PageProps) {
   const projectId = h.get("x-project-id") ?? "unknown";
   const mode: ProjectMode = "admin"; // ✅ ВОТ КЛЮЧЕВОЕ
 
+  console.log("x-locales:", h.get("x-locales"));
+  console.log("x-default-locale:", h.get("x-default-locale"));
+  console.log("x-lang:", h.get("x-lang"));
+
   const runtime = await getProjectRuntime(projectId, mode);
   const schema = await getSiteSchema(projectId, mode);
+
+  console.log("runtime", runtime);
+  console.log("schema:", schema);
 
   const matched = matchPage(schema.pages, path);
   // if (!matched) {
