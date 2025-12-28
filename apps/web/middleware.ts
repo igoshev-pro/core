@@ -67,24 +67,6 @@ export async function middleware(req: NextRequest) {
   const host = getHost(req);
   const mode = pathname.startsWith('/admin') ? 'admin' : pathname.startsWith('/login') ? 'login' : 'public';
 
-  // ================================
-  // ✅ DEV OVERRIDE ПО projectId
-  // ================================
-  const devPid = req.nextUrl.searchParams.get("pid");
-
-  if (process.env.NODE_ENV === "development" && devPid) {
-    const requestHeaders = new Headers(req.headers);
-
-    requestHeaders.set(H_PROJECT_ID, devPid);
-    requestHeaders.set(H_PROJECT_MODE, mode);
-    requestHeaders.set(H_PROJECT_HOST, host);
-
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    });
-  }
-  // ================================
-
   // ⬇️ обычный прод-резолв по домену
   const resolved = (await resolveProject(host));
 
