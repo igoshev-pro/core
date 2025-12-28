@@ -84,6 +84,12 @@ export class CreateProjectDto {
   i18n?: any
 
   @IsOptional()
+  previewPath?: string | null;
+
+  @IsOptional()
+  gallery?: any[];
+
+  @IsOptional()
   @IsString()
   type?: string;
 

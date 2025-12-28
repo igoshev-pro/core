@@ -84,7 +84,9 @@ const SideMenuMainLayout = () => {
     );
   }, [pathname]);
 
-  const onEdit = () => {}
+  const onEdit = () => {
+    router.push('/admin/core/projects/create')
+  }
 
   return (
     <div className="flex flex-col w-full gap-6">
