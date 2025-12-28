@@ -2,31 +2,33 @@
 
 import { useRouter } from "next/navigation";
 import { useI18nConfig } from "@/lib/i18n/client";
-
-function setLangCookie(lang: string) {
-  document.cookie = `lang=${lang}; path=/; max-age=${60 * 60 * 24 * 365}`;
-}
+import { cn } from "@heroui/react";
+import { setLangAction } from "@/app/api/actions/set-lang";
 
 export function LanguageSwitcher() {
   const router = useRouter();
   const { locales, lang } = useI18nConfig();
 
-  const onChange = (next: string) => {
-    setLangCookie(next);
+  const onChange = async (next: string) => {
+    // ✅ ставим cookie НА СЕРВЕРЕ
+    await setLangAction(next);
 
-    // обновляем HTML сразу
+    // ✅ обновляем html для клиентских компонентов сразу
     document.documentElement.lang = next;
 
-    // перерендер серверных компонентов на новом языке
-    router.refresh();
+    // ✅ теперь refresh точно подтянет новый cookie
+    window.location.reload();
   };
+
 
   if (locales.length <= 1) return null;
 
   return (
     <div style={{ display: "flex", gap: 8 }}>
       {locales.map((l) => (
-        <button key={l} type="button" disabled={l === lang} onClick={() => onChange(l)}>
+        <button className={cn("cursor-pointer hover:text-primary", {
+            ['text-primary']: lang === l
+        })} key={l} type="button" disabled={l === lang} onClick={() => onChange(l)}>
           {l.toUpperCase()}
         </button>
       ))}

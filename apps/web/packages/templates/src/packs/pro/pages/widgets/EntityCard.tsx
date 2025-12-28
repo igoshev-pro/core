@@ -6,6 +6,7 @@ import { usePresignedUrl } from "@/api/feature/usePresignedUrl";
 import { MdNoPhotography } from "react-icons/md";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { BiSolidMessageSquareEdit } from "react-icons/bi";
+import { useT } from "@/lib/i18n/client";
 
 export type EntityCardRow = {
   label: React.ReactNode;
@@ -101,7 +102,16 @@ type CardConfig<T extends Record<string, any>> = {
   rows: (item: T) => EntityCardRow[];
 };
 
-function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): CardConfig<T> {
+
+
+function resolveMaybeFn<TItem, TValue>(v: TValue | ((item: TItem) => TValue), item: TItem): TValue {
+  return typeof v === "function" ? (v as any)(item) : v;
+}
+
+export function EntityCard<T extends Record<string, any> = Record<string, any>>(props: EntityCardProps<T>) {
+  const tc = useT()
+
+  function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): CardConfig<T> {
   switch (api) {
     case "templates":
       return {
@@ -175,7 +185,7 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
       return {
         imagePathKey: "previewPath",
         rows: (item) => [
-          { label: "Название", value: (item as any)?.name?.ru ?? (item as any)?.name ?? "—", valueClassName: "font-semibold" },
+          { label: "Название", value: tc((item as any)?.name) ?? "—", valueClassName: "font-semibold" },
           { label: "Ключ", value: (item as any)?.key ?? "—" },
           { label: "Статус", value: (item as any)?.status ?? "—" },
         ],
@@ -192,11 +202,6 @@ function getCardConfig<T extends Record<string, any>>(api: EntityCardApiKey): Ca
   }
 }
 
-function resolveMaybeFn<TItem, TValue>(v: TValue | ((item: TItem) => TValue), item: TItem): TValue {
-  return typeof v === "function" ? (v as any)(item) : v;
-}
-
-export function EntityCard<T extends Record<string, any> = Record<string, any>>(props: EntityCardProps<T>) {
   const placeholderDefault = (
     <div className="flex flex-col items-center gap-6 text-foreground-500">
       <MdNoPhotography className="text-[36px]" />
