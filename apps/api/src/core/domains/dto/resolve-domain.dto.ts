@@ -7,5 +7,5 @@ export class ResolveDomainQueryDto {
 }
 
 export type ResolveDomainResponse =
-  | { ok: true; projectId: string; status: 'active' | 'disabled' | 'draft', i18n?: any }
+  | { ok: true; projectId: string; status: 'active' | 'disabled' | 'draft' }
   | { ok: false; code: 'NOT_FOUND' | 'DISABLED' };

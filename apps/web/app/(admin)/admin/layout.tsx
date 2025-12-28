@@ -118,7 +118,12 @@ export default async function AdminRootLayout({
   if (await isCoreAdmin() && result.role !== "superAdmin") {
     redirect(`/login`);
   }
-  
+
+  const h = await headers()
+  console.log("x-locales:", h.get("x-locales"));
+  console.log("x-default-locale:", h.get("x-default-locale"));
+  console.log("x-lang:", h.get("x-lang"));
+
   return (
     <html
       suppressHydrationWarning

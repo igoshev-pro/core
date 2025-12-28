@@ -6,7 +6,6 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Domain, type DomainDocument } from './entities/domain.entity'
 import { DomainDto } from './dto/domain.dto'
-import { Project, ProjectDocument } from '../projects/entities/project.entity';
 
 // ВАЖНО: тут должен быть твой репозиторий доменов/проектов.
 // Ниже — заглушка. Подставишь Prisma/TypeORM.
@@ -16,21 +15,13 @@ type DomainRow = {
   status: 'active' | 'disabled' | 'draft';
 };
 
-type ResolveCache = {
-  projectId: string;
-  status: string;
-  i18n?: { locales?: string[]; defaultLocale?: string };
-};
-
 @Injectable()
 export class DomainsService {
   constructor(
     @Inject(REDIS) private readonly redis: Redis,
     @InjectModel(Domain.name, 'core')
-    private readonly domainModel: Model<DomainDocument>,
-    @InjectModel(Project.name, 'core')
-    private readonly projectModel: Model<ProjectDocument>,
-  ) { }
+      private readonly domainModel: Model<DomainDocument>,
+  ) {}
 
   private key(hostname: string) {
     return `domain:${hostname}`;
@@ -45,58 +36,31 @@ export class DomainsService {
 
   async resolve(rawHost: string): Promise<ResolveDomainResponse> {
     const hostname = this.normalizeHost(rawHost);
-    if (!hostname) return { ok: false, code: "NOT_FOUND" };
+    if (!hostname) return { ok: false, code: 'NOT_FOUND' };
 
+    // 1) Redis cache
     const cached = await this.redis.get(this.key(hostname));
     if (cached) {
-      // ✅ новый формат: JSON
-      try {
-        const data = JSON.parse(cached) as ResolveCache;
-        if (!data?.projectId) return { ok: false, code: "NOT_FOUND" };
-        if (data.status === "disabled") return { ok: false, code: "DISABLED" };
-
-        return {
-          ok: true,
-          projectId: data.projectId,
-          status: (data.status as any) ?? "active",
-          i18n: data.i18n,
-        };
-      } catch {
-        // ✅ backward compat со старым "projectId|status"
-        const [projectId, status] = cached.split("|");
-        if (!projectId) return { ok: false, code: "NOT_FOUND" };
-        if (status === "disabled") return { ok: false, code: "DISABLED" };
-        return { ok: true, projectId, status: (status as any) ?? "active" };
-      }
+      // формат: "projectId|status"
+      const [projectId, status] = cached.split('|');
+      if (!projectId) return { ok: false, code: 'NOT_FOUND' };
+      if (status === 'disabled') return { ok: false, code: 'DISABLED' };
+      return { ok: true, projectId, status: (status as any) ?? 'active' };
     }
 
-    // DB fallback
+    // 2) DB fallback
     const row = await this.findDomainInDb(hostname);
     if (!row) {
-      await this.redis.set(this.key(hostname), "0|not_found", "EX", 30);
-      return { ok: false, code: "NOT_FOUND" };
+      // negative cache, чтобы не долбить БД при неизвестных доменах
+      await this.redis.set(this.key(hostname), '0|not_found', 'EX', 30);
+      return { ok: false, code: 'NOT_FOUND' };
     }
 
-    // ✅ ВАЖНО: подтянуть i18n проекта
-    const project = await this.projectModel
-      .findById(row.projectId)
-      .select({ i18n: 1 })
-      .lean()
-      .exec();
+    // 3) Save cache
+    await this.redis.set(this.key(hostname), `${row.projectId}|${row.status}`, 'EX', 300);
 
-    const i18n = project?.i18n;
-
-    // Save cache (JSON)
-    await this.redis.set(
-      this.key(hostname),
-      JSON.stringify({ projectId: row.projectId, status: row.status, i18n }),
-      "EX",
-      300
-    );
-
-    if (row.status === "disabled") return { ok: false, code: "DISABLED" };
-
-    return { ok: true, projectId: row.projectId, status: row.status, i18n };
+    if (row.status === 'disabled') return { ok: false, code: 'DISABLED' };
+    return { ok: true, projectId: row.projectId, status: row.status };
   }
 
   // TODO: заменить на реальный запрос
@@ -106,40 +70,40 @@ export class DomainsService {
     // if (hostname === 'tenant.local') {
     //   return { host: hostname, projectId: 'project-uuid-1', status: 'active' };
     // }
-
+    
     // @ts-ignore
     return this.domainModel.findOne({ host: hostname }).exec();
   }
-
-  create(data: DomainDto) {
-    const newDomain = new this.domainModel(data);
-    return newDomain.save();
-  }
-
-  findAll(query: Record<string, any>) {
-    const { limit } = query;
-
-    const limitValue = Number.parseInt(limit ?? '', 10);
-
-    return this.domainModel
-      .find()
-      .sort({ createdAt: -1 })
-      .limit(Number.isNaN(limitValue) ? 10 : limitValue)
-      .exec();
-  }
-
-  findOne(id: string) {
-    return this.domainModel.findOne({ _id: id }).exec();
-  }
-
-
-  update(id: string, data: DomainDto) {
-    return this.domainModel
-      .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })
-      .lean();
-  }
-
-  async remove(id: string) {
-    await this.domainModel.deleteOne({ _id: id }).exec()
-  }
+  
+    create(data: DomainDto) {
+      const newDomain = new this.domainModel(data);
+      return newDomain.save();
+    }
+  
+    findAll(query: Record<string, any>) {
+      const { limit } = query;
+  
+      const limitValue = Number.parseInt(limit ?? '', 10);
+  
+      return this.domainModel
+        .find()
+        .sort({ createdAt: -1 })
+        .limit(Number.isNaN(limitValue) ? 10 : limitValue)
+        .exec();
+    }
+  
+    findOne(id: string) {
+      return this.domainModel.findOne({ _id: id }).exec();
+    }
+  
+  
+    update(id: string, data: DomainDto) {
+      return this.domainModel
+        .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })
+        .lean();
+    }
+  
+    async remove(id: string) {
+      await this.domainModel.deleteOne({ _id: id }).exec()
+    }
 }
