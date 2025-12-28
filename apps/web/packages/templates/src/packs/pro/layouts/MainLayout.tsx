@@ -7,6 +7,7 @@ import UserBalanceAdminShell from "./components/UserBalanceAdminShell";
 import LogoutAdminShell from "./components/LogoutAdminShell";
 import SideMenuMainLayout from "./components/SideMenuMainLayout";
 import SupportAdminShell from "./components/SupportAdminShell";
+import { LanguageSwitcher } from "../components/ui/LanguageSwitcher";
 
 
 export default function MainLayout({
@@ -24,6 +25,7 @@ export default function MainLayout({
         <div className="col-span-4 grid grid-cols-2 gap-6">
           <SearchAdminShell api="users" />
           <div className="col-span-1 flex items-center justify-end gap-6">
+            <LanguageSwitcher />
             <ThemeSwitch className="" />
             <NotificationsAdminShell />
             <UserBalanceAdminShell />
