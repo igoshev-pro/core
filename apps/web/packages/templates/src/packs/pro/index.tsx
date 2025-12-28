@@ -17,6 +17,7 @@ import PageUpsertSectionMain from "./pages/p-factory/p-pages/p-upsert/sections/P
 import SectionUpsertSectionMain from "./pages/p-factory/p-sections/p-upsert/sections/SectionUpsertSectionMain";
 import FactoryWidgetsSectionMain from "./pages/p-factory/p-widgets/FactoryWidgetsSectionMain";
 import WidgetUpsertSectionMain from "./pages/p-factory/p-widgets/p-upsert/sections/WidgetUpsertSectionMain";
+import ProjectUpsertSectionMain from "./pages/p-projects/p-upsert/ProjectUpsertSectionMain";
 
 function DashboardSectionMain({ node }: any) {
   return (
@@ -38,6 +39,7 @@ export const adminShellPack: TemplatePack = {
   sections: {
     "pro.dashboard.main.v1": DashboardSectionMain,
     "pro.projects.main.v1": ProjectsSectionMain,
+    "pro.projects.upsert.main.v1": ProjectUpsertSectionMain,
     "pro.clients.main.v1": ClientsSectionMain,
     "pro.client.upsert.main.v1": ClientUpsertSectionMain,
     "pro.factory.main.v1": FactorySectionMain,
