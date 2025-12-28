@@ -20,14 +20,13 @@ export function LanguageSwitcher() {
     window.location.reload();
   };
 
-
   if (locales.length <= 1) return null;
 
   return (
-    <div style={{ display: "flex", gap: 8 }}>
+    <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
       {locales.map((l) => (
         <button className={cn("cursor-pointer hover:text-primary", {
-            ['text-primary']: lang === l
+            ['text-primary font-semibold']: lang === l
         })} key={l} type="button" disabled={l === lang} onClick={() => onChange(l)}>
           {l.toUpperCase()}
         </button>
