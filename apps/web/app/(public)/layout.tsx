@@ -1,10 +1,18 @@
 import "../../styles/globals.css";
 import { Providers } from "../providers";
+import { getI18nConfig, getLocale } from "@/lib/i18n/server";
 
-export default function PublicRootLayout({ children }: { children: React.ReactNode }) {
-  // Global public wrapper; keep it light for SEO
+export default async function PublicRootLayout({ children }: { children: React.ReactNode }) {
+  const cfg = await getI18nConfig();
+  const lang = await getLocale();
+
   return (
-    <html suppressHydrationWarning lang="ru">
+    <html
+      suppressHydrationWarning
+      lang={lang}
+      data-locales={cfg.locales.join(",")}
+      data-default-locale={cfg.defaultLocale}
+    >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
