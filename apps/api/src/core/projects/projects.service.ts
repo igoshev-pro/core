@@ -385,26 +385,4 @@ export class ProjectsService {
 
     return schema;
   }
-
-  async search(projectId: string, q: string) {
-    const query: any = { projectId };
-
-    if (q?.trim()) {
-      query.$text = { $search: q.trim() };
-    }
-
-    return this.projectModel
-      .find(query, q?.trim() ? { score: { $meta: "textScore" } } : undefined)
-      .sort(q?.trim() ? { score: { $meta: "textScore" } } : { createdAt: -1 })
-      .limit(50);
-  }
-
-  // filterI18nMap(map: Record<string, string>, allowed: string[]) {
-  // const out: Record<string, string> = {};
-  // for (const [k, v] of Object.entries(map ?? {})) {
-  //   const kk = k.toLowerCase();
-  //   if (allowed.includes(kk) && typeof v === "string") out[kk] = v;
-  // }
-  // return out;
-  // }
 }

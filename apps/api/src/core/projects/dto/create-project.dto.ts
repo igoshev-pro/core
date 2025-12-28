@@ -1,6 +1,5 @@
 import { IsOptional, IsString, IsObject, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import type { I18nMap } from 'src/common/types/i18n.types';
 
 class MongoDbDto {
   @IsOptional()
@@ -77,8 +76,9 @@ export class CreateProjectDto {
   @IsString()
   domainCustom?: string;
 
-  @IsObject()
-  name!: I18nMap;
+  @IsOptional()
+  @IsString()
+  name?: string;
 
   @IsOptional()
   i18n?: any

@@ -4,19 +4,6 @@ const H_PROJECT_ID = 'x-project-id';
 const H_PROJECT_MODE = 'x-project-mode';
 const H_PROJECT_HOST = 'x-project-host';
 
-const H_LANG = "x-lang";
-const H_LOCALES = "x-locales";
-const H_DEFAULT_LOCALE = "x-default-locale";
-
-function norm(s: string | null | undefined) {
-  return (s ?? "").trim().toLowerCase();
-}
-
-function pickFromAcceptLanguage(header: string | null): string[] {
-  if (!header) return [];
-  return header.split(",").map((p) => p.trim().slice(0, 2).toLowerCase()).filter(Boolean);
-}
-
 function getHost(req: NextRequest) {
   const raw = (req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? '')
     .split(',')[0]
@@ -56,7 +43,7 @@ async function resolveProject(host: string) {
 
   if (!res.ok) return null;
   return (await res.json()) as
-    | { ok: true; projectId: string; status: string, i18n?: { locales?: string[]; defaultLocale?: string } }
+    | { ok: true; projectId: string; status: string }
     | { ok: false; code: string };
 }
 
@@ -86,40 +73,23 @@ export async function middleware(req: NextRequest) {
   // ================================
 
   // ⬇️ обычный прод-резолв по домену
-  const resolved = (await resolveProject(host));
+  const resolved = await resolveProject(host);
 
   if (!resolved || resolved.ok === false) {
     const url = req.nextUrl.clone();
-    url.pathname = "/_system/not-found";
-    url.search = "";
+    url.pathname = '/_system/not-found';
+    url.search = '';
     return NextResponse.rewrite(url);
   }
-
-  const projectLocales = (resolved.i18n?.locales?.map(norm).filter(Boolean) ?? ["ru"]);
-  const defaultLocale = norm(resolved.i18n?.defaultLocale) || projectLocales[0] || "ru";
-
-  const cookieLang = norm(req.cookies.get("lang")?.value);
-  const acceptLangs = pickFromAcceptLanguage(req.headers.get("accept-language"));
-
-  const chosen =
-    (cookieLang && projectLocales.includes(cookieLang) ? cookieLang : "") ||
-    (acceptLangs.find((l) => projectLocales.includes(l)) ?? "") ||
-    defaultLocale;
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set(H_PROJECT_ID, resolved.projectId);
   requestHeaders.set(H_PROJECT_MODE, mode);
   requestHeaders.set(H_PROJECT_HOST, host);
 
-  requestHeaders.set(H_LANG, chosen);
-  requestHeaders.set(H_LOCALES, projectLocales.join(","));
-  requestHeaders.set(H_DEFAULT_LOCALE, defaultLocale);
-
-  const res = NextResponse.next({ request: { headers: requestHeaders } });
-
-  res.cookies.set("lang", chosen, { path: "/", maxAge: 60 * 60 * 24 * 365 });
-
-  return res;
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
 
 export const config = {
