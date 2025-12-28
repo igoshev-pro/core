@@ -6,9 +6,8 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Domain, type DomainDocument } from './entities/domain.entity'
 import { DomainDto } from './dto/domain.dto'
+import { Project, ProjectDocument } from '../projects/entities/project.entity';
 
-// ВАЖНО: тут должен быть твой репозиторий доменов/проектов.
-// Ниже — заглушка. Подставишь Prisma/TypeORM.
 type DomainRow = {
   host: string;
   projectId: string;
@@ -20,8 +19,10 @@ export class DomainsService {
   constructor(
     @Inject(REDIS) private readonly redis: Redis,
     @InjectModel(Domain.name, 'core')
-      private readonly domainModel: Model<DomainDocument>,
-  ) {}
+    private readonly domainModel: Model<DomainDocument>,
+    @InjectModel(Project.name, 'core')
+    private readonly projectModel: Model<ProjectDocument>
+  ) { }
 
   private key(hostname: string) {
     return `domain:${hostname}`;
@@ -60,6 +61,13 @@ export class DomainsService {
     await this.redis.set(this.key(hostname), `${row.projectId}|${row.status}`, 'EX', 300);
 
     if (row.status === 'disabled') return { ok: false, code: 'DISABLED' };
+
+    // Добавление локализации
+    const project = await this.projectModel.findOne(({ _id: row.projectId })).exec()
+    if (project?.i18n) {
+      return { ok: true, projectId: row.projectId, status: row.status, i18n: project.i18n}
+    }
+
     return { ok: true, projectId: row.projectId, status: row.status };
   }
 
@@ -70,40 +78,40 @@ export class DomainsService {
     // if (hostname === 'tenant.local') {
     //   return { host: hostname, projectId: 'project-uuid-1', status: 'active' };
     // }
-    
+
     // @ts-ignore
     return this.domainModel.findOne({ host: hostname }).exec();
   }
-  
-    create(data: DomainDto) {
-      const newDomain = new this.domainModel(data);
-      return newDomain.save();
-    }
-  
-    findAll(query: Record<string, any>) {
-      const { limit } = query;
-  
-      const limitValue = Number.parseInt(limit ?? '', 10);
-  
-      return this.domainModel
-        .find()
-        .sort({ createdAt: -1 })
-        .limit(Number.isNaN(limitValue) ? 10 : limitValue)
-        .exec();
-    }
-  
-    findOne(id: string) {
-      return this.domainModel.findOne({ _id: id }).exec();
-    }
-  
-  
-    update(id: string, data: DomainDto) {
-      return this.domainModel
-        .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })
-        .lean();
-    }
-  
-    async remove(id: string) {
-      await this.domainModel.deleteOne({ _id: id }).exec()
-    }
+
+  create(data: DomainDto) {
+    const newDomain = new this.domainModel(data);
+    return newDomain.save();
+  }
+
+  findAll(query: Record<string, any>) {
+    const { limit } = query;
+
+    const limitValue = Number.parseInt(limit ?? '', 10);
+
+    return this.domainModel
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(Number.isNaN(limitValue) ? 10 : limitValue)
+      .exec();
+  }
+
+  findOne(id: string) {
+    return this.domainModel.findOne({ _id: id }).exec();
+  }
+
+
+  update(id: string, data: DomainDto) {
+    return this.domainModel
+      .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })
+      .lean();
+  }
+
+  async remove(id: string) {
+    await this.domainModel.deleteOne({ _id: id }).exec()
+  }
 }

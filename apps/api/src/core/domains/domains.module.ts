@@ -4,12 +4,12 @@ import { DomainsService } from './domains.service';
 import { MongooseModule } from '@nestjs/mongoose'
 import { Domain } from 'domain'
 import { DomainSchema } from './entities/domain.entity'
-import { SuperAdminGuard } from '../auth/guards/super-admin.guard'
+import { Project, ProjectSchema } from '../projects/entities/project.entity';
 
 @Module({
   imports: [
     MongooseModule.forFeature(
-      [{ name: Domain.name, schema: DomainSchema }],
+      [{ name: Domain.name, schema: DomainSchema }, { name: Project.name, schema: ProjectSchema}],
       'core',
     ),
   ],
