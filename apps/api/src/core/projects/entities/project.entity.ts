@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { ProjectStatus, ProjectType } from '../project.enum'
 import { Client } from '../../clients/entities/client.entity';
+import { buildI18nText, type I18nMap } from 'src/common/types/i18n.types';
 
 export type ProjectDocument = Project & Document;
 
@@ -90,8 +91,8 @@ export class Project {
   @Prop({ required: false, type: String })
   domainCustom?: string;
 
-  @Prop({ required: true })
-  name: string;
+  @Prop({ type: Object, default: {} })
+  name!: I18nMap;
 
   @Prop({
     type: Object, default: {
@@ -194,3 +195,24 @@ export class Project {
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
+
+// ProjectSchema.pre("save", function (next) {
+//   this.nameI18nText = buildI18nText(this.name);
+//   next();
+// });
+
+// ProjectSchema.pre(["findOneAndUpdate", "updateOne", "updateMany"], function (next) {
+//   const update: any = this.getUpdate() ?? {};
+//   const name = update.name ?? update.$set?.name;
+
+//   if (name && typeof name === "object") {
+//     const computed = buildI18nText(name);
+//     update.$set = update.$set ?? {};
+//     update.$set.nameI18nText = computed;
+//     this.setUpdate(update);
+//   }
+//   next();
+// });
+
+// ProjectSchema.index({ projectId: 1, slug: 1 }, { unique: true });
+// ProjectSchema.index({ projectId: 1, nameI18nText: "text" });
