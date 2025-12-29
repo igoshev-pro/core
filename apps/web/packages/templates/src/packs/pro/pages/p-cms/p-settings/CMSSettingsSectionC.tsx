@@ -603,7 +603,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                                     <div className="relative w-full aspect-square rounded-3xl overflow-hidden">
                                         <div
                                             className={cn("absolute inset-0", {
-                                                ["bg-background flex items-center justify-center"]: !logoSrc,
+                                                ["bg-foreground-100 flex items-center justify-center"]: !logoSrc,
                                             })}
                                         >
                                             {logoSrc ? (
@@ -652,7 +652,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                                     <div className="relative w-full aspect-square rounded-3xl overflow-hidden">
                                         <div
                                             className={cn("absolute inset-0", {
-                                                ["bg-background flex items-center justify-center"]: !logoDarkSrc,
+                                                ["bg-foreground-100 flex items-center justify-center"]: !logoDarkSrc,
                                             })}
                                         >
                                             {logoDarkSrc ? (
@@ -701,7 +701,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                                     <div className="relative w-full aspect-square rounded-3xl overflow-hidden">
                                         <div
                                             className={cn("absolute inset-0", {
-                                                ["bg-background flex items-center justify-center"]: !logoAltSrc,
+                                                ["bg-foreground-100 flex items-center justify-center"]: !logoAltSrc,
                                             })}
                                         >
                                             {logoAltSrc ? (
@@ -750,7 +750,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                                     <div className="relative w-full aspect-square rounded-3xl overflow-hidden">
                                         <div
                                             className={cn("absolute inset-0", {
-                                                ["bg-background flex items-center justify-center"]: !faviconSrc,
+                                                ["bg-foreground-100 flex items-center justify-center"]: !faviconSrc,
                                             })}
                                         >
                                             {faviconSrc ? (
@@ -798,7 +798,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
 
                     {/* Right: form sections */}
                     <div className="xl:col-span-8 flex flex-col gap-4 sm:gap-6">
-                        <Section title="Компания" description="Название компании (i18n).">
+                        <Section title="Компания" description="">
                             <Grid2>
                                 <Input
                                     label="RU"
@@ -814,7 +814,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                             </Grid2>
                         </Section>
 
-                        <Section title="SEO по умолчанию" description="Title и Description в i18n.">
+                        <Section title="SEO по умолчанию" description="">
                             <div className="flex flex-col gap-4 sm:gap-6">
                                 <Grid2>
                                     <Input label="Title RU" size="lg" {...register("seo_title_ru")} />
@@ -838,7 +838,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                             </div>
                         </Section>
 
-                        <Section title="Контакты" description="Телефоны, email и мессенджеры.">
+                        <Section title="Контакты" description="">
                             <div className="flex flex-col gap-3">
                                 <div className="flex items-center justify-between">
                                     <p className="font-medium">Телефоны</p>
@@ -934,7 +934,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                             </div>
                         </Section>
 
-                        <Section title="Адрес и карта" description="Структура + координаты.">
+                        <Section title="Адрес и карта" description="">
                             <div className="flex flex-col gap-4 sm:gap-6">
                                 <Grid2>
                                     <Input label="Страна" size="lg" {...register("address_country")} />
@@ -954,7 +954,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                             </div>
                         </Section>
 
-                        <Section title="Соцсети" description="Основные соцсети.">
+                        <Section title="Соцсети" description="">
                             <Grid2>
                                 <Input label="Instagram" placeholder="https://instagram.com/..." size="lg" {...register("instagram")} />
                                 <Input label="Facebook" placeholder="https://facebook.com/..." size="lg" {...register("facebook")} />
@@ -963,7 +963,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
                             </Grid2>
                         </Section>
 
-                        <Section title="Аналитика" description="ID трекеров (необязательно).">
+                        <Section title="Аналитика" description="">
                             <Grid2>
                                 <Input label="GA4 ID" placeholder="G-XXXXXXXXXX" size="lg" {...register("ga4Id")} />
                                 <Input label="Yandex Metrika ID" placeholder="12345678" size="lg" {...register("ymId")} />
