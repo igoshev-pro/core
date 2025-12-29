@@ -1,5 +1,5 @@
 import { ThemeSwitch } from "@/components/theme-switch";
-import { SearchAdminShell} from "./components/SearchAdminShell";
+import { SearchAdminShell } from "./components/SearchAdminShell";
 import { LogoAdminShell } from "./components/LogoAdminShell";
 import { NotificationsAdminShell } from "./components/NotificationsAdminShell";
 import UserBalanceAdminShell from "./components/UserBalanceAdminShell";
@@ -8,7 +8,9 @@ import LogoutAdminShell from "./components/LogoutAdminShell";
 import SideMenuMainLayout from "./components/SideMenuMainLayout";
 import SupportAdminShell from "./components/SupportAdminShell";
 import { LanguageSwitcher } from "../components/ui/LanguageSwitcher";
-
+import { CgMenuRight } from "react-icons/cg";
+import { Button } from "@heroui/react";
+import BurgerMenu from "./components/BurgerMenu";
 
 export default function MainLayout({
   children,
@@ -22,6 +24,10 @@ export default function MainLayout({
         <div className="col-span-2 sm:col-span-1 flex items-center">
           <LogoAdminShell />
         </div>
+        <div className="w-full flex sm:hidden col-span-3 justify-end items-center">
+          <BurgerMenu />
+        </div>
+
         <div className="col-span-4 hidden sm:grid sm:grid-cols-2 gap-6">
           <SearchAdminShell api="users" />
           <div className="col-span-1 flex items-center justify-end gap-6">
@@ -35,7 +41,7 @@ export default function MainLayout({
       </div>
 
       {/* Основная часть */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 min-h-[calc(100vh-120px)]">
+      <div className="grid grid-cols-1 sm:grid-cols-5 min-h-[calc(100vh-120px)]">
         {/* Боковое меню */}
         <div className="col-span-1 hidden sm:flex flex-col justify-between pr-9 pb-9 gap-6 transition-all duration-1000 animate-appearance-in">
           <SideMenuMainLayout />
