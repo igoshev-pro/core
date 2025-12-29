@@ -7,7 +7,7 @@ import { CgMenuRight } from 'react-icons/cg'
 const BurgerMenu = () => {
     return (
         <button className='cursor-pointer'>
-            <CgMenuRight className="text-5xl hover:text-primary" />
+            <CgMenuRight className="text-4xl hover:text-primary" />
         </ button>
     )
 }
