@@ -48,7 +48,7 @@ export default function MainLayout({
         </div>
 
         {/* Контент */}
-        <div className="col-span-4 bg-foreground-100 mb-9 rounded-4xl p-4 sm:p-9">
+        <div className="col-span-4 bg-foreground-100 mb-0 sm:mb-9 rounded-4xl p-4 sm:p-9">
           {children}
         </div>
       </div>
