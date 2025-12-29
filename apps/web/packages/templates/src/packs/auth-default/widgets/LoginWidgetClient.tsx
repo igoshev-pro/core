@@ -64,10 +64,10 @@ export const LoginWidgetClient = () => {
   return (
     <div>
       <form
-        className="w-[500px] flex flex-col gap-9 z-50"
+        className="flex flex-col gap-9 z-50"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <h1 className="text-5xl font-bold">Вход</h1>
+        <h1 className="text-5xl font-semibold text-white">Вход</h1>
         <Input
           errorMessage={errors?.email?.message}
           isInvalid={Boolean(errors.email)}

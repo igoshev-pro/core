@@ -20,7 +20,7 @@ export const AuthLogo = () => {
     <Image
       alt="logo"
       height={110}
-      src={theme === "dark" ? "/img/system/logo-primary.png" : "/img/system/logo.png"}
+      src={"/img/system/logo.png"}
       width={319}
     />
   );

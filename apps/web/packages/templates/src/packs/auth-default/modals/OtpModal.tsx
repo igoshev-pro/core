@@ -96,6 +96,7 @@ export const OtpModal: React.FC<Props> = ({
       isOpen={isOpen}
       radius="lg"
       size="sm"
+      placement="center"
       onClose={onClose}
     >
       <ModalContent className="py-3 pt-5">
