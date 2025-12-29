@@ -88,6 +88,7 @@ const formSchema = z.object({
   // paths (редактируются через upload кнопки)
   companyLogoPath: z.string().optional().or(z.literal("")),
   companyLogoDarkPath: z.string().optional().or(z.literal("")),
+  companyLogoAltPath: z.string().optional().or(z.literal("")), // ✅ NEW
   faviconPath: z.string().optional().or(z.literal("")),
 
   // ✅ seo title i18n
@@ -102,7 +103,7 @@ const formSchema = z.object({
 
   seo_ogImage: urlOrEmpty,
 
-  // address (строки)
+  // address
   address_country: z.string().optional().or(z.literal("")),
   address_region: z.string().optional().or(z.literal("")),
   address_city: z.string().optional().or(z.literal("")),
@@ -110,8 +111,6 @@ const formSchema = z.object({
   address_house: z.string().optional().or(z.literal("")),
   address_postalCode: z.string().optional().or(z.literal("")),
   address_placeId: z.string().optional().or(z.literal("")),
-
-  // ✅ lat/lng как string (фикс resolver типов)
   address_lat: z.string().optional().or(z.literal("")),
   address_lng: z.string().optional().or(z.literal("")),
 
@@ -165,6 +164,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
 
       companyLogoPath: "",
       companyLogoDarkPath: "",
+      companyLogoAltPath: "", // ✅ NEW
       faviconPath: "",
 
       seo_title_ru: "",
@@ -199,7 +199,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
       metaPixelId: "",
 
       emails: [{ value: "" }],
-      phones: [{ value: "+7" }], // ✅ стартовый префикс
+      phones: [{ value: "+7" }],
     },
   });
 
@@ -211,19 +211,23 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
 
   const { url: logoRemoteUrl } = usePresignedUrl(settings?.companyLogoPath);
   const { url: logoDarkRemoteUrl } = usePresignedUrl(settings?.companyLogoDarkPath);
+  const { url: logoAltRemoteUrl } = usePresignedUrl(settings?.companyLogoAltPath); // ✅ NEW
   const { url: faviconRemoteUrl } = usePresignedUrl(settings?.faviconPath);
 
   // ===================== uploads refs + state =====================
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const logoDarkInputRef = useRef<HTMLInputElement | null>(null);
+  const logoAltInputRef = useRef<HTMLInputElement | null>(null); // ✅ NEW
   const faviconInputRef = useRef<HTMLInputElement | null>(null);
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoDarkFile, setLogoDarkFile] = useState<File | null>(null);
+  const [logoAltFile, setLogoAltFile] = useState<File | null>(null); // ✅ NEW
   const [faviconFile, setFaviconFile] = useState<File | null>(null);
 
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [logoDarkPreviewUrl, setLogoDarkPreviewUrl] = useState<string | null>(null);
+  const [logoAltPreviewUrl, setLogoAltPreviewUrl] = useState<string | null>(null); // ✅ NEW
   const [faviconPreviewUrl, setFaviconPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -241,6 +245,13 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
   }, [logoDarkFile]);
 
   useEffect(() => {
+    if (!logoAltFile) return;
+    const url = URL.createObjectURL(logoAltFile);
+    setLogoAltPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [logoAltFile]);
+
+  useEffect(() => {
     if (!faviconFile) return;
     const url = URL.createObjectURL(faviconFile);
     setFaviconPreviewUrl(url);
@@ -249,6 +260,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
 
   const logoSrc = logoPreviewUrl ?? logoRemoteUrl ?? null;
   const logoDarkSrc = logoDarkPreviewUrl ?? logoDarkRemoteUrl ?? null;
+  const logoAltSrc = logoAltPreviewUrl ?? logoAltRemoteUrl ?? null; // ✅ NEW
   const faviconSrc = faviconPreviewUrl ?? faviconRemoteUrl ?? null;
 
   const clearLogoPicked = () => {
@@ -263,6 +275,12 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
     if (logoDarkInputRef.current) logoDarkInputRef.current.value = "";
   };
 
+  const clearLogoAltPicked = () => {
+    setLogoAltFile(null);
+    setLogoAltPreviewUrl(null);
+    if (logoAltInputRef.current) logoAltInputRef.current.value = "";
+  };
+
   const clearFaviconPicked = () => {
     setFaviconFile(null);
     setFaviconPreviewUrl(null);
@@ -272,22 +290,28 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
   /**
    * ✅ buildUserPhotoPath(kind) принимает только: "avatar" | "photo" | "preview"
    * Поэтому для логотипов/фавикона используем kind="photo"
-   * и делаем namespace через userId: `${projectId}__companyLogo` / `${projectId}__companyLogoDark` / `${projectId}__favicon`
+   * и делаем namespace через userId: `${id}__companyLogo` / `${id}__companyLogoDark` / `${id}__companyLogoAlt` / `${id}__favicon`
    */
   const uploadToSettings = async (
     projectEntityId: string,
-    kind: "companyLogo" | "companyLogoDark" | "favicon",
+    kind: "companyLogo" | "companyLogoDark" | "companyLogoAlt" | "favicon",
     file: File
   ) => {
     const ext = fileExt(file);
 
     const namespace =
-      kind === "companyLogo" ? "companyLogo" : kind === "companyLogoDark" ? "companyLogoDark" : "favicon";
+      kind === "companyLogo"
+        ? "companyLogo"
+        : kind === "companyLogoDark"
+        ? "companyLogoDark"
+        : kind === "companyLogoAlt"
+        ? "companyLogoAlt"
+        : "favicon";
 
     const path = buildUserPhotoPath({
       projectId,
-      userId: `${projectEntityId}__${namespace}`, // ✅ чтобы пути не конфликтовали
-      kind: "photo", // ✅ валидный kind для util
+      userId: `${projectEntityId}__${namespace}`,
+      kind: "photo",
       ext,
     });
 
@@ -307,6 +331,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
       ...prevSettings,
       ...(kind === "companyLogo" ? { companyLogoPath: uploaded.path } : {}),
       ...(kind === "companyLogoDark" ? { companyLogoDarkPath: uploaded.path } : {}),
+      ...(kind === "companyLogoAlt" ? { companyLogoAltPath: uploaded.path } : {}),
       ...(kind === "favicon" ? { faviconPath: uploaded.path } : {}),
     };
 
@@ -326,6 +351,8 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
           ? "Логотип обновлён"
           : kind === "companyLogoDark"
           ? "Dark-логотип обновлён"
+          : kind === "companyLogoAlt"
+          ? "Альтернативный логотип обновлён"
           : "Favicon обновлён",
       variant: "solid",
       radius: "lg",
@@ -366,6 +393,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
 
             companyLogoPath: s?.companyLogoPath ?? "",
             companyLogoDarkPath: s?.companyLogoDarkPath ?? "",
+            companyLogoAltPath: s?.companyLogoAltPath ?? "",
             faviconPath: s?.faviconPath ?? "",
 
             seo_title_ru: seoTitle?.ru ?? "",
@@ -434,6 +462,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
       // paths сохраняются через uploadToSettings
       companyLogoPath: (item?.settings?.companyLogoPath ?? data.companyLogoPath) || undefined,
       companyLogoDarkPath: (item?.settings?.companyLogoDarkPath ?? data.companyLogoDarkPath) || undefined,
+      companyLogoAltPath: (item?.settings?.companyLogoAltPath ?? data.companyLogoAltPath) || undefined,
       faviconPath: (item?.settings?.faviconPath ?? data.faviconPath) || undefined,
 
       seoDefaults: {
@@ -499,7 +528,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
         description: "Произошла ошибка при сохранении",
         variant: "solid",
         radius: "lg",
-        timeout: 3000,
+       timeout: 3000,
         shouldShowTimeoutProgress: true,
       });
     } finally {
@@ -507,7 +536,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
     }
   };
 
-  const canSave = isDirty || !!logoFile || !!logoDarkFile || !!faviconFile;
+  const canSave = isDirty || !!logoFile || !!logoDarkFile || !!logoAltFile || !!faviconFile;
 
   return (
     <>
@@ -531,7 +560,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
         onSubmit={handleSubmit(onSubmit)}
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
-        {/* Left: logo + dark logo + favicon */}
+        {/* Left: logo + dark logo + alt logo + favicon */}
         <Section title="Брендинг" className="lg:col-span-1 !bg-transparent !p-0 !md:p-0">
           <div className="flex flex-col gap-6">
             {/* Logo */}
@@ -658,6 +687,69 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
               }}
             >
               Загрузить dark-логотип
+            </Button>
+
+            {/* Alt Logo */}
+            <div className="relative w-full aspect-square rounded-3xl overflow-hidden">
+              <div
+                className={cn("absolute inset-0", {
+                  ["bg-background flex items-center justify-center"]: !logoAltSrc,
+                })}
+              >
+                {logoAltSrc ? (
+                  <Image
+                    alt="Company logo alt"
+                    src={logoAltSrc}
+                    radius="none"
+                    removeWrapper
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                  />
+                ) : (
+                  <div className="flex flex-col gap-3 h-full w-full items-center justify-center text-foreground-500">
+                    <MdNoPhotography className="text-[36px]" />
+                    <p className="text-xs">Альтернативный логотип не загружен</p>
+                  </div>
+                )}
+
+                <Button
+                  className="absolute bottom-3 right-3 z-10"
+                  color="primary"
+                  radius="full"
+                  isIconOnly
+                  onPress={() => logoAltInputRef.current?.click()}
+                  type="button"
+                >
+                  <IoCamera className="text-[20px] min-w-[20px] mx-[2px]" />
+                </Button>
+
+                <input
+                  ref={logoAltInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setLogoAltFile(f);
+                  }}
+                />
+              </div>
+            </div>
+
+            <Button
+              color="primary"
+              radius="full"
+              type="button"
+              isDisabled={!logoAltFile || !id}
+              onPress={async () => {
+                if (!id || !logoAltFile) return;
+                try {
+                  await uploadToSettings(id, "companyLogoAlt", logoAltFile);
+                } finally {
+                  clearLogoAltPicked();
+                }
+              }}
+            >
+              Загрузить альтернативный логотип
             </Button>
 
             {/* Favicon */}
