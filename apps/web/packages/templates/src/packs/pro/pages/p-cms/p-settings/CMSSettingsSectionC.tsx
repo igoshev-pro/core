@@ -991,7 +991,7 @@ export default function ProjectSiteSettingsEditPage({ type, projectId, id }: Pro
             </div>
             {/* Save (mobile sticky bottom) */}
             <div className="md:hidden sticky bottom-3 z-20">
-                <div className="bg-background shadow-custom rounded-4xl mt-9 -py-[100px]">
+                <div className="bg-background shadow-custom rounded-4xl p-4 mt-6">
                     <Button
                         className="w-full"
                         color="primary"

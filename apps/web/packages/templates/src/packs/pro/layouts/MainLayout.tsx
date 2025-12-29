@@ -16,9 +16,9 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-screen h-screen px-6 sm:px-9">
+    <div className="w-screen h-screen px-0 sm:px-9">
       {/* Шапка */}
-      <div className="grid grid-cols-5 py-4 sm:py-8">
+      <div className="grid grid-cols-5 px-6 sm:px-0 py-4 sm:py-8">
         <div className="col-span-2 md:col-span-1 flex items-center">
           <LogoAdminShell />
         </div>
@@ -48,7 +48,7 @@ export default function MainLayout({
         </div>
 
         {/* Контент */}
-        <div className="col-span-4 bg-foreground-100 mb-9 rounded-4xl p-6 sm:p-9">
+        <div className="col-span-4 bg-foreground-100 mb-9 rounded-4xl p-4 sm:p-9">
           {children}
         </div>
       </div>
