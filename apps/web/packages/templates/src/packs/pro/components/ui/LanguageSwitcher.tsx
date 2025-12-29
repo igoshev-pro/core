@@ -27,7 +27,7 @@ export function LanguageSwitcher() {
   if (locales.length <= 1) return null;
 
   return (
-    <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+    <div className="flex gap-6 md:gap-2 mt-1">
       {locales.map((l) => (
         <button
           key={l}
