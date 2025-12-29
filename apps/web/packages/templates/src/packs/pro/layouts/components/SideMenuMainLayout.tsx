@@ -4,12 +4,14 @@ import { Button } from '@heroui/react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { FaChevronDown, FaChevronRight, FaLaptopCode, FaSitemap, FaUsers } from 'react-icons/fa6';
-import { IoRocketSharp } from 'react-icons/io5';
+import { IoRocketSharp, IoSettingsSharp } from 'react-icons/io5';
 import { MdDesignServices, MdFactory, MdWork } from 'react-icons/md';
 import { IoIosColorPalette } from "react-icons/io";
-import { RiLayoutMasonryFill } from 'react-icons/ri';
+import { RiLayoutMasonryFill, RiPagesFill } from 'react-icons/ri';
 import { SiPlatformdotsh } from "react-icons/si";
 import { BiSolidWidget } from 'react-icons/bi';
+import { TbWorldWww } from 'react-icons/tb';
+import { GiHamburgerMenu } from "react-icons/gi";
 
 const SideMenuMainLayout = () => {
   const pathname = usePathname();
@@ -63,7 +65,30 @@ const SideMenuMainLayout = () => {
           route: '/admin/factory/widgets',
         },
       ],
-    }
+    },
+    {
+      label: "Сайт",
+      icon: <TbWorldWww className="text-[24px]" />,
+      route: `/admin/cms/settings`,
+      isOpen: false,
+      submenu: [
+        {
+          label: "Настройки",
+          icon: <IoSettingsSharp className="text-[22px] w-[24px] flex justify-center" />,
+          route: '/admin/cms/settings',
+        },
+        {
+          label: "Меню сайта",
+          icon: <GiHamburgerMenu className="text-[22px] w-[24px] flex justify-center" />,
+          route: '/admin/cms/menu',
+        },
+        {
+          label: "Страницы",
+          icon: <RiPagesFill className="text-[22px] w-[24px] flex justify-center" />,
+          route: '/admin/cms/pages',
+        },
+      ],
+    },
   ]);
 
   const isActive = (route: string) => pathname.startsWith(route);
