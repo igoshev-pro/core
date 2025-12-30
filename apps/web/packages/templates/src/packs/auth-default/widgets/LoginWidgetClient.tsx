@@ -64,7 +64,7 @@ export const LoginWidgetClient = () => {
   return (
     <div>
       <form
-        className="flex flex-col gap-9 z-50"
+        className="flex flex-col gap-9 z-50 w-[500px] min-w-[350px]"
         onSubmit={handleSubmit(onSubmit)}
       >
         <h1 className="text-5xl font-semibold text-white">Вход</h1>

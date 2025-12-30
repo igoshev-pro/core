@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-export const AuthLogo = () => {
+export const AuthLogo = ({ className = "" }: any) => {
   const { theme } = useTheme();
 
   const [mounted, setMounted] = useState(false);
@@ -18,6 +18,7 @@ export const AuthLogo = () => {
 
   return (
     <Image
+      className={className}
       alt="logo"
       height={110}
       src={"/img/system/logo.png"}
