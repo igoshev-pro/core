@@ -3,6 +3,8 @@
 import React from "react";
 import { Button, cn, Image } from "@heroui/react";
 import { MdNoPhotography, MdDragIndicator } from "react-icons/md";
+import { BiSolidMessageSquareEdit } from "react-icons/bi";
+import { RiDeleteBin5Fill } from "react-icons/ri";
 
 export type SiteModuleKey = "public" | "admin" | "login";
 
@@ -75,8 +77,19 @@ export function CMSPageCard({
         </div>
       </div>
 
-      <div className="mt-4 flex justify-end">
-        <Button color="primary" radius="full" onPress={() => onEdit(page)}>
+      <div className="mt-4 flex justify-between gap-3">
+        <Button
+          isIconOnly
+          color="danger"
+          radius="full"
+          size="md"
+          variant="flat"
+          onPress={() => null}
+        >
+          <RiDeleteBin5Fill className="text-[18px]" />
+        </Button>
+
+        <Button color="primary" radius="full" onPress={() => onEdit(page)} startContent={<BiSolidMessageSquareEdit className="text-[20px] min-w-[20px] mx-[2px]" />}>
           Редактировать
         </Button>
       </div>
