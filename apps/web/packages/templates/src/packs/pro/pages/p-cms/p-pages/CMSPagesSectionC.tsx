@@ -280,7 +280,6 @@ export default function CMSPagesSectionC({ projectId }: { projectId: string }) {
                   <SortableWithHandle key={p._id} id={p._id}>
                     {({ handleProps }) => (
                       <CMSPageCard
-                        domainCustom={project?.domainCustom}
                         page={p}
                         projectPreviewUrl={projectPreviewUrl ?? null}
                         onEdit={goEdit}
