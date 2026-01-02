@@ -33,9 +33,9 @@ export function CMSPageCard({
     <div className="bg-background rounded-4xl p-4 sm:p-5">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-base sm:text-lg font-semibold truncate">{page.path}</p>
+          <p className="text-base sm:text-lg font-semibold truncate">{page.name || "Страница"}</p>
           <p className="text-xs text-foreground-500 mt-0.5 truncate">
-            {page.kind} • id: <span className="font-mono">{page._id}</span>
+            <span className="font-mono">{page.path}</span>
           </p>
         </div>
 
@@ -79,17 +79,17 @@ export function CMSPageCard({
 
       <div className="mt-4 flex justify-between gap-3">
         <Button
-          isIconOnly
           color="danger"
           radius="full"
           size="md"
-          variant="flat"
+          variant="light"
           onPress={() => null}
+          startContent={<RiDeleteBin5Fill className="text-[18px]" />}
         >
-          <RiDeleteBin5Fill className="text-[18px]" />
+          Удалить
         </Button>
 
-        <Button color="primary" radius="full" onPress={() => onEdit(page)} startContent={<BiSolidMessageSquareEdit className="text-[20px] min-w-[20px] mx-[2px]" />}>
+        <Button color="primary" radius="full" variant='light' onPress={() => onEdit(page)} startContent={<BiSolidMessageSquareEdit className="text-[20px] min-w-[20px] mx-[2px]" />}>
           Редактировать
         </Button>
       </div>

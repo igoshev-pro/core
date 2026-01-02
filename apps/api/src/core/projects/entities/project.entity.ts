@@ -49,6 +49,7 @@ export type PageAccess = {
 
 export type SitePage = {
   _id: string,
+  name: string,
   path: string,
   kind: "static" | "dynamic"
   access: PageAccess
