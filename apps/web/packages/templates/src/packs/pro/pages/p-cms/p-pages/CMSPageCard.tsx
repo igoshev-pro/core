@@ -44,7 +44,7 @@ export function CMSPageCard({
           isIconOnly
           radius="full"
           variant="flat"
-          className={cn("shrink-0", "touch-none")}
+          className={cn("shrink-0 cursor-pointer", "touch-none")}
           {...handleProps.attributes}
           {...(handleProps.listeners ?? {})}   // ✅
         >
@@ -79,17 +79,17 @@ export function CMSPageCard({
 
       <div className="mt-4 flex justify-between gap-3">
         <Button
+          isIconOnly
           color="danger"
           radius="full"
           size="md"
           variant="light"
           onPress={() => null}
-          startContent={<RiDeleteBin5Fill className="text-[18px]" />}
         >
-          Удалить
+          <RiDeleteBin5Fill className="text-[18px]" />
         </Button>
 
-        <Button color="primary" radius="full" variant='light' onPress={() => onEdit(page)} startContent={<BiSolidMessageSquareEdit className="text-[20px] min-w-[20px] mx-[2px]" />}>
+        <Button color="primary" radius="full" variant='light' onPress={() => onEdit(page)}>
           Редактировать
         </Button>
       </div>
