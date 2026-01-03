@@ -30,9 +30,9 @@ export function CMSPageCard({
   handleProps: { attributes: any; listeners?: any };
 }) {
   return (
-    <div className="bg-background rounded-4xl p-4 sm:p-5">
+    <div className="bg-background rounded-4xl p-3 sm:p-3">
       <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 p-2 pt-0">
           <p className="text-base sm:text-lg font-semibold truncate">{page.name || "Страница"}</p>
           <p className="text-xs text-foreground-500 mt-0.5 truncate">
             <span className="font-mono">{page.path}</span>
@@ -52,7 +52,7 @@ export function CMSPageCard({
         </Button>
       </div>
 
-      <div className="mt-4">
+      <div className="">
         <div className="relative w-full aspect-[9/16] rounded-3xl overflow-hidden">
           <div
             className={cn("absolute inset-0", {
@@ -77,7 +77,7 @@ export function CMSPageCard({
         </div>
       </div>
 
-      <div className="mt-4 flex justify-between gap-3">
+      <div className="mt-2 flex justify-between gap-3">
         <Button
           isIconOnly
           color="danger"

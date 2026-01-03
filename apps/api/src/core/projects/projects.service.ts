@@ -4,15 +4,78 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
+
 import { Project, type ProjectDocument } from './entities/project.entity';
-import { Client, ClientDocument } from '../clients/entities/client.entity';
+import { Client, type ClientDocument } from '../clients/entities/client.entity';
+import { Domain, type DomainDocument } from '../domains/entities/domain.entity';
+
 import { ProjectStatus } from './project.enum';
-import { Domain, type DomainDocument } from '../domains/entities/domain.entity'
 import { Mode } from './projects.controller';
+
+import { SiteSchemaSection } from './entities/site-schema.entity';
+import { generateReadableRandomDomain } from 'src/common/utils/generateReadableRandomDomain';
+
+const DEFAULT_SCHEMA_BY_MODE: Record<Mode, SiteSchemaSection> = {
+  admin: {
+    version: '1.0.0',
+    layout: { _id: 'l-admin', type: 'layout', layoutKey: 'admin.shell', slots: {} },
+    pages: [
+      {
+        _id: 'p-admin',
+        name: 'Admin',
+        path: '/admin',
+        kind: 'static',
+        access: {},
+        blocks: [],
+      },
+    ],
+  },
+  login: {
+    version: '1.0.0',
+    layout: { _id: 'l-login', type: 'layout', layoutKey: 'auth.default', slots: {} },
+    pages: [
+      {
+        _id: 'p-login',
+        name: 'Login',
+        path: '/login',
+        kind: 'static',
+        access: {},
+        blocks: [],
+      },
+    ],
+  },
+  public: {
+    version: '1.0.0',
+    layout: { _id: 'l-public', type: 'layout', layoutKey: 'public.default', slots: {} },
+    pages: [
+      {
+        _id: 'home',
+        name: 'Home',
+        path: '/',
+        kind: 'static',
+        access: {},
+        blocks: [],
+      },
+    ],
+  },
+} as const;
+
+function pickTemplateId(project: any, mode: Mode): string {
+  if (mode === 'admin') return project.template?.admin ?? 'pro';
+  if (mode === 'login') return project.template?.auth ?? 'auth-default';
+  return project.template?.public ?? 'landing-classic';
+}
+
+function pickThemeId(project: any, mode: Mode): string {
+  if (mode === 'admin') return project.theme?.admin ?? 'default-light';
+  if (mode === 'login') return project.theme?.auth ?? 'default-light';
+  return project.theme?.public ?? 'default-light';
+}
 
 @Injectable()
 export class ProjectsService {
@@ -23,181 +86,7 @@ export class ProjectsService {
     private readonly clientModel: Model<ClientDocument>,
     @InjectModel(Domain.name, 'core')
     private readonly domainModel: Model<DomainDocument>,
-  ) { }
-
-  generateReadableRandomDomain() {
-    const adjectives = [
-      'quick',
-      'bright',
-      'clever',
-      'fast',
-      'smart',
-      'happy',
-      'sunny',
-      'brave',
-      'calm',
-      'cool',
-      'kind',
-      'sharp',
-      'strong',
-      'swift',
-      'silent',
-      'loud',
-      'gentle',
-      'bold',
-      'proud',
-      'fresh',
-      'wise',
-      'wild',
-      'free',
-      'playful',
-      'fierce',
-      'friendly',
-      'curious',
-      'eager',
-      'alert',
-      'active',
-      'agile',
-      'busy',
-      'cheerful',
-      'charming',
-      'confident',
-      'creative',
-      'daring',
-      'dynamic',
-      'energetic',
-      'faithful',
-      'fearless',
-      'focused',
-      'funny',
-      'graceful',
-      'helpful',
-      'honest',
-      'humble',
-      'inventive',
-      'jolly',
-      'keen',
-      'lively',
-      'loyal',
-      'mighty',
-      'modern',
-      'neat',
-      'noble',
-      'optimistic',
-      'patient',
-      'peaceful',
-      'powerful',
-      'practical',
-      'precise',
-      'quiet',
-      'rapid',
-      'reliable',
-      'resilient',
-      'robust',
-      'serene',
-      'sincere',
-      'skillful',
-      'steady',
-      'thoughtful',
-      'tough',
-      'trusty',
-      'upbeat',
-      'vivid',
-      'warm',
-      'witty',
-      'zesty',
-    ];
-
-    const nouns = [
-      'fox',
-      'bear',
-      'wolf',
-      'eagle',
-      'hawk',
-      'lion',
-      'tiger',
-      'panther',
-      'leopard',
-      'cheetah',
-      'falcon',
-      'raven',
-      'owl',
-      'shark',
-      'whale',
-      'dolphin',
-      'otter',
-      'seal',
-      'horse',
-      'stallion',
-      'mustang',
-      'bison',
-      'buffalo',
-      'deer',
-      'elk',
-      'moose',
-      'boar',
-      'ram',
-      'goat',
-      'sheep',
-      'camel',
-      'llama',
-      'alpaca',
-      'monkey',
-      'ape',
-      'gorilla',
-      'baboon',
-      'panda',
-      'koala',
-      'kangaroo',
-      'wallaby',
-      'badger',
-      'beaver',
-      'weasel',
-      'marten',
-      'squirrel',
-      'chipmunk',
-      'rabbit',
-      'hare',
-      'hedgehog',
-      'porcupine',
-      'skunk',
-      'lynx',
-      'bobcat',
-      'cougar',
-      'jaguar',
-      'crocodile',
-      'alligator',
-      'lizard',
-      'gecko',
-      'python',
-      'viper',
-      'cobra',
-      'turtle',
-      'tortoise',
-      'frog',
-      'toad',
-      'newt',
-      'sparrow',
-      'robin',
-      'crow',
-      'magpie',
-      'swan',
-      'goose',
-      'heron',
-      'crane',
-      'stork',
-      'pelican',
-      'antelope',
-      'gazelle',
-      'oryx',
-    ];
-
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    const randomString = Math.random().toString(36).slice(2, 7);
-
-    return `${adj}-${noun}-${randomString}.igoshev.pro`;
-  }
+  ) {}
 
   async create(data: CreateProjectDto) {
     if (!data?.db?.mongo?.uri && data?.db?.mongo?.name) {
@@ -207,9 +96,9 @@ export class ProjectsService {
         `${process.env.MONGO_URI_LAST_PART}`;
     }
 
-    data.domainTech = this.generateReadableRandomDomain();
+    data.domainTech = generateReadableRandomDomain();
 
-    const project = await new this.projectModel(data);
+    const project = new this.projectModel(data);
     const savedProject = await project.save();
 
     if (!savedProject?._id) {
@@ -221,7 +110,8 @@ export class ProjectsService {
       projectId: savedProject._id.toString(),
       status: ProjectStatus.ACTIVE,
     });
-    newDomain.save();
+
+    await newDomain.save();
 
     await this.clientModel.findOneAndUpdate(
       { _id: data.owner },
@@ -233,10 +123,7 @@ export class ProjectsService {
   }
 
   async getDbConfigOrThrow(projectId: string) {
-    const project = await this.projectModel
-      .findOne({ _id: projectId })
-      .lean()
-      .exec();
+    const project = await this.projectModel.findOne({ _id: projectId }).lean().exec();
 
     if (!project) throw new NotFoundException('Project not found');
 
@@ -248,7 +135,7 @@ export class ProjectsService {
   }
 
   findAll(query: Record<string, string> = {}) {
-    const { owner, limit, offset } = query;
+    const { owner, limit } = query;
 
     const filter: Record<string, any> = {};
     if (owner) filter.owner = owner;
@@ -268,28 +155,24 @@ export class ProjectsService {
   }
 
   async update(id: string, data: UpdateProjectDto) {
-    // Получаем старый проект перед обновлением
-    const oldProject = await this.projectModel.findById(id).lean();
-    if (!oldProject) {
-      throw new NotFoundException('Проект не найден');
-    }
+    const oldProject = await this.projectModel.findById(id).lean().exec();
+    if (!oldProject) throw new NotFoundException('Проект не найден');
 
-    // Выполняем обновление
     const updatedProject = await this.projectModel
       .findOneAndUpdate({ _id: id }, { ...data }, { new: true })
-      .lean();
+      .lean()
+      .exec();
 
-    // Формируем объект со старыми значениями для отслеживаемых полей
     const oldFields: Record<string, any> = {};
     for (const key of ['preview', 'logo']) {
-      oldFields[`_${key}`] = oldProject[key];
+      oldFields[`_${key}`] = (oldProject as any)[key];
     }
 
     return { ...updatedProject, ...oldFields };
   }
 
   async remove(id: string) {
-    const project = await this.projectModel.findOne({ _id: id }).lean();
+    const project = await this.projectModel.findOne({ _id: id }).lean().exec();
 
     if (!project) {
       throw new HttpException('Project not found', HttpStatus.NOT_FOUND);
@@ -328,63 +211,42 @@ export class ProjectsService {
 
     if (!project) throw new NotFoundException('Project not found');
 
-    const templateId =
-      mode === 'admin'
-        ? project.template?.admin ?? 'pro'
-        : mode === 'login'
-          ? project.template?.auth ?? 'auth-default' : project.template?.public ?? 'landing-classic';
-
-    const themeId =
-      mode === 'admin'
-        ? project.theme?.admin ?? 'default-light'
-        : mode === 'login'
-          ? project.theme?.auth ?? 'default-light' : project.theme?.public ?? 'default-light';
-
     return {
       projectId: project._id.toString(),
-      templateId,
-      themeId,
+      templateId: pickTemplateId(project, mode),
+      themeId: pickThemeId(project, mode),
       seoDefaults: project.seoDefaults ?? {},
     };
   }
 
+  /**
+   * Теперь Project.site = ObjectId ref 'SiteSchema'
+   * Поэтому берём site через populate и возвращаем нужную секцию.
+   */
   async getSchema(projectId: string, mode: Mode) {
     const project = await this.projectModel
       .findById(projectId)
       .select({ _id: 1, site: 1 })
+      .populate({
+        path: 'site',
+        select: { public: 1, admin: 1, login: 1 },
+        options: { lean: true },
+      })
       .lean()
       .exec();
 
     if (!project) throw new NotFoundException('Project not found');
 
-    const schema =
+    const site = project.site as any | null;
+
+    const section: SiteSchemaSection | undefined =
       mode === 'admin'
-        ? project.site?.admin
+        ? site?.admin
         : mode === 'login'
-          ? project.site?.login 
-          : project.site?.public;
+          ? site?.login
+          : site?.public;
 
-    if (!schema) {
-      // дефолт, чтобы проект хоть рендерился
-      return mode === 'admin'
-        ? {
-          version: '1.0.0',
-          layout: { id: 'l-admin', type: 'layout', layoutKey: 'admin.shell', slots: {} },
-          pages: [{ id: 'p-admin', path: '/admin', kind: 'static', blocks: [] }],
-        }
-        : mode === 'login'
-        ? {
-          version: '1.0.0',
-          layout: { id: 'l-login', type: 'layout', layoutKey: 'auth.default', slots: {} },
-          pages: [{ id: 'p-login', path: '/login', kind: 'static', blocks: [] }],
-        } : {
-          version: '1.0.0',
-          layout: { id: 'l-public', type: 'layout', layoutKey: 'public.default', slots: {} },
-          pages: [{ id: 'home', path: '/', kind: 'static', blocks: [] }],
-        };
-    }
-
-    return schema;
+    return section ?? DEFAULT_SCHEMA_BY_MODE[mode];
   }
 
   async search(projectId: string, q: string) {
@@ -395,17 +257,8 @@ export class ProjectsService {
     }
 
     return this.projectModel
-      .find(query, q?.trim() ? { score: { $meta: "textScore" } } : undefined)
-      .sort(q?.trim() ? { score: { $meta: "textScore" } } : { createdAt: -1 })
+      .find(query, q?.trim() ? { score: { $meta: 'textScore' } } : undefined)
+      .sort(q?.trim() ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
       .limit(50);
   }
-
-  // filterI18nMap(map: Record<string, string>, allowed: string[]) {
-  // const out: Record<string, string> = {};
-  // for (const [k, v] of Object.entries(map ?? {})) {
-  //   const kk = k.toLowerCase();
-  //   if (allowed.includes(kk) && typeof v === "string") out[kk] = v;
-  // }
-  // return out;
-  // }
 }

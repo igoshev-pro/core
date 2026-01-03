@@ -37,7 +37,7 @@ function Section({
 		<div
 			className={cn(
 				// ✅ mobile меньше, на md+ больше воздуха
-				"bg-background rounded-4xl p-4 sm:p-6 md:p-9",
+				"bg-background rounded-4xl p-4 sm:p-6 md:p-6",
 				className
 			)}
 		>
@@ -655,8 +655,8 @@ export default function ProjectSiteSettingsEditPage({
 							{/* Responsive image grid: 2 on sm+, 1 on mobile */}
 							<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4 sm:gap-5">
 								{/* logo card */}
-								<div className="bg-background rounded-4xl p-4 sm:p-5">
-									<p className="font-medium mb-3">Logo</p>
+								<div className="bg-background rounded-4xl p-3 sm:p-3">
+									<p className="font-medium p-2 pt-0">Logo</p>
 									<div className="relative w-full aspect-square rounded-3xl overflow-hidden">
 										<div
 											className={cn("absolute inset-0", {
@@ -705,8 +705,8 @@ export default function ProjectSiteSettingsEditPage({
 								</div>
 
 								{/* dark logo */}
-								<div className="bg-background rounded-4xl p-4 sm:p-5">
-									<p className="font-medium mb-3">Logo (Dark)</p>
+								<div className="bg-background rounded-4xl p-3 sm:p-3">
+									<p className="font-medium p-2 pt-0">Logo (Dark)</p>
 									<div className="relative w-full aspect-square rounded-3xl overflow-hidden">
 										<div
 											className={cn("absolute inset-0", {
@@ -755,8 +755,8 @@ export default function ProjectSiteSettingsEditPage({
 								</div>
 
 								{/* alt logo */}
-								<div className="bg-background rounded-4xl p-4 sm:p-5">
-									<p className="font-medium mb-3">Logo (Alt)</p>
+								<div className="bg-background rounded-4xl p-3 sm:p-3">
+									<p className="font-medium p-2 pt-0">Logo (Alt)</p>
 									<div className="relative w-full aspect-square rounded-3xl overflow-hidden">
 										<div
 											className={cn("absolute inset-0", {
@@ -805,8 +805,8 @@ export default function ProjectSiteSettingsEditPage({
 								</div>
 
 								{/* favicon */}
-								<div className="bg-background rounded-4xl p-4 sm:p-5">
-									<p className="font-medium mb-3">Favicon</p>
+								<div className="bg-background rounded-4xl p-3 sm:p-3">
+									<p className="font-medium p-2 pt-0">Favicon</p>
 									<div className="relative w-full aspect-square rounded-3xl overflow-hidden">
 										<div
 											className={cn("absolute inset-0", {

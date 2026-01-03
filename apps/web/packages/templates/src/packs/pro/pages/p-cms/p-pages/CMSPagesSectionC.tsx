@@ -246,7 +246,7 @@ export default function CMSPagesSectionC({ projectId }: { projectId: string }) {
         </div>
 
         {/* Tabs */}
-        <div className="bg-background rounded-4xl mb-4 sm:mb-6">
+        <div className="bg-background rounded-4xl mb-4 sm:mb-9">
           <Tabs
             aria-label="Modules"
             selectedKey={activeModule}

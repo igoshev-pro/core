@@ -4,6 +4,7 @@ import { ProjectStatus, ProjectType } from '../project.enum'
 import { Client } from '../../clients/entities/client.entity';
 import { buildI18nText, type I18nMap } from 'src/common/types/i18n.types';
 import { FileObject } from 'src/common/types/file-object';
+import { SiteSchema } from './site-schema.entity';
 
 export type ProjectDocument = Project & Document;
 
@@ -104,11 +105,11 @@ export class Project {
   })
   i18n: I18n
 
-      @Prop({ type: String, required: false, default: null })
-      previewPath?: string | null;
-  
-      @Prop()
-      gallery?: FileObject[];
+  @Prop({ type: String, required: false, default: null })
+  previewPath?: string | null;
+
+  @Prop()
+  gallery?: FileObject[];
 
   @Prop({ default: 0, index: true })
   sortOrder: number;
@@ -135,8 +136,8 @@ export class Project {
   @Prop({ type: Object, required: false })
   theme?: ProjectTheme;
 
-  @Prop({ type: Object, required: false })
-  site?: ProjectSiteSchema
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'SiteSchema', required: false, default: null })
+  site?: mongoose.Types.ObjectId | SiteSchema | null;
 
   @Prop({ type: Object, required: false })
   seoDefaults?: ProjectSeoDefaults
