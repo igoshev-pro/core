@@ -1,48 +1,55 @@
-import { withProjectId } from "../utils/withProjectId";
+import { apiRequest } from "../httpClient";
 
-export async function uploadFileToStorage(input: any) {
-    const { file, path, expiresInSec, apiBaseUrl = "" } = input;
+type UploadFileInput = {
+  file: File | Blob;
+  path: string;
+  expiresInSec?: number;
+  apiBaseUrl?: string;
+};
 
-    // 1) presign upload
-    const presignRes = await fetch(`/api/storage/presign/upload${withProjectId()}`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            path,
-            contentType: file.type || "application/octet-stream",
-            expiresInSec: expiresInSec ?? 60,
-        }),
-    });
+type PresignUploadResponse = { url: string };
 
-    
-    if (!presignRes.ok) {
-        const text = await presignRes.text();
-        throw new Error(`Presign upload failed: ${presignRes.status} ${text}`);
-    }
+export async function uploadFileToStorage(input: UploadFileInput) {
+  const { file, path, expiresInSec, apiBaseUrl = "" } = input;
 
-    const { url } = (await presignRes.json())
+  // 1) presign upload
+  const presignRes = await apiRequest<PresignUploadResponse>({
+    path: `/api/storage/presign/upload`,
+    method: "POST",
+    throwOnError: true,
+    body: {
+      path,
+      contentType: (file as File).type || "application/octet-stream",
+      expiresInSec: expiresInSec ?? 60,
+    },
+  });
 
-    // 2) upload to S3
-    const putRes = await fetch(url, {
-        method: "PUT",
-        headers: {
-            "Content-Type": file.type || "application/octet-stream",
-        },
-        body: file,
-        credentials: "omit"
-    });
+  if (!presignRes?.url) {
+    throw new Error("Presign upload failed: empty url");
+  }
 
-    if (!putRes.ok) {
-        const text = await putRes.text();
-        throw new Error(`S3 upload failed: ${putRes.status} ${text}`);
-    }
+  const url = presignRes.url;
 
-    return {
-        path,
-        contentType: file.type || "application/octet-stream",
-        size: file.size,
-    };
+  // 2) upload to S3
+  const putRes = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": (file as File).type || "application/octet-stream",
+    },
+    body: file,
+    credentials: "omit",
+  });
+
+  if (!putRes.ok) {
+    const text = await putRes.text();
+    throw new Error(`S3 upload failed: ${putRes.status} ${text}`);
+  }
+
+  return {
+    path,
+    contentType: (file as File).type || "application/octet-stream",
+    size: (file as File).size,
+  };
 }
 
 export async function getDownloadUrl(params: {
@@ -51,18 +58,16 @@ export async function getDownloadUrl(params: {
 }): Promise<string> {
   const { path, expiresInSec = 300 } = params;
 
-  const res = await fetch(`/api/storage/presign/download`, {
+  const res = await apiRequest<{ url: string }, { path: string; expiresInSec: number }>({
+    path: "/api/storage/presign/download",
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include", // чтобы куки/сессия дошли до Next API (если нужно)
-    body: JSON.stringify({ path, expiresInSec }),
+    body: { path, expiresInSec },
+    throwOnError: true,
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Presign download failed: ${res.status} ${text}`);
+  if (!res?.url) {
+    throw new Error("Presign download failed: empty url");
   }
 
-  const data = (await res.json()) as { url: string };
-  return data.url;
+  return res.url;
 }

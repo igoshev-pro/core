@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { withProjectId } from "@/api/utils/withProjectId";
 import { OtpModal } from "../modals/OtpModal";
 import { useState } from "react";
 import { getOtp } from "@/api/core/authApi";
@@ -87,17 +86,6 @@ export const LoginWidgetClient = () => {
         >
           {isSubmitting ? "Отправка..." : "Войти"}
         </Button>
-        {/* <div className="flex justify-center">
-          <div className="text-xs">
-            Еще нет аккаунта?{" "}
-            <button
-              className="text-primary cursor-pointer"
-              onClick={() => router.push(`/login/new${withProjectId()}`)}
-            >
-              Регистрация
-            </button>
-          </div>
-        </div> */}
       </form>
 
       <OtpModal

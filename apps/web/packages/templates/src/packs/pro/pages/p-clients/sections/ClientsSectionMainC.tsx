@@ -9,7 +9,6 @@ import { UserCard } from "../../../components/widgets/UserCard";
 import { ConfirmModal } from "../../../components/modals/ConfirmModal";
 import { AddMoneyModal } from "../../../components/modals/AddMoneyModal";
 import { ROUTES } from "@/packages/templates/common/routes";
-import { withProjectId } from "@/api/utils/withProjectId";
 
 import {
   DndContext,
@@ -320,9 +319,7 @@ export default function ClientsSectionMainC() {
             <Button
               color="primary"
               radius="full"
-              onPress={() =>
-                router.push(ROUTES.ADMIN_CLIENTS_CREATE + withProjectId())
-              }
+              onPress={() => router.push(ROUTES.ADMIN_CLIENTS_CREATE)}
             >
               Создать
             </Button>
@@ -341,9 +338,7 @@ export default function ClientsSectionMainC() {
                       item={item}
                       onEdit={(i: Client) => {
                         setCurrent(i);
-                        router.push(
-                          `${ROUTES.ADMIN_CLIENTS_EDIT}/${i?._id}/${withProjectId()}`
-                        );
+                        router.push(`${ROUTES.ADMIN_CLIENTS_EDIT}/${i?._id}`);
                       }}
                       onRemove={(i: Client) => {
                         setCurrent(i);
