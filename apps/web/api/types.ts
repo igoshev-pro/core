@@ -50,6 +50,8 @@ export type ProjectSeoDefaults = {
   ogImage?: string;
 };
 
+export type ProjectSettings = Record<string, unknown>;
+
 export type ProjectDbConfig = {
   mongo?: { uri?: string; name?: string };
 };
@@ -73,6 +75,7 @@ export type Project = {
   template?: ProjectTemplate;
   theme?: ProjectTheme;
   seoDefaults?: ProjectSeoDefaults;
+  settings?: ProjectSettings;
   site?: Record<string, unknown>;
   sortOrder?: number;
   db?: ProjectDbConfig;
@@ -92,6 +95,7 @@ export type CreateProjectDto = {
   template?: ProjectTemplate;
   theme?: ProjectTheme;
   seoDefaults?: ProjectSeoDefaults;
+  settings?: ProjectSettings;
   site?: Record<string, unknown>;
 };
 

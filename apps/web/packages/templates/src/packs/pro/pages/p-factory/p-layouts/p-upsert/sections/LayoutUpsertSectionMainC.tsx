@@ -273,7 +273,7 @@ export default function LayoutUpsertSectionMainC({
 			try {
 				const user = await ops.create({ ...data, template: data.template, name: { ru: data.name } });
 
-				if (file) {
+				if (file && user?._id) {
 					await upload(user._id);
 				}
 

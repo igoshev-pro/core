@@ -325,7 +325,7 @@ export default function SectionUpsertSectionMainC({
 			try {
 				const created = await ops.create(payload);
 
-				if (file) await upload(created._id);
+				if (file && created?._id) await upload(created._id);
 
 				addToast({
 					color: "success",

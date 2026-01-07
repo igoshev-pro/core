@@ -220,7 +220,7 @@ export default function ClientUpsertSectionMainC({
 			try {
 				const user = await ops.create(data);
 
-				if (file) {
+				if (file && user?._id) {
 					await upload(user._id);
 				}
 

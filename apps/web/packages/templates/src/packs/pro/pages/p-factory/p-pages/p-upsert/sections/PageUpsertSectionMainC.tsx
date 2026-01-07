@@ -297,7 +297,7 @@ export default function PageUpsertSectionMainC({
                     name: { ru: data.name },
                 });
 
-                if (file) {
+                if (file && user?._id) {
                     await upload(user._id);
                 }
 

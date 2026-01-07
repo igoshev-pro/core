@@ -235,7 +235,7 @@ export default function ThemeUpsertSectionMainC({
 			try {
 				const user = await ops.create({ ...data, name: { ru: data.name } });
 
-				if (file) {
+				if (file && user?._id) {
 					await upload(user._id);
 				}
 

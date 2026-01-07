@@ -267,7 +267,13 @@ export default function ProjectUpsertSectionMainC({
       setTemplatesLoading(true);
       try {
         const data = await getTemplates();
-        if (!cancelled) setTemplates(Array.isArray(data) ? data : []);
+        const normalized =
+          Array.isArray(data)
+            ? data
+                .filter((t) => typeof t?.slug === "string")
+                .map((t) => ({ slug: String(t.slug), name: t.name as I18nString | undefined }))
+            : [];
+        if (!cancelled) setTemplates(normalized);
       } finally {
         if (!cancelled) setTemplatesLoading(false);
       }
@@ -303,7 +309,13 @@ export default function ProjectUpsertSectionMainC({
       setThemesLoading(true);
       try {
         const data = await getThemes();
-        if (!cancelled) setThemes(Array.isArray(data) ? data : []);
+        const normalized =
+          Array.isArray(data)
+            ? data
+                .filter((t) => typeof t?.slug === "string")
+                .map((t) => ({ slug: String(t.slug), name: t.name as I18nString | undefined }))
+            : [];
+        if (!cancelled) setThemes(normalized);
       } finally {
         if (!cancelled) setThemesLoading(false);
       }
@@ -575,7 +587,7 @@ export default function ProjectUpsertSectionMainC({
       setLoading(true);
       try {
         const created = await ops.create(payload);
-        if (file) await upload(created._id);
+        if (file && created?._id) await upload(created._id);
 
         addToast({
           color: "success",
