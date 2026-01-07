@@ -34,6 +34,10 @@ export class WidgetsService {
     return this.widgetModel.findOne({ _id: id }).exec();
   }
 
+  findByKey(key: string) {
+    return this.widgetModel.findOne({ key }).select('propsSchema').lean().exec();
+  }
+
   update(id: string, data: UpdateWidgetDto) {
     return this.widgetModel
       .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })

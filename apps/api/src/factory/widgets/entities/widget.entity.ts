@@ -41,6 +41,9 @@ export class Widget {
 
     @Prop({ type: Object, required: false })
     props?: Object
+
+    @Prop({ type: Object, required: false })
+    propsSchema?: Object
 }
 
 export type WidgetDocument = Widget & Document;

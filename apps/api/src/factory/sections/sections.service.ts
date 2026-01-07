@@ -34,6 +34,10 @@ export class SectionsService {
     return this.sectionModel.findOne({ _id: id }).populate('widgets').exec();
   }
 
+  findByKey(key: string) {
+    return this.sectionModel.findOne({ key }).select('propsSchema').lean().exec();
+  }
+
   update(id: string, data: UpdateSectionDto) {
     return this.sectionModel
       .findByIdAndUpdate({ _id: id }, { ...data }, { new: true })

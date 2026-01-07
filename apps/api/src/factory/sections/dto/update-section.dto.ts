@@ -10,5 +10,6 @@ export class UpdateSectionDto {
     previewPath?: string | null;
     gallery?: any[];
     props?: any
+    propsSchema?: any
     widgets?: any[]
 }

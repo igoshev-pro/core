@@ -25,6 +25,11 @@ export class SectionsController {
     return this.sectionsService.findOne(id);
   }
 
+  @Get('key/:key')
+  findByKey(@Param('key') key: string) {
+    return this.sectionsService.findByKey(key);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateSectionDto: UpdateSectionDto) {
     return this.sectionsService.update(id, updateSectionDto);

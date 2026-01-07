@@ -25,6 +25,11 @@ export class WidgetsController {
     return this.widgetsService.findOne(id);
   }
 
+  @Get('key/:key')
+  findByKey(@Param('key') key: string) {
+    return this.widgetsService.findByKey(key);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateWidgetDto: UpdateWidgetDto) {
     return this.widgetsService.update(id, updateWidgetDto);

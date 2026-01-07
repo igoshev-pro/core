@@ -84,6 +84,253 @@ const DEFAULT_BLOCK: SiteBlock = {
   props: {},
 };
 
+// ===================== Props Editor Component =====================
+const PropsEditor = memo(function PropsEditor({
+  block,
+  pageIndex,
+  blockIndex,
+  onUpdate,
+}: {
+  block: SiteBlock;
+  pageIndex: number;
+  blockIndex: number;
+  onUpdate: (pageIndex: number, blockIndex: number, field: keyof SiteBlock, value: any) => void;
+}) {
+  const [propsSchema, setPropsSchema] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Загружаем схему пропсов при изменении key или type
+  useEffect(() => {
+    if (!block.key || !block.type) {
+      setPropsSchema(null);
+      return;
+    }
+
+    const loadSchema = async () => {
+      setLoading(true);
+      try {
+        const endpoint = block.type === 'section' 
+          ? `/api/factory/sections/key/${encodeURIComponent(block.key)}`
+          : `/api/factory/widgets/key/${encodeURIComponent(block.key)}`;
+        
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setPropsSchema(data?.propsSchema || null);
+        } else {
+          setPropsSchema(null);
+        }
+      } catch (error) {
+        console.error('Failed to load props schema:', error);
+        setPropsSchema(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSchema();
+  }, [block.key, block.type]);
+
+  const handlePropChange = useCallback((propKey: string, value: any) => {
+    const currentProps = block.props || {};
+    const newProps = {
+      ...currentProps,
+      [propKey]: value === '' ? undefined : value,
+    };
+    // Удаляем undefined значения
+    Object.keys(newProps).forEach(key => {
+      if (newProps[key] === undefined) {
+        delete newProps[key];
+      }
+    });
+    onUpdate(pageIndex, blockIndex, 'props', newProps);
+  }, [block.props, pageIndex, blockIndex, onUpdate]);
+
+  const handleKeyValueChange = useCallback((key: string, value: string) => {
+    const currentProps = block.props || {};
+    const newProps = {
+      ...currentProps,
+      [key]: value === '' ? undefined : value,
+    };
+    // Удаляем undefined значения
+    Object.keys(newProps).forEach(k => {
+      if (newProps[k] === undefined) {
+        delete newProps[k];
+      }
+    });
+    onUpdate(pageIndex, blockIndex, 'props', newProps);
+  }, [block.props, pageIndex, blockIndex, onUpdate]);
+
+  const handleAddProp = useCallback(() => {
+    const currentProps = block.props || {};
+    const newKey = `newProp${Object.keys(currentProps).length + 1}`;
+    handleKeyValueChange(newKey, '');
+  }, [block.props, handleKeyValueChange]);
+
+  const handleRemoveProp = useCallback((key: string) => {
+    const currentProps = block.props || {};
+    const newProps = { ...currentProps };
+    delete newProps[key];
+    onUpdate(pageIndex, blockIndex, 'props', newProps);
+  }, [block.props, pageIndex, blockIndex, onUpdate]);
+
+  // Условные возвраты только после всех хуков
+  if (!block.key || !block.type) {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="mt-3 p-3 bg-foreground-50 rounded-xl">
+        <p className="text-sm text-foreground-400">Загрузка схемы пропсов...</p>
+      </div>
+    );
+  }
+
+  if (!propsSchema || !propsSchema.properties) {
+    // Если схемы нет, показываем редактор ключ-значение
+    const propsEntries = Object.entries(block.props || {});
+    
+    return (
+      <div className="mt-3">
+        <Button
+          size="sm"
+          variant="light"
+          onPress={() => setIsExpanded(!isExpanded)}
+          className="w-full justify-start"
+        >
+          {isExpanded ? 'Скрыть' : 'Показать'} Props ({propsEntries.length})
+        </Button>
+        {isExpanded && (
+          <div className="mt-2 space-y-2 p-3 bg-foreground-50 rounded-xl">
+            {propsEntries.map(([key, value]) => (
+              <div key={key} className="flex gap-2 items-end">
+                <Input
+                  label="Ключ"
+                  size="sm"
+                  className="flex-1"
+                  value={key}
+                  onChange={(e) => {
+                    const newKey = e.target.value;
+                    if (newKey && newKey !== key) {
+                      const currentProps = block.props || {};
+                      const newProps = { ...currentProps };
+                      delete newProps[key];
+                      newProps[newKey] = value;
+                      onUpdate(pageIndex, blockIndex, 'props', newProps);
+                    }
+                  }}
+                />
+                <Input
+                  label="Значение"
+                  size="sm"
+                  className="flex-1"
+                  value={String(value)}
+                  onChange={(e) => handleKeyValueChange(key, e.target.value)}
+                />
+                <Button
+                  variant="flat"
+                  color="danger"
+                  radius="full"
+                  isIconOnly
+                  size="sm"
+                  onPress={() => handleRemoveProp(key)}
+                >
+                  <RiDeleteBin5Fill />
+                </Button>
+              </div>
+            ))}
+            <Button
+              size="sm"
+              variant="light"
+              color="primary"
+              startContent={<RiAddLine />}
+              onPress={handleAddProp}
+              className="w-full"
+            >
+              Добавить проп
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Рендерим поля на основе схемы
+  const properties = propsSchema.properties || {};
+  const required = propsSchema.required || [];
+
+  return (
+    <div className="mt-3">
+      <Button
+        size="sm"
+        variant="light"
+        onPress={() => setIsExpanded(!isExpanded)}
+        className="w-full justify-start"
+      >
+        {isExpanded ? 'Скрыть' : 'Показать'} Props ({Object.keys(properties).length})
+      </Button>
+      {isExpanded && (
+        <div className="mt-2 space-y-3 p-3 bg-foreground-50 rounded-xl">
+          {Object.entries(properties).map(([propKey, propSchema]: [string, any]) => {
+            const isRequired = required.includes(propKey);
+            const propType = propSchema.type || 'string';
+            const currentValue = block.props?.[propKey] ?? propSchema.default ?? '';
+
+            return (
+              <div key={propKey}>
+                {propType === 'string' && (
+                  <Input
+                    label={propSchema.title || propKey}
+                    description={propSchema.description}
+                    size="sm"
+                    value={String(currentValue)}
+                    onChange={(e) => handlePropChange(propKey, e.target.value)}
+                    isRequired={isRequired}
+                  />
+                )}
+                {propType === 'number' && (
+                  <Input
+                    type="number"
+                    label={propSchema.title || propKey}
+                    description={propSchema.description}
+                    size="sm"
+                    value={String(currentValue)}
+                    onChange={(e) => handlePropChange(propKey, e.target.value ? Number(e.target.value) : undefined)}
+                    isRequired={isRequired}
+                  />
+                )}
+                {propType === 'boolean' && (
+                  <Select
+                    label={propSchema.title || propKey}
+                    description={propSchema.description}
+                    size="sm"
+                    selectedKeys={currentValue ? ['true'] : ['false']}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0] as string;
+                      handlePropChange(propKey, selected === 'true');
+                    }}
+                    isRequired={isRequired}
+                  >
+                    <SelectItem key="true">true</SelectItem>
+                    <SelectItem key="false">false</SelectItem>
+                  </Select>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+});
+
 // ===================== Page Inputs Component =====================
 const PageInputs = memo(function PageInputs({
   page,
@@ -192,54 +439,62 @@ const SortableBlockItem = memo(function SortableBlockItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex gap-3 items-center bg-background rounded-xl p-3",
+        "bg-background rounded-xl p-3",
         isDragging ? "shadow-lg" : "border-transparent"
       )}
     >
-      {/* Drag Handle */}
-      <button
-        type="button"
-        className="cursor-grab active:cursor-grabbing p-1 text-foreground-400 hover:text-foreground-600 touch-none"
-        {...attributes}
-        {...listeners}
-      >
-        <RiDraggable className="text-lg" />
-      </button>
+      <div className="flex gap-3 items-center">
+        {/* Drag Handle */}
+        <button
+          type="button"
+          className="cursor-grab active:cursor-grabbing p-1 text-foreground-400 hover:text-foreground-600 touch-none"
+          {...attributes}
+          {...listeners}
+        >
+          <RiDraggable className="text-lg" />
+        </button>
 
-      <Input
-        label="ID"
-        size="sm"
-        className="flex-1"
-        value={block._id}
-        onChange={handleIdChange}
+        <Input
+          label="ID"
+          size="sm"
+          className="flex-1"
+          value={block._id}
+          onChange={handleIdChange}
+        />
+        <Select
+          label="Type"
+          size="sm"
+          className="w-32"
+          selectedKeys={[block.type]}
+          onChange={handleTypeChange}
+        >
+          <SelectItem key="widget">widget</SelectItem>
+          <SelectItem key="section">section</SelectItem>
+        </Select>
+        <Input
+          label="Key"
+          size="sm"
+          className="flex-1"
+          value={block.key}
+          onChange={handleKeyChange}
+        />
+        <Button
+          variant="flat"
+          color="danger"
+          radius="full"
+          isIconOnly
+          size="sm"
+          onPress={handleRemove}
+        >
+          <RiDeleteBin5Fill />
+        </Button>
+      </div>
+      <PropsEditor
+        block={block}
+        pageIndex={pageIndex}
+        blockIndex={blockIndex}
+        onUpdate={onUpdate}
       />
-      <Select
-        label="Type"
-        size="sm"
-        className="w-32"
-        selectedKeys={[block.type]}
-        onChange={handleTypeChange}
-      >
-        <SelectItem key="widget">widget</SelectItem>
-        <SelectItem key="section">section</SelectItem>
-      </Select>
-      <Input
-        label="Key"
-        size="sm"
-        className="flex-1"
-        value={block.key}
-        onChange={handleKeyChange}
-      />
-      <Button
-        variant="flat"
-        color="danger"
-        radius="full"
-        isIconOnly
-        size="sm"
-        onPress={handleRemove}
-      >
-        <RiDeleteBin5Fill />
-      </Button>
     </div>
   );
 });

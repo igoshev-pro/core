@@ -10,5 +10,6 @@ export class CreateSectionDto {
     previewPath?: string | null;
     gallery?: any[];
     props?: any
+    propsSchema?: any
     widgets?: any[]
 }

@@ -43,6 +43,9 @@ export class Section {
     @Prop({ type: Object, required: false })
     props?: Object
 
+    @Prop({ type: Object, required: false })
+    propsSchema?: Object
+
     @Prop([
         {
             type: mongoose.Schema.Types.ObjectId,

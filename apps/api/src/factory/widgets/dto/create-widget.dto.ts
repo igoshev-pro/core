@@ -10,4 +10,5 @@ export class CreateWidgetDto {
     previewPath?: string | null;
     gallery?: any[];
     props?: any
+    propsSchema?: any
 }

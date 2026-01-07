@@ -7,7 +7,8 @@ export class UpdateWidgetDto {
         type?: string;
         sortOrder?: number;
         status?: string;
-        previewPath?: string | null;
-        gallery?: any[];
-        props?: any
+    previewPath?: string | null;
+    gallery?: any[];
+    props?: any
+    propsSchema?: any
 }
