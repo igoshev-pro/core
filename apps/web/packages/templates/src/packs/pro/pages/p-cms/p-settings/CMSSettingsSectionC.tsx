@@ -162,6 +162,7 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
     getValues,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<FormData>({
+    // @ts-ignore
     resolver: zodResolver(formSchema),
     defaultValues: {
       companyName_ru: "",
@@ -550,11 +551,12 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
               Брендинг, SEO, контакты, аналитика
             </p>
           </div>
-        </div>
+          </div>
 
         <form
           id={`site-settings-form-${formKey}`}
           key={formKey}
+          // @ts-ignore
           onSubmit={handleSubmit(onSubmit)}
           className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-12"
         >
@@ -589,16 +591,16 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
                         </div>
                       )}
 
-                      <Button
+          <Button
                         className="absolute bottom-3 right-3 z-10"
-                        color="primary"
-                        radius="full"
+            color="primary"
+            radius="full"
                         isIconOnly
                         onPress={() => logoInputRef.current?.click()}
                         type="button"
-                      >
+          >
                         <IoCamera className="text-[20px]" />
-                      </Button>
+          </Button>
 
                       <input
                         ref={logoInputRef}
@@ -612,7 +614,7 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
                       />
                     </div>
                   </div>
-                </div>
+        </div>
 
                 {/* Logo Dark */}
                 <div className="bg-background rounded-4xl p-3">
@@ -638,16 +640,16 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
                         </div>
                       )}
 
-                      <Button
+            <Button
                         className="absolute bottom-3 right-3 z-10"
                         color="primary"
-                        radius="full"
+              radius="full"
                         isIconOnly
                         onPress={() => logoDarkInputRef.current?.click()}
                         type="button"
-                      >
+            >
                         <IoCamera className="text-[20px]" />
-                      </Button>
+            </Button>
 
                       <input
                         ref={logoDarkInputRef}
@@ -661,7 +663,7 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
                       />
                     </div>
                   </div>
-                </div>
+        </div>
 
                 {/* Logo Alt */}
                 <div className="bg-background rounded-4xl p-3">
@@ -856,12 +858,12 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
                   {phonesFA.fields.length === 0 && (
                     <p className="text-sm text-foreground-400">Нет телефонов</p>
                   )}
-                </div>
+                    </div>
 
                 <div className="flex items-center justify-between mt-3">
                   <p className="font-medium">Emails</p>
                   <Button
-                    size="sm"
+                        size="sm"
                     radius="full"
                     variant="light"
                     color="primary"
@@ -905,20 +907,20 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
                 </div>
 
                 <Grid2>
-                  <Input
+                      <Input
                     label="Telegram"
                     placeholder="@username или ссылка"
                     size="lg"
                     {...register("telegram")}
-                  />
-                  <Input
+                      />
+                      <Input
                     label="WhatsApp"
                     placeholder="+7XXXXXXXXXX или wa.me/..."
                     size="lg"
                     {...register("whatsApp")}
                   />
                 </Grid2>
-              </div>
+                    </div>
             </Section>
 
             <Section title="Адрес и карта">
@@ -992,17 +994,17 @@ export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, 
 
             {/* Save (desktop bottom) */}
             <div className="hidden md:flex justify-end mt-3">
-              <Button
-                color="primary"
+                <Button
+                  color="primary"
                 size="lg"
-                radius="full"
+                  radius="full"
                 isLoading={isSubmitting || loading}
                 isDisabled={!canSave}
                 type="submit"
-              >
+                >
                 Сохранить
-              </Button>
-            </div>
+                </Button>
+              </div>
           </div>
         </form>
       </div>

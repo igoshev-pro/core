@@ -55,6 +55,21 @@ const propItemSchema = z.object({
 	value: z.string().default(""),
 });
 
+// ✅ схема для элемента propsSchema
+const propSchemaItemSchema = z.object({
+	key: z.string().default(""),
+	label: z.object({
+		ru: z.string().default(""),
+		en: z.string().default(""),
+		de: z.string().default(""),
+	}).default({ ru: "", en: "", de: "" }),
+	type: z.enum(["string", "number", "boolean"]).default("string"),
+	isContent: z.boolean().default(true),
+	description: z.string().optional(),
+	default: z.string().optional(),
+	required: z.boolean().default(false),
+});
+
 const itemSchema = z.object({
 	name: z
 		.string()
@@ -68,6 +83,9 @@ const itemSchema = z.object({
 
 	// ✅ props всегда массив, не optional
 	props: z.array(propItemSchema).default([]),
+	
+	// ✅ propsSchema - массив схем пропсов
+	propsSchema: z.array(propSchemaItemSchema).default([]),
 
 	status: z
 		.string()
@@ -111,6 +129,62 @@ function propsArrayToObject(arr: Array<{ key: string; value: string }>) {
 	return out;
 }
 
+function normalizePropsSchemaToArray(input: any): Array<any> {
+	if (!input || !input.properties) return [];
+	return Object.entries(input.properties).map(([key, schema]: [string, any]) => ({
+		key,
+		label: schema.label || { ru: "", en: "", de: "" },
+		type: schema.type || "string",
+		isContent: schema.isContent !== false,
+		description: schema.description || "",
+		default: schema.default || "",
+		required: input.required?.includes(key) || false,
+	}));
+}
+
+function propsSchemaArrayToObject(arr: Array<any>) {
+	if (!arr || arr.length === 0) return null;
+	
+	const properties: any = {};
+	const required: string[] = [];
+	
+	arr.forEach((item) => {
+		if (!item.key) return;
+		
+		const propSchema: any = {
+			type: item.type || "string",
+		};
+		
+		if (item.label && (item.label.ru || item.label.en || item.label.de)) {
+			propSchema.label = item.label;
+		}
+		
+		if (item.isContent === false) {
+			propSchema.isContent = false;
+		}
+		
+		if (item.description) {
+			propSchema.description = item.description;
+		}
+		
+		if (item.default) {
+			propSchema.default = item.default;
+		}
+		
+		properties[item.key] = propSchema;
+		
+		if (item.required) {
+			required.push(item.key);
+		}
+	});
+	
+	return {
+		type: "object",
+		properties,
+		required: required.length > 0 ? required : undefined,
+	};
+}
+
 export default function SectionUpsertSectionMainC({
 	type,
 	projectId,
@@ -126,23 +200,28 @@ export default function SectionUpsertSectionMainC({
 	const [templates, setTemplates] = useState<TemplateItem[]>([]);
 	const [templatesLoading, setTemplatesLoading] = useState(false);
 
-	const {
-		register,
-		control,
-		handleSubmit,
-		reset,
-		getValues,
-		formState: { errors, isSubmitting, isDirty },
-	} = useForm<RegisterFormData>({
+    const {
+        register,
+        control,
+        handleSubmit,
+        reset,
+        getValues,
+        formState: { errors, isSubmitting, isDirty },
+    } = useForm<RegisterFormData>({
         // @ts-ignore
-		resolver: zodResolver(itemSchema),
-		defaultValues: { status: "draft", template: "", props: [] },
-	});
+        resolver: zodResolver(itemSchema),
+        defaultValues: { status: "draft", template: "", props: [], propsSchema: [] },
+    });
 
-	const { fields, append, remove } = useFieldArray({
-		control,
-		name: "props",
-	});
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: "props",
+    });
+
+    const { fields: propsSchemaFields, append: appendPropsSchema, remove: removePropsSchema } = useFieldArray({
+        control,
+        name: "propsSchema",
+    });
 
 	const ops = useMemo(() => {
 		switch (api) {
@@ -284,6 +363,7 @@ export default function SectionUpsertSectionMainC({
 					key: res?.key ?? "",
 					template: res?.template?._id ?? res?.template ?? "",
 					props: normalizePropsToArray(res?.props),
+					propsSchema: normalizePropsSchemaToArray(res?.propsSchema),
 					status: res?.status ?? "draft",
 				});
 			})
@@ -312,12 +392,25 @@ export default function SectionUpsertSectionMainC({
 		append({ key: "", value: "" });
 	};
 
+	const addPropsSchemaRow = () => {
+		appendPropsSchema({
+			key: "",
+			label: { ru: "", en: "", de: "" },
+			type: "string",
+			isContent: true,
+			description: "",
+			default: "",
+			required: false,
+		});
+	};
+
 	const onSubmit = async (data: RegisterFormData) => {
 		const payload = {
 			...data,
 			template: data.template,
 			name: { ru: data.name },
 			props: propsArrayToObject(data.props), // отправляем объект key->value
+			propsSchema: propsSchemaArrayToObject(data.propsSchema), // отправляем объект схемы
 		};
 
 		if (type === UpsertType.Create) {
@@ -348,7 +441,7 @@ export default function SectionUpsertSectionMainC({
 					shouldShowTimeoutProgress: true,
 				});
 			} finally {
-				reset({ status: "draft", template: "", props: [], name: "", key: "" });
+				reset({ status: "draft", template: "", props: [], propsSchema: [], name: "", key: "" });
 				clearPickedFile();
 				setLoading(false);
 			}
@@ -548,6 +641,138 @@ export default function SectionUpsertSectionMainC({
 											>
 												<RiDeleteBin5Fill className="text-[18px]" />
 											</Button>
+										</div>
+									))}
+								</div>
+
+								{/* ===== Props Schema ===== */}
+								<div className="mt-2 flex flex-col gap-3">
+									<div className="flex items-center justify-between">
+										<div className="text-sm font-semibold">Props Schema</div>
+										<Button
+											radius="full"
+											variant="light"
+											startContent={<FiPlus />}
+											onPress={addPropsSchemaRow}
+										>
+											Добавить
+										</Button>
+									</div>
+
+									{propsSchemaFields.length === 0 ? (
+										<div className="text-xs opacity-60">Нет схемы пропсов — добавь при необходимости.</div>
+									) : null}
+
+									{propsSchemaFields.map((f, idx) => (
+										<div key={f.id} className="flex flex-col gap-3 p-4 bg-foreground-50 rounded-xl">
+											<div className="flex gap-3 items-start">
+												<Input 
+													placeholder="Ключ пропса" 
+													size="lg" 
+													className="flex-1"
+													{...register(`propsSchema.${idx}.key`)} 
+												/>
+												<Controller
+													name={`propsSchema.${idx}.type`}
+													control={control}
+													render={({ field }) => (
+														<Select
+															placeholder="Тип"
+															size="lg"
+															className="w-32"
+															selectedKeys={field.value ? new Set([field.value]) : new Set()}
+															onSelectionChange={(keys) => {
+																const value = Array.from(keys)[0] as string;
+																field.onChange(value);
+															}}
+														>
+															<SelectItem key="string">string</SelectItem>
+															<SelectItem key="number">number</SelectItem>
+															<SelectItem key="boolean">boolean</SelectItem>
+														</Select>
+													)}
+												/>
+												<Button
+													isIconOnly
+													radius="full"
+													variant="light"
+													color="danger"
+													onPress={() => removePropsSchema(idx)}
+												>
+													<RiDeleteBin5Fill className="text-[18px]" />
+												</Button>
+											</div>
+											<div className="grid grid-cols-3 gap-3">
+												<Input 
+													placeholder="Label (RU)" 
+													size="lg" 
+													{...register(`propsSchema.${idx}.label.ru`)} 
+												/>
+												<Input 
+													placeholder="Label (EN)" 
+													size="lg" 
+													{...register(`propsSchema.${idx}.label.en`)} 
+												/>
+												<Input 
+													placeholder="Label (DE)" 
+													size="lg" 
+													{...register(`propsSchema.${idx}.label.de`)} 
+												/>
+											</div>
+											<div className="flex gap-3 items-center">
+												<Input 
+													placeholder="Описание" 
+													size="lg" 
+													className="flex-1"
+													{...register(`propsSchema.${idx}.description`)} 
+												/>
+												<Input 
+													placeholder="Значение по умолчанию" 
+													size="lg" 
+													className="flex-1"
+													{...register(`propsSchema.${idx}.default`)} 
+												/>
+											</div>
+											<div className="flex gap-3 items-center">
+												<Controller
+													name={`propsSchema.${idx}.isContent`}
+													control={control}
+													render={({ field }) => (
+														<Select
+															label="Тип"
+															size="lg"
+															className="flex-1"
+															selectedKeys={field.value ? new Set(['true']) : new Set(['false'])}
+															onSelectionChange={(keys) => {
+																const value = Array.from(keys)[0] === 'true';
+																field.onChange(value);
+															}}
+														>
+															<SelectItem key="true">Контентный</SelectItem>
+															<SelectItem key="false">Технический</SelectItem>
+														</Select>
+													)}
+												/>
+												<Controller
+													name={`propsSchema.${idx}.required`}
+													control={control}
+													render={({ field }) => (
+														<Select
+															label="Обязательный"
+															size="lg"
+															className="flex-1"
+															selectedKeys={field.value ? new Set(['true']) : new Set(['false'])}
+															onSelectionChange={(keys) => {
+																const value = Array.from(keys)[0] === 'true';
+																field.onChange(value);
+															}}
+														>
+															<SelectItem key="true">Да</SelectItem>
+															<SelectItem key="false">Нет</SelectItem>
+														</Select>
+													)}
+												/>
+											</div>
 										</div>
 									))}
 								</div>

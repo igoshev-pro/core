@@ -34,6 +34,7 @@ import {
   type SitePage,
   type SiteBlock,
 } from "@/api/core/projectsApi";
+import { useT } from "@/lib/i18n/client";
 
 // ===================== UI blocks =====================
 function Section({
@@ -178,6 +179,12 @@ const PropsEditor = memo(function PropsEditor({
   const [propsSchema, setPropsSchema] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Получаем функцию перевода - ВСЕГДА вызываем, до любых условных возвратов
+  const t = useT();
+  
+  // Определяем, является ли пользователь суперадмином - ВСЕГДА вызываем, до любых условных возвратов
+  const [isSuperAdmin, setIsSuperAdmin] = useState(true);
 
   // Загружаем схему пропсов при изменении key или type
   useEffect(() => {
@@ -215,6 +222,14 @@ const PropsEditor = memo(function PropsEditor({
 
     loadSchema();
   }, [block.key, block.type]);
+
+  // Проверяем роль пользователя через API
+  useEffect(() => {
+    // Проверяем роль пользователя через API
+    fetch('/api/core/super-admins/get/me')
+      .then(res => res.ok ? setIsSuperAdmin(true) : setIsSuperAdmin(false))
+      .catch(() => setIsSuperAdmin(false));
+  }, []);
 
   const handlePropChange = useCallback((propKey: string, value: any) => {
     onUpdate(pageIndex, blockIndex, 'props', (prevProps: any) => {
@@ -332,6 +347,29 @@ const PropsEditor = memo(function PropsEditor({
   const properties = propsSchema.properties || {};
   const required = propsSchema.required || [];
 
+  // Фильтруем пропсы: если не суперадмин, показываем только контентные
+  const filteredProperties = useMemo(() => {
+    if (isSuperAdmin) {
+      return properties;
+    }
+    // Фильтруем только контентные пропсы для клиентов
+    return Object.fromEntries(
+      Object.entries(properties).filter(([_, propSchema]: [string, any]) => {
+        // Если isContent не указан, считаем контентным (для обратной совместимости)
+        return propSchema.isContent !== false;
+      })
+    );
+  }, [properties, isSuperAdmin]);
+
+  const getPropLabel = useCallback((propKey: string, propSchema: any): string => {
+    // Если есть label с i18n, используем его
+    if (propSchema.label && typeof propSchema.label === 'object') {
+      return t(propSchema.label) || propKey;
+    }
+    // Иначе используем title или propKey
+    return propSchema.title || propKey;
+  }, [t]);
+
   return (
     <div className="mt-3">
       <Button
@@ -340,20 +378,21 @@ const PropsEditor = memo(function PropsEditor({
         onPress={() => setIsExpanded(!isExpanded)}
         className="w-full justify-start"
       >
-        {isExpanded ? 'Скрыть' : 'Показать'} Props ({Object.keys(properties).length})
+        {isExpanded ? 'Скрыть' : 'Показать'} Props ({Object.keys(filteredProperties).length})
       </Button>
       {isExpanded && (
         <div className="mt-2 space-y-3 p-3 bg-foreground-50 rounded-xl">
-          {Object.entries(properties).map(([propKey, propSchema]: [string, any]) => {
+          {Object.entries(filteredProperties).map(([propKey, propSchema]: [string, any]) => {
             const isRequired = required.includes(propKey);
             const propType = propSchema.type || 'string';
             const currentValue = block.props?.[propKey] ?? propSchema.default ?? '';
+            const propLabel = getPropLabel(propKey, propSchema);
 
             return (
               <div key={propKey}>
                 {propType === 'string' && (
                   <Input
-                    label={propSchema.title || propKey}
+                    label={propLabel}
                     description={propSchema.description}
                     size="sm"
                     value={String(currentValue)}
@@ -364,7 +403,7 @@ const PropsEditor = memo(function PropsEditor({
                 {propType === 'number' && (
                   <Input
                     type="number"
-                    label={propSchema.title || propKey}
+                    label={propLabel}
                     description={propSchema.description}
                     size="sm"
                     value={String(currentValue)}
@@ -374,7 +413,7 @@ const PropsEditor = memo(function PropsEditor({
                 )}
                 {propType === 'boolean' && (
                   <Select
-                    label={propSchema.title || propKey}
+                    label={propLabel}
                     description={propSchema.description}
                     size="sm"
                     selectedKeys={currentValue ? ['true'] : ['false']}
