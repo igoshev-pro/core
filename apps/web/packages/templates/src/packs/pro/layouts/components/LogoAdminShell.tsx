@@ -2,27 +2,30 @@
 
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 
-export const LogoAdminShell = () => {
-  const { theme } = useTheme();
-
+export const LogoAdminShell = memo(() => {
+  const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  if (!mounted) {
-    return (
-      <Image alt="logo" height={52} src="/img/system/logo-dark.png" width={151} />
-    );
-  }
+  // Используем resolvedTheme для более точного определения темы
+  const logoSrc = mounted && resolvedTheme === "dark" 
+    ? "/img/system/logo.png" 
+    : "/img/system/logo-dark.png";
 
   return (
     <Image
       alt="logo"
       height={52}
-      src={theme === "dark" ? "/img/system/logo.png" : "/img/system/logo-dark.png"}
+      src={logoSrc}
       width={151}
+      priority
     />
   );
-};
+});
+
+LogoAdminShell.displayName = 'LogoAdminShell';
