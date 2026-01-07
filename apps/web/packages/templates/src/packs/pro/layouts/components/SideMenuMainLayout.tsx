@@ -157,6 +157,35 @@ const globalMenuCache = new Map<string, {
 // Глобальный флаг загрузки
 const loadingPromises = new Map<string, Promise<any[]>>();
 
+// Функция для очистки кэша меню (можно вызвать извне)
+export const clearMenuCache = (projectId?: string) => {
+  if (projectId) {
+    // Очищаем кэш для конкретного проекта
+    globalMenuCache.delete(projectId);
+    loadingPromises.delete(projectId);
+    try {
+      localStorage.removeItem(`adminMenuData_${projectId}`);
+    } catch {
+      // Игнорируем ошибки localStorage
+    }
+  } else {
+    // Очищаем весь кэш
+    globalMenuCache.clear();
+    loadingPromises.clear();
+    try {
+      // Очищаем все ключи меню из localStorage
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('adminMenuData_')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch {
+      // Игнорируем ошибки localStorage
+    }
+  }
+};
+
 const SideMenuMainLayout = memo(() => {
   const pathname = usePathname();
   const router = useRouter();

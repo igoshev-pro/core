@@ -34,6 +34,7 @@ import {
   type SiteMenuItem,
   type SitePage,
 } from "@/api/core/projectsApi";
+import { clearMenuCache } from "../../../layouts/components/SideMenuMainLayout";
 
 // ===================== UI blocks =====================
 function Section({
@@ -527,6 +528,9 @@ export default function CMSMenuSectionC({ projectId }: Props) {
     try {
       const result = await updateSiteSchema(projectId, schema);
       console.log("✅ Schema saved:", result);
+
+      // Очищаем кэш меню после успешного сохранения
+      clearMenuCache(projectId);
 
       addToast({
         color: "success",
