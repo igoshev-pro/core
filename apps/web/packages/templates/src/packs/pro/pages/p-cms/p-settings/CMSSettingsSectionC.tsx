@@ -34,39 +34,21 @@ function Section({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "bg-background rounded-4xl p-4 sm:p-6 md:p-6",
-        className
-      )}
-    >
-      {title ? (
+    <div className={cn("bg-background rounded-4xl p-4 sm:p-6 md:p-6", className)}>
+      {title && (
         <div className="flex flex-col gap-1 mb-4 sm:mb-6">
           <h2 className="text-lg sm:text-xl font-semibold">{title}</h2>
-          {description ? (
-            <p className="text-sm text-foreground-500">{description}</p>
-          ) : null}
+          {description && <p className="text-sm text-foreground-500">{description}</p>}
         </div>
-      ) : null}
+      )}
       {children}
     </div>
   );
 }
 
-function Grid2({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function Grid2({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div
-      className={cn(
-        "grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5",
-        className
-      )}
-    >
+    <div className={cn("grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5", className)}>
       {children}
     </div>
   );
@@ -96,36 +78,22 @@ const urlOrEmpty = z
   .trim()
   .optional()
   .or(z.literal(""))
-  .refine(
-    (v) => !v || /^https?:\/\/.+/i.test(v),
-    "Введите корректный URL (https://...)"
-  );
+  .refine((v) => !v || /^https?:\/\/.+/i.test(v), "Введите корректный URL (https://...)");
 
 const phoneRu = z
   .string()
   .trim()
-  .refine(
-    (v) => !v || /^\+7\d{10}$/.test(v),
-    "Телефон должен быть в формате +7XXXXXXXXXX"
-  );
+  .refine((v) => !v || /^\+7\d{10}$/.test(v), "Телефон должен быть в формате +7XXXXXXXXXX");
 
 const emailOrEmpty = z
   .string()
   .trim()
-  .refine(
-    (v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
-    "Некорректный email"
-  );
+  .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Некорректный email");
 
 const formSchema = z.object({
   companyName_ru: z.string().optional().or(z.literal("")),
   companyName_en: z.string().optional().or(z.literal("")),
   companyName_de: z.string().optional().or(z.literal("")),
-
-  companyLogoPath: z.string().optional().or(z.literal("")),
-  companyLogoDarkPath: z.string().optional().or(z.literal("")),
-  companyLogoAltPath: z.string().optional().or(z.literal("")),
-  faviconPath: z.string().optional().or(z.literal("")),
 
   seo_title_ru: z.string().optional().or(z.literal("")),
   seo_title_en: z.string().optional().or(z.literal("")),
@@ -171,16 +139,20 @@ type Props = {
   id?: string;
 };
 
-export default function ProjectSiteSettingsEditPage({
-  type = UpsertType.Update,
-  projectId,
-  id,
-}: Props) {
+export default function ProjectSiteSettingsEditPage({ type = UpsertType.Update, projectId, id }: Props) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState<any>(null);
   const [formKey, setFormKey] = useState(0);
+
+  // Храним пути к изображениям отдельно (не в форме)
+  const [logoPaths, setLogoPaths] = useState({
+    companyLogoPath: "",
+    companyLogoDarkPath: "",
+    companyLogoAltPath: "",
+    faviconPath: "",
+  });
 
   const {
     register,
@@ -195,10 +167,6 @@ export default function ProjectSiteSettingsEditPage({
       companyName_ru: "",
       companyName_en: "",
       companyName_de: "",
-      companyLogoPath: "",
-      companyLogoDarkPath: "",
-      companyLogoAltPath: "",
-      faviconPath: "",
       seo_title_ru: "",
       seo_title_en: "",
       seo_title_de: "",
@@ -231,13 +199,18 @@ export default function ProjectSiteSettingsEditPage({
   const phonesFA = useFieldArray({ control, name: "phones" });
   const emailsFA = useFieldArray({ control, name: "emails" });
 
-  // ===================== settings from project =====================
-  const settings = (project?.settings ?? {}) as any;
+  // Debug errors
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.log("🔴 Form validation errors:", errors);
+    }
+  }, [errors]);
 
-  const { url: logoRemoteUrl } = usePresignedUrl(settings?.companyLogoPath);
-  const { url: logoDarkRemoteUrl } = usePresignedUrl(settings?.companyLogoDarkPath);
-  const { url: logoAltRemoteUrl } = usePresignedUrl(settings?.companyLogoAltPath);
-  const { url: faviconRemoteUrl } = usePresignedUrl(settings?.faviconPath);
+  // ===================== presigned URLs для превью =====================
+  const { url: logoRemoteUrl } = usePresignedUrl(logoPaths.companyLogoPath || null);
+  const { url: logoDarkRemoteUrl } = usePresignedUrl(logoPaths.companyLogoDarkPath || null);
+  const { url: logoAltRemoteUrl } = usePresignedUrl(logoPaths.companyLogoAltPath || null);
+  const { url: faviconRemoteUrl } = usePresignedUrl(logoPaths.faviconPath || null);
 
   // ===================== uploads refs + state =====================
   const logoInputRef = useRef<HTMLInputElement | null>(null);
@@ -255,34 +228,48 @@ export default function ProjectSiteSettingsEditPage({
   const [logoAltPreviewUrl, setLogoAltPreviewUrl] = useState<string | null>(null);
   const [faviconPreviewUrl, setFaviconPreviewUrl] = useState<string | null>(null);
 
+  // Create object URLs for previews
   useEffect(() => {
-    if (!logoFile) return;
+    if (!logoFile) {
+      setLogoPreviewUrl(null);
+      return;
+    }
     const url = URL.createObjectURL(logoFile);
     setLogoPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [logoFile]);
 
   useEffect(() => {
-    if (!logoDarkFile) return;
+    if (!logoDarkFile) {
+      setLogoDarkPreviewUrl(null);
+      return;
+    }
     const url = URL.createObjectURL(logoDarkFile);
     setLogoDarkPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [logoDarkFile]);
 
   useEffect(() => {
-    if (!logoAltFile) return;
+    if (!logoAltFile) {
+      setLogoAltPreviewUrl(null);
+      return;
+    }
     const url = URL.createObjectURL(logoAltFile);
     setLogoAltPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [logoAltFile]);
 
   useEffect(() => {
-    if (!faviconFile) return;
+    if (!faviconFile) {
+      setFaviconPreviewUrl(null);
+      return;
+    }
     const url = URL.createObjectURL(faviconFile);
     setFaviconPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [faviconFile]);
 
+  // Final preview URLs: local file preview > remote presigned URL
   const logoSrc = logoPreviewUrl ?? logoRemoteUrl ?? null;
   const logoDarkSrc = logoDarkPreviewUrl ?? logoDarkRemoteUrl ?? null;
   const logoAltSrc = logoAltPreviewUrl ?? logoAltRemoteUrl ?? null;
@@ -295,12 +282,10 @@ export default function ProjectSiteSettingsEditPage({
   ): Promise<string | null> => {
     try {
       const ext = fileExt(file);
-      const path = buildUserPhotoPath({
-        projectId,
-        userId: `${id}__${kind}`,
-        kind: "photo",
-        ext,
-      });
+      const timestamp = Date.now();
+      const path = `projects/${projectId}/branding/${kind}_${timestamp}.${ext}`;
+
+      console.log(`📤 Uploading ${kind}...`, { path });
 
       const uploaded = await uploadFileToStorage({
         projectId,
@@ -310,8 +295,10 @@ export default function ProjectSiteSettingsEditPage({
         apiBaseUrl: process.env.NEXT_PUBLIC_CORE_API_URL || "https://api.igoshev.pro/core",
       });
 
+      console.log(`✅ Uploaded ${kind}:`, uploaded);
       return uploaded?.path ?? null;
-    } catch {
+    } catch (error) {
+      console.error(`❌ Upload ${kind} error:`, error);
       return null;
     }
   };
@@ -320,13 +307,24 @@ export default function ProjectSiteSettingsEditPage({
   useEffect(() => {
     if (type !== UpsertType.Update || !id) return;
 
+    console.log("📥 Loading project:", id);
     setLoading(true);
 
     getProject(id)
       .then((res: any) => {
+        console.log("📦 Project loaded:", res);
         setProject(res);
 
         const s = (res?.settings ?? {}) as any;
+
+        // Устанавливаем пути к изображениям
+        setLogoPaths({
+          companyLogoPath: s?.companyLogoPath ?? "",
+          companyLogoDarkPath: s?.companyLogoDarkPath ?? "",
+          companyLogoAltPath: s?.companyLogoAltPath ?? "",
+          faviconPath: s?.faviconPath ?? "",
+        });
+
         const companyName = (s?.companyName ?? {}) as I18n3;
         const seo = (s?.seoDefaults ?? {}) as any;
         const seoTitle = (seo?.title ?? {}) as I18n3;
@@ -345,11 +343,6 @@ export default function ProjectSiteSettingsEditPage({
             companyName_ru: companyName?.ru ?? "",
             companyName_en: companyName?.en ?? "",
             companyName_de: companyName?.de ?? "",
-
-            companyLogoPath: s?.companyLogoPath ?? "",
-            companyLogoDarkPath: s?.companyLogoDarkPath ?? "",
-            companyLogoAltPath: s?.companyLogoAltPath ?? "",
-            faviconPath: s?.faviconPath ?? "",
 
             seo_title_ru: seoTitle?.ru ?? "",
             seo_title_en: seoTitle?.en ?? "",
@@ -383,19 +376,16 @@ export default function ProjectSiteSettingsEditPage({
             ymId: analytics?.ymId ?? "",
             metaPixelId: analytics?.metaPixelId ?? "",
 
-            emails: emailsArr.length > 0 
-              ? emailsArr.map((e: string) => ({ value: e }))
-              : [],
-            phones: phonesArr.length > 0
-              ? phonesArr.map((p: string) => ({ value: p }))
-              : [],
+            emails: emailsArr.length > 0 ? emailsArr.map((e: string) => ({ value: e })) : [],
+            phones: phonesArr.length > 0 ? phonesArr.map((p: string) => ({ value: p })) : [],
           },
           { keepDirty: false, keepTouched: false }
         );
 
         setFormKey((k) => k + 1);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("❌ Load error:", err);
         addToast({
           color: "danger",
           title: "Ошибка!",
@@ -411,55 +401,47 @@ export default function ProjectSiteSettingsEditPage({
 
   // ===================== submit =====================
   const onSubmit = async (data: FormData) => {
-	console.log("🚀 onSubmit called", { id, data });
+    console.log("🚀 onSubmit called", { id, data });
 
-    if (!id) return;
+    if (!id) {
+      console.log("❌ No id, returning");
+      return;
+    }
 
     setLoading(true);
 
     try {
       // Upload images if selected
-      let logoPath = project?.settings?.companyLogoPath;
-      let logoDarkPath = project?.settings?.companyLogoDarkPath;
-      let logoAltPath = project?.settings?.companyLogoAltPath;
-      let faviconPath = project?.settings?.faviconPath;
+      let newLogoPaths = { ...logoPaths };
 
       if (logoFile) {
         const uploaded = await uploadImage("companyLogo", logoFile);
-        if (uploaded) logoPath = uploaded;
+        if (uploaded) newLogoPaths.companyLogoPath = uploaded;
       }
       if (logoDarkFile) {
         const uploaded = await uploadImage("companyLogoDark", logoDarkFile);
-        if (uploaded) logoDarkPath = uploaded;
+        if (uploaded) newLogoPaths.companyLogoDarkPath = uploaded;
       }
       if (logoAltFile) {
         const uploaded = await uploadImage("companyLogoAlt", logoAltFile);
-        if (uploaded) logoAltPath = uploaded;
+        if (uploaded) newLogoPaths.companyLogoAltPath = uploaded;
       }
       if (faviconFile) {
         const uploaded = await uploadImage("favicon", faviconFile);
-        if (uploaded) faviconPath = uploaded;
+        if (uploaded) newLogoPaths.faviconPath = uploaded;
       }
 
       // Build settings object
       const nextSettings = {
-        companyName: buildI18n3(
-          data.companyName_ru,
-          data.companyName_en,
-          data.companyName_de
-        ),
+        companyName: buildI18n3(data.companyName_ru, data.companyName_en, data.companyName_de),
 
-        companyLogoPath: logoPath || undefined,
-        companyLogoDarkPath: logoDarkPath || undefined,
-        companyLogoAltPath: logoAltPath || undefined,
-        faviconPath: faviconPath || undefined,
+        companyLogoPath: newLogoPaths.companyLogoPath || undefined,
+        companyLogoDarkPath: newLogoPaths.companyLogoDarkPath || undefined,
+        companyLogoAltPath: newLogoPaths.companyLogoAltPath || undefined,
+        faviconPath: newLogoPaths.faviconPath || undefined,
 
         seoDefaults: {
-          title: buildI18n3(
-            data.seo_title_ru,
-            data.seo_title_en,
-            data.seo_title_de
-          ),
+          title: buildI18n3(data.seo_title_ru, data.seo_title_en, data.seo_title_de),
           description: buildI18n3(
             data.seo_description_ru,
             data.seo_description_en,
@@ -489,12 +471,8 @@ export default function ProjectSiteSettingsEditPage({
         },
 
         contacts: {
-          phones: (data.phones ?? [])
-            .map((x) => x.value?.trim())
-            .filter(Boolean),
-          emails: (data.emails ?? [])
-            .map((x) => x.value?.trim())
-            .filter(Boolean),
+          phones: (data.phones ?? []).map((x) => x.value?.trim()).filter(Boolean),
+          emails: (data.emails ?? []).map((x) => x.value?.trim()).filter(Boolean),
           telegram: data.telegram?.trim() || undefined,
           whatsApp: data.whatsApp?.trim() || undefined,
         },
@@ -506,8 +484,12 @@ export default function ProjectSiteSettingsEditPage({
         },
       };
 
+      console.log("💾 Saving settings:", nextSettings);
+
       // Save to project.settings
-      await updateProject(id, { settings: nextSettings });
+      const result = await updateProject(id, { settings: nextSettings });
+
+      console.log("✅ Save result:", result);
 
       addToast({
         color: "success",
@@ -521,19 +503,17 @@ export default function ProjectSiteSettingsEditPage({
 
       // Update local state
       setProject((prev: any) => ({ ...prev, settings: nextSettings }));
-      
+      setLogoPaths(newLogoPaths);
+
       // Clear file states
       setLogoFile(null);
       setLogoDarkFile(null);
       setLogoAltFile(null);
       setFaviconFile(null);
-      setLogoPreviewUrl(null);
-      setLogoDarkPreviewUrl(null);
-      setLogoAltPreviewUrl(null);
-      setFaviconPreviewUrl(null);
 
       reset(getValues(), { keepDirty: false, keepTouched: false });
-    } catch {
+    } catch (error) {
+      console.error("❌ Save error:", error);
       addToast({
         color: "danger",
         title: "Ошибка!",
@@ -548,13 +528,12 @@ export default function ProjectSiteSettingsEditPage({
     }
   };
 
-  const canSave =
-    isDirty || !!logoFile || !!logoDarkFile || !!logoAltFile || !!faviconFile;
+  const canSave = isDirty || !!logoFile || !!logoDarkFile || !!logoAltFile || !!faviconFile;
 
   // ===================== Render =====================
   return (
     <div className="relative">
-      {loading ? <LoaderModal /> : null}
+      {loading && <LoaderModal />}
 
       <div className="w-full">
         {/* Header */}
@@ -793,8 +772,6 @@ export default function ProjectSiteSettingsEditPage({
                   label="Название (RU)"
                   placeholder="Название на русском"
                   size="lg"
-                  isInvalid={Boolean(errors.companyName_ru)}
-                  errorMessage={errors.companyName_ru?.message}
                   {...register("companyName_ru")}
                 />
                 <Input
@@ -830,21 +807,9 @@ export default function ProjectSiteSettingsEditPage({
                 </Grid2>
 
                 <Grid2 className="lg:grid-cols-3">
-                  <Textarea
-                    label="Description RU"
-                    minRows={4}
-                    {...register("seo_description_ru")}
-                  />
-                  <Textarea
-                    label="Description EN"
-                    minRows={4}
-                    {...register("seo_description_en")}
-                  />
-                  <Textarea
-                    label="Description DE"
-                    minRows={4}
-                    {...register("seo_description_de")}
-                  />
+                  <Textarea label="Description RU" minRows={4} {...register("seo_description_ru")} />
+                  <Textarea label="Description EN" minRows={4} {...register("seo_description_en")} />
+                  <Textarea label="Description DE" minRows={4} {...register("seo_description_de")} />
                 </Grid2>
               </div>
             </Section>
@@ -968,25 +933,11 @@ export default function ProjectSiteSettingsEditPage({
                 </Grid2>
 
                 <Grid2>
-                  <Input
-                    label="Lat"
-                    placeholder="55.7558"
-                    size="lg"
-                    {...register("address_lat")}
-                  />
-                  <Input
-                    label="Lng"
-                    placeholder="37.6173"
-                    size="lg"
-                    {...register("address_lng")}
-                  />
+                  <Input label="Lat" placeholder="55.7558" size="lg" {...register("address_lat")} />
+                  <Input label="Lng" placeholder="37.6173" size="lg" {...register("address_lng")} />
                 </Grid2>
 
-                <Input
-                  label="Place ID (optional)"
-                  size="lg"
-                  {...register("address_placeId")}
-                />
+                <Input label="Place ID (optional)" size="lg" {...register("address_placeId")} />
               </div>
             </Section>
 
@@ -1022,12 +973,7 @@ export default function ProjectSiteSettingsEditPage({
 
             <Section title="Аналитика">
               <Grid2>
-                <Input
-                  label="GA4 ID"
-                  placeholder="G-XXXXXXXXXX"
-                  size="lg"
-                  {...register("ga4Id")}
-                />
+                <Input label="GA4 ID" placeholder="G-XXXXXXXXXX" size="lg" {...register("ga4Id")} />
                 <Input
                   label="Yandex Metrika ID"
                   placeholder="12345678"
