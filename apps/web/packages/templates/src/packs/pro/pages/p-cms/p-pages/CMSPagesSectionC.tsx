@@ -84,6 +84,85 @@ const DEFAULT_BLOCK: SiteBlock = {
   props: {},
 };
 
+// ===================== Prop Key Value Input Component =====================
+const PropKeyValueInput = memo(function PropKeyValueInput({
+  propKey,
+  propValue,
+  originalKey,
+  onKeyChange,
+  onValueChange,
+  onRemove,
+}: {
+  propKey: string;
+  propValue: any;
+  originalKey: string; // Оригинальный ключ для стабильности
+  onKeyChange: (oldKey: string, newKey: string) => void;
+  onValueChange: (newValue: string) => void;
+  onRemove: () => void;
+}) {
+  const [localKey, setLocalKey] = useState(propKey);
+
+  // Синхронизируем localKey с propKey при изменении извне
+  useEffect(() => {
+    setLocalKey(propKey);
+  }, [propKey]);
+
+  const handleKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalKey(e.target.value);
+  }, []);
+
+  const handleKeyBlur = useCallback(() => {
+    const newKey = localKey.trim();
+    if (newKey && newKey !== originalKey) {
+      onKeyChange(originalKey, newKey);
+    } else if (!newKey) {
+      // Если ключ пустой, возвращаем оригинальный
+      setLocalKey(originalKey);
+    }
+  }, [localKey, originalKey, onKeyChange]);
+
+  const handleKeyKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    }
+  }, []);
+
+  const handleValueChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onValueChange(e.target.value);
+  }, [onValueChange]);
+
+  return (
+    <div className="flex gap-2 items-end">
+      <Input
+        label="Ключ"
+        size="sm"
+        className="flex-1"
+        value={localKey}
+        onChange={handleKeyChange}
+        onBlur={handleKeyBlur}
+        onKeyDown={handleKeyKeyDown}
+      />
+      <Input
+        label="Значение"
+        size="sm"
+        className="flex-1"
+        value={String(propValue)}
+        onChange={handleValueChange}
+      />
+      <Button
+        variant="flat"
+        color="danger"
+        radius="full"
+        isIconOnly
+        size="sm"
+        onPress={onRemove}
+      >
+        <RiDeleteBin5Fill />
+      </Button>
+    </div>
+  );
+});
+
 // ===================== Props Editor Component =====================
 const PropsEditor = memo(function PropsEditor({
   block,
@@ -138,47 +217,50 @@ const PropsEditor = memo(function PropsEditor({
   }, [block.key, block.type]);
 
   const handlePropChange = useCallback((propKey: string, value: any) => {
-    const currentProps = block.props || {};
-    const newProps = {
-      ...currentProps,
-      [propKey]: value === '' ? undefined : value,
-    };
-    // Удаляем undefined значения
-    Object.keys(newProps).forEach(key => {
-      if (newProps[key] === undefined) {
-        delete newProps[key];
-      }
+    onUpdate(pageIndex, blockIndex, 'props', (prevProps: any) => {
+      const currentProps = prevProps || {};
+      return {
+        ...currentProps,
+        [propKey]: value,
+      };
     });
-    onUpdate(pageIndex, blockIndex, 'props', newProps);
-  }, [block.props, pageIndex, blockIndex, onUpdate]);
+  }, [pageIndex, blockIndex, onUpdate]);
 
   const handleKeyValueChange = useCallback((key: string, value: string) => {
-    const currentProps = block.props || {};
-    const newProps = {
-      ...currentProps,
-      [key]: value === '' ? undefined : value,
-    };
-    // Удаляем undefined значения
-    Object.keys(newProps).forEach(k => {
-      if (newProps[k] === undefined) {
-        delete newProps[k];
-      }
+    onUpdate(pageIndex, blockIndex, 'props', (prevProps: any) => {
+      const currentProps = prevProps || {};
+      return {
+        ...currentProps,
+        [key]: value,
+      };
     });
-    onUpdate(pageIndex, blockIndex, 'props', newProps);
-  }, [block.props, pageIndex, blockIndex, onUpdate]);
+  }, [pageIndex, blockIndex, onUpdate]);
 
   const handleAddProp = useCallback(() => {
-    const currentProps = block.props || {};
-    const newKey = `newProp${Object.keys(currentProps).length + 1}`;
-    handleKeyValueChange(newKey, '');
-  }, [block.props, handleKeyValueChange]);
+    onUpdate(pageIndex, blockIndex, 'props', (prevProps: any) => {
+      const currentProps = prevProps || {};
+      const existingKeys = Object.keys(currentProps);
+      let newKey = 'newProp1';
+      let counter = 1;
+      while (existingKeys.includes(newKey)) {
+        counter++;
+        newKey = `newProp${counter}`;
+      }
+      return {
+        ...currentProps,
+        [newKey]: '',
+      };
+    });
+  }, [pageIndex, blockIndex, onUpdate]);
 
   const handleRemoveProp = useCallback((key: string) => {
-    const currentProps = block.props || {};
-    const newProps = { ...currentProps };
-    delete newProps[key];
-    onUpdate(pageIndex, blockIndex, 'props', newProps);
-  }, [block.props, pageIndex, blockIndex, onUpdate]);
+    onUpdate(pageIndex, blockIndex, 'props', (prevProps: any) => {
+      const currentProps = prevProps || {};
+      const newProps = { ...currentProps };
+      delete newProps[key];
+      return newProps;
+    });
+  }, [pageIndex, blockIndex, onUpdate]);
 
   // Условные возвраты только после всех хуков
   if (!block.key || !block.type) {
@@ -209,42 +291,26 @@ const PropsEditor = memo(function PropsEditor({
         </Button>
         {isExpanded && (
           <div className="mt-2 space-y-2 p-3 bg-foreground-50 rounded-xl">
-            {propsEntries.map(([key, value]) => (
-              <div key={key} className="flex gap-2 items-end">
-                <Input
-                  label="Ключ"
-                  size="sm"
-                  className="flex-1"
-                  value={key}
-                  onChange={(e) => {
-                    const newKey = e.target.value;
-                    if (newKey && newKey !== key) {
-                      const currentProps = block.props || {};
+            {propsEntries.map(([key, value], index) => (
+              <PropKeyValueInput
+                key={`prop-${pageIndex}-${blockIndex}-${index}-${key}`}
+                propKey={key}
+                propValue={value}
+                originalKey={key}
+                onKeyChange={(oldKey: string, newKey: string) => {
+                  if (newKey && newKey !== oldKey) {
+                    onUpdate(pageIndex, blockIndex, 'props', (prevProps: any) => {
+                      const currentProps = prevProps || {};
                       const newProps = { ...currentProps };
-                      delete newProps[key];
-                      newProps[newKey] = value;
-                      onUpdate(pageIndex, blockIndex, 'props', newProps);
-                    }
-                  }}
-                />
-                <Input
-                  label="Значение"
-                  size="sm"
-                  className="flex-1"
-                  value={String(value)}
-                  onChange={(e) => handleKeyValueChange(key, e.target.value)}
-                />
-                <Button
-                  variant="flat"
-                  color="danger"
-                  radius="full"
-                  isIconOnly
-                  size="sm"
-                  onPress={() => handleRemoveProp(key)}
-                >
-                  <RiDeleteBin5Fill />
-                </Button>
-              </div>
+                      delete newProps[oldKey];
+                      newProps[newKey] = currentProps[oldKey];
+                      return newProps;
+                    });
+                  }
+                }}
+                onValueChange={(newValue: string) => handleKeyValueChange(key, newValue)}
+                onRemove={() => handleRemoveProp(key)}
+              />
             ))}
             <Button
               size="sm"
@@ -704,7 +770,17 @@ export default function ProjectSiteSchemaEditPage({ projectId }: Props) {
       if (!prev) return prev;
       const pages = [...prev[activeMode].pages];
       const blocks = [...pages[pageIndex].blocks];
-      blocks[blockIndex] = { ...blocks[blockIndex], [field]: value };
+      // Если value - функция, используем функциональное обновление
+      if (typeof value === 'function' && field === 'props') {
+        const currentProps = blocks[blockIndex]?.props || {};
+        const newProps = value(currentProps);
+        blocks[blockIndex] = { ...blocks[blockIndex], [field]: newProps };
+      } else if (field === 'props') {
+        // Для props создаем новый объект, чтобы гарантировать обновление
+        blocks[blockIndex] = { ...blocks[blockIndex], [field]: { ...value } };
+      } else {
+        blocks[blockIndex] = { ...blocks[blockIndex], [field]: value };
+      }
       pages[pageIndex] = { ...pages[pageIndex], blocks };
       return {
         ...prev,
