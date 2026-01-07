@@ -6,21 +6,25 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col bg-secondary justify-between items-center w-screen h-screen py-[100px]">
+    <div className="flex flex-col bg-secondary justify-between items-center w-full h-screen py-8 md:py-[100px]">
       {/* Левая панель (desktop) / Верх + низ (mobile) */}
     
       <AuthLogo className="" />
 
       {/* Контент */}
-        <main className="!min-w-[350-px]">
-          {children}
+        <main className="w-full flex items-center justify-center px-3 md:px-0 flex-1">
+          <div className="w-full max-w-md">
+            {children}
+          </div>
         </main>
 
       {/* Текст снизу на mobile / по центру на desktop */}
-        <div className="text-2xl md:text-4xl font-semibold text-white leading-tight md:leading-[64px] text-center">
-          {/* Панель управления вашим
-          <span className="text-primary dark:text-secondary"> бизнесом</span> */}
-          Панель управления вашим бизнесом
+        <div className="w-full flex items-center justify-center px-3 md:px-0">
+          <div className="text-2xl md:text-4xl font-semibold text-white leading-tight md:leading-[44px] text-center max-w-2xl">
+            {/* Панель управления вашим
+            <span className="text-primary dark:text-secondary"> бизнесом</span> */}
+            Панель управления вашим бизнесом
+          </div>
         </div>
 
         {/* Хештеги — только desktop */}

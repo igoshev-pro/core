@@ -18,6 +18,7 @@ export default async function LoginRootLayout({
       lang={lang}
       data-locales={cfg.locales.join(",")}
       data-default-locale={cfg.defaultLocale}
+      className="h-full"
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,7 +28,7 @@ export default async function LoginRootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>{children}</Providers></body>
+      <body className="font-sans m-0 p-0 h-full w-full overflow-x-hidden"><Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>{children}</Providers></body>
     </html>
   );
 }

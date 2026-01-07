@@ -61,22 +61,27 @@ export const LoginWidgetClient = () => {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <form
-        className="flex flex-col gap-9 z-50 w-[500px] min-w-[350px]"
+        className="flex flex-col gap-9 z-50 w-full max-w-[500px]"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <h1 className="text-5xl font-semibold text-white">Вход</h1>
+        <h1 className="text-4xl md:text-5xl font-semibold text-white">Вход</h1>
         <Input
           errorMessage={errors?.email?.message}
           isInvalid={Boolean(errors.email)}
           placeholder="Email"
           size="lg"
           type="email"
+          className="w-full"
+          classNames={{
+            input: "w-full",
+            inputWrapper: "w-full",
+          }}
           {...register("email")}
         />
         <Button
-          className="font-bold shadow-custom"
+          className="font-bold shadow-custom w-full"
           color="primary"
           disabled={isSubmitting}
           isLoading={isSubmitting}
