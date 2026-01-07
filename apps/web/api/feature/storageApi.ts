@@ -5,22 +5,26 @@ type UploadFileInput = {
   path: string;
   expiresInSec?: number;
   apiBaseUrl?: string;
+  projectId?: string;
 };
 
 type PresignUploadResponse = { url: string };
 
 export async function uploadFileToStorage(input: UploadFileInput) {
-  const { file, path, expiresInSec, apiBaseUrl = "" } = input;
+  const { file, path, expiresInSec, apiBaseUrl = "", projectId } = input;
+  const base = apiBaseUrl ? apiBaseUrl.replace(/\/$/, "") : "";
+  const presignPath = `${base}/api/storage/presign/upload`;
 
   // 1) presign upload
   const presignRes = await apiRequest<PresignUploadResponse>({
-    path: `/api/storage/presign/upload`,
+    path: presignPath,
     method: "POST",
     throwOnError: true,
     body: {
       path,
       contentType: (file as File).type || "application/octet-stream",
       expiresInSec: expiresInSec ?? 60,
+      ...(projectId ? { projectId } : {}),
     },
   });
 
