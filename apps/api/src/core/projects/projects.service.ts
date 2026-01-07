@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -17,8 +17,9 @@ import { Domain, type DomainDocument } from '../domains/entities/domain.entity';
 import { ProjectStatus } from './project.enum';
 import { Mode } from './projects.controller';
 
-import { SiteSchemaSection } from './entities/site-schema.entity';
+import { ProjectSiteSchema, SiteSchema, SiteSchemaDocument, SiteSchemaSection } from './entities/site-schema.entity';
 import { generateReadableRandomDomain } from 'src/common/utils/generateReadableRandomDomain';
+import { UpdateSiteSchemaDto } from './dto/update-site-schema.dto';
 
 const DEFAULT_SCHEMA_BY_MODE: Record<Mode, SiteSchemaSection> = {
   admin: {
@@ -82,6 +83,8 @@ export class ProjectsService {
   constructor(
     @InjectModel(Project.name, 'core')
     private readonly projectModel: Model<ProjectDocument>,
+    @InjectModel(SiteSchema.name, 'core')
+    private readonly siteSchemaModel: Model<SiteSchemaDocument>,
     @InjectModel(Client.name, 'core')
     private readonly clientModel: Model<ClientDocument>,
     @InjectModel(Domain.name, 'core')
@@ -260,5 +263,127 @@ export class ProjectsService {
       .find(query, q?.trim() ? { score: { $meta: 'textScore' } } : undefined)
       .sort(q?.trim() ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
       .limit(50);
+  }
+
+  /**
+   * Получить полную SiteSchema для проекта (все секции: public, admin, login)
+   */
+  async getSiteSchema(projectId: string): Promise<ProjectSiteSchema> {
+    const project = await this.projectModel
+      .findById(projectId)
+      .select({ site: 1 })
+      .lean()
+      .exec();
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    // Если site — ObjectId, загружаем из коллекции
+    if (project.site && Types.ObjectId.isValid(project.site.toString())) {
+      const siteDoc = await this.siteSchemaModel
+        .findById(project.site)
+        .lean()
+        .exec();
+
+      if (siteDoc) {
+        return {
+          public: siteDoc.public ?? DEFAULT_SCHEMA_BY_MODE.public,
+          admin: siteDoc.admin ?? DEFAULT_SCHEMA_BY_MODE.admin,
+          login: siteDoc.login ?? DEFAULT_SCHEMA_BY_MODE.login,
+        };
+      }
+    }
+
+    // Fallback на дефолты
+    return {
+      public: DEFAULT_SCHEMA_BY_MODE.public,
+      admin: DEFAULT_SCHEMA_BY_MODE.admin,
+      login: DEFAULT_SCHEMA_BY_MODE.login,
+    };
+  }
+
+  /**
+   * Создать или обновить SiteSchema для проекта
+   */
+  async upsertSiteSchema(
+    projectId: string,
+    dto: UpdateSiteSchemaDto,
+  ): Promise<ProjectSiteSchema> {
+    const project = await this.projectModel
+      .findById(projectId)
+      .select({ site: 1 })
+      .lean()
+      .exec();
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    let siteId: Types.ObjectId | null = null;
+
+    // Проверяем, есть ли уже SiteSchema
+    if (project.site && Types.ObjectId.isValid(project.site.toString())) {
+      siteId = project.site as Types.ObjectId;
+    }
+
+    const updateData: Partial<ProjectSiteSchema> = {};
+    if (dto.public) updateData.public = dto.public as SiteSchemaSection;
+    if (dto.admin) updateData.admin = dto.admin as SiteSchemaSection;
+    if (dto.login) updateData.login = dto.login as SiteSchemaSection;
+
+    if (siteId) {
+      // Обновляем существующую SiteSchema
+      const updated = await this.siteSchemaModel
+        .findByIdAndUpdate(
+          siteId,
+          { $set: updateData },
+          { new: true, lean: true },
+        )
+        .exec();
+
+      return {
+        public: updated?.public ?? DEFAULT_SCHEMA_BY_MODE.public,
+        admin: updated?.admin ?? DEFAULT_SCHEMA_BY_MODE.admin,
+        login: updated?.login ?? DEFAULT_SCHEMA_BY_MODE.login,
+      };
+    } else {
+      // Создаём новую SiteSchema
+      const newSiteSchema = new this.siteSchemaModel({
+        public: dto.public ?? DEFAULT_SCHEMA_BY_MODE.public,
+        admin: dto.admin ?? DEFAULT_SCHEMA_BY_MODE.admin,
+        login: dto.login ?? DEFAULT_SCHEMA_BY_MODE.login,
+        projectId: new Types.ObjectId(projectId),
+      });
+
+      const saved = await newSiteSchema.save();
+
+      // Привязываем к проекту
+      await this.projectModel.findByIdAndUpdate(projectId, {
+        $set: { site: saved._id },
+      });
+
+      return {
+        public: saved.public,
+        admin: saved.admin,
+        login: saved.login,
+      };
+    }
+  }
+
+  /**
+   * Обновить конкретную секцию (public | admin | login)
+   */
+  async updateSiteSchemaSection(
+    projectId: string,
+    mode: Mode,
+    section: SiteSchemaSection,
+  ): Promise<SiteSchemaSection> {
+    const dto: UpdateSiteSchemaDto = {
+      [mode]: section,
+    };
+
+    const result = await this.upsertSiteSchema(projectId, dto);
+    return result[mode];
   }
 }

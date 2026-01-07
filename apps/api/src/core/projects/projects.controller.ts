@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -18,6 +20,8 @@ import { UserRole } from 'src/common/enums/user.enum'
 import { ClientGuard } from '../clients/client.guard';
 import { InternalTokenGuard } from 'src/common/guards/internal-token.guard';
 import { Header } from '@nestjs/common';
+import { UpdateSiteSchemaDto } from './dto/update-site-schema.dto';
+import * as siteSchemaEntity from './entities/site-schema.entity';
 
 export type Mode = 'public' | 'admin' | 'login';
 
@@ -79,5 +83,45 @@ export class ProjectsController {
     @Query('mode') mode: Mode = 'public',
   ) {
     return this.projectsService.getSchema(id, mode);
+  }
+
+  /**
+   * GET /core/projects/:id/site-schema
+   * Получить полную SiteSchema проекта
+   */
+  @UseGuards(JwtAuthGuard, ClientGuard)
+  @Get(':id/site-schema')
+  async getSiteSchema(@Param('id') id: string) {
+    return this.projectsService.getSiteSchema(id);
+  }
+
+  /**
+   * PATCH /core/projects/:id/site-schema
+   * Обновить SiteSchema (можно передать public, admin, login частично)
+   */
+  @UseGuards(JwtAuthGuard, ClientGuard)
+  @Patch(':id/site-schema')
+  async updateSiteSchema(
+    @Param('id') id: string,
+    @Body() dto: UpdateSiteSchemaDto,
+  ) {
+    return this.projectsService.upsertSiteSchema(id, dto);
+  }
+
+  /**
+   * PATCH /core/projects/:id/site-schema/:mode
+   * Обновить конкретную секцию (public | admin | login)
+   */
+  @UseGuards(JwtAuthGuard, ClientGuard)
+  @Patch(':id/site-schema/:mode')
+  async updateSiteSchemaSection(
+    @Param('id') id: string,
+    @Param('mode') mode: Mode,
+    @Body() section: siteSchemaEntity.SiteSchemaSection,
+  ) {
+    if (!['public', 'admin', 'login'].includes(mode)) {
+      throw new HttpException('Invalid mode', HttpStatus.BAD_REQUEST);
+    }
+    return this.projectsService.updateSiteSchemaSection(id, mode, section);
   }
 }
