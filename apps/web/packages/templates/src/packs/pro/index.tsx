@@ -21,6 +21,7 @@ import ProjectUpsertSectionMain from "./pages/p-projects/p-upsert/ProjectUpsertS
 import CMSSettingsSection from "./pages/p-cms/p-settings/CMSSettingsSection";
 import CMSPagesSectionC from "./pages/p-cms/p-pages/CMSPagesSectionC";
 import CMSPagesSection from "./pages/p-cms/p-pages/CMSPagesSection";
+import CMSMenuSection from "./pages/p-cms/p-menu/CMSMenuSection";
 
 function DashboardSectionMain({ node }: any) {
   return (
@@ -60,6 +61,7 @@ export const adminShellPack: TemplatePack = {
     "pro.factory.widgets.upsert.main.v1": WidgetUpsertSectionMain,
     "pro.cms.settings.main.v1": CMSSettingsSection,
     "pro.cms.pages.main.v1": CMSPagesSection,
+    "pro.cms.menu.main.v1": CMSMenuSection,
   },
   widgets: {
   },

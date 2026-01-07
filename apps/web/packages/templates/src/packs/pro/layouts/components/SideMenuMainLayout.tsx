@@ -68,7 +68,7 @@ const SideMenuMainLayout = () => {
     },
     {
       label: "Сайт",
-      icon: <TbWorldWww className="text-[24px]" />,
+      icon: <TbWorldWww className="text-[24px] w-[24px]" />,
       route: `/admin/cms/settings`,
       isOpen: false,
       submenu: [

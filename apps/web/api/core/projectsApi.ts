@@ -36,10 +36,23 @@ export type SitePage = {
   blocks: SiteBlock[];
 };
 
+export type SiteMenuItem = {
+  _id: string;
+  label: Record<string, string>; // i18n: { ru: "Главная", en: "Home", de: "Startseite" }
+  order: number;
+  linkType: 'internal' | 'external';
+  pagePath?: string; // если linkType === 'internal', путь страницы из pages (например, "/about")
+  externalUrl?: string; // если linkType === 'external', внешняя ссылка
+  parentId?: string; // иерархия - ID родительского пункта меню
+  icon?: string; // опционально: иконка
+  iconSize?: string; // опционально: размер иконки (например, "24px", "1.5rem")
+};
+
 export type SiteSchemaSection = {
   version?: string;
   layout: SiteLayout;
   pages: SitePage[];
+  menu?: SiteMenuItem[]; // меню сайта
 };
 
 export type ProjectSiteSchema = {

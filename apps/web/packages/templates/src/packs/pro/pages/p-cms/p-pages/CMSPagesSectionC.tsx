@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo, memo } from "react";
 import { useRouter } from "next/navigation";
 import { addToast, Button, cn, Input, Select, SelectItem } from "@heroui/react";
 import { IoChevronBack } from "react-icons/io5";
@@ -84,8 +84,67 @@ const DEFAULT_BLOCK: SiteBlock = {
   props: {},
 };
 
+// ===================== Page Inputs Component =====================
+const PageInputs = memo(function PageInputs({
+  page,
+  pageIndex,
+  updatePage,
+}: {
+  page: SitePage;
+  pageIndex: number;
+  updatePage: (pageIndex: number, field: keyof SitePage, value: any) => void;
+}) {
+  const handleIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    updatePage(pageIndex, "_id", e.target.value);
+  }, [pageIndex, updatePage]);
+
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    updatePage(pageIndex, "name", e.target.value);
+  }, [pageIndex, updatePage]);
+
+  const handlePathChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    updatePage(pageIndex, "path", e.target.value);
+  }, [pageIndex, updatePage]);
+
+  const handleKindChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    updatePage(pageIndex, "kind", e.target.value);
+  }, [pageIndex, updatePage]);
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+      <Input
+        label="ID"
+        size="lg"
+        value={page._id}
+        onChange={handleIdChange}
+      />
+      <Input
+        label="Name"
+        size="lg"
+        value={page.name}
+        onChange={handleNameChange}
+      />
+      <Input
+        label="Path"
+        size="lg"
+        value={page.path}
+        onChange={handlePathChange}
+      />
+      <Select
+        label="Kind"
+        size="lg"
+        selectedKeys={[page.kind]}
+        onChange={handleKindChange}
+      >
+        <SelectItem key="static">static</SelectItem>
+        <SelectItem key="dynamic">dynamic</SelectItem>
+      </Select>
+    </div>
+  );
+});
+
 // ===================== Sortable Block Item =====================
-function SortableBlockItem({
+const SortableBlockItem = memo(function SortableBlockItem({
   block,
   pageIndex,
   blockIndex,
@@ -98,23 +157,43 @@ function SortableBlockItem({
   onUpdate: (pageIndex: number, blockIndex: number, field: keyof SiteBlock, value: any) => void;
   onRemove: (pageIndex: number, blockIndex: number) => void;
 }) {
+  // Используем стабильный id на основе индексов, чтобы не терять фокус при изменении _id
+  const stableId = useMemo(() => `block-${pageIndex}-${blockIndex}`, [pageIndex, blockIndex]);
+  
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: block._id || `block-${pageIndex}-${blockIndex}`,
+    id: stableId,
   });
 
-  const style = {
+  const style = useMemo(() => ({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-  };
+  }), [transform, transition, isDragging]);
+
+  // Мемоизируем обработчики, чтобы не создавать новые функции при каждом рендере
+  const handleIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onUpdate(pageIndex, blockIndex, "_id", e.target.value);
+  }, [pageIndex, blockIndex, onUpdate]);
+
+  const handleTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    onUpdate(pageIndex, blockIndex, "type", e.target.value);
+  }, [pageIndex, blockIndex, onUpdate]);
+
+  const handleKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onUpdate(pageIndex, blockIndex, "key", e.target.value);
+  }, [pageIndex, blockIndex, onUpdate]);
+
+  const handleRemove = useCallback(() => {
+    onRemove(pageIndex, blockIndex);
+  }, [pageIndex, blockIndex, onRemove]);
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex gap-3 items-center bg-background rounded-xl p-3 border",
-        isDragging ? "border-primary shadow-lg" : "border-transparent"
+        "flex gap-3 items-center bg-background rounded-xl p-3",
+        isDragging ? "shadow-lg" : "border-transparent"
       )}
     >
       {/* Drag Handle */}
@@ -132,14 +211,14 @@ function SortableBlockItem({
         size="sm"
         className="flex-1"
         value={block._id}
-        onChange={(e) => onUpdate(pageIndex, blockIndex, "_id", e.target.value)}
+        onChange={handleIdChange}
       />
       <Select
         label="Type"
         size="sm"
         className="w-32"
         selectedKeys={[block.type]}
-        onChange={(e) => onUpdate(pageIndex, blockIndex, "type", e.target.value)}
+        onChange={handleTypeChange}
       >
         <SelectItem key="widget">widget</SelectItem>
         <SelectItem key="section">section</SelectItem>
@@ -149,7 +228,7 @@ function SortableBlockItem({
         size="sm"
         className="flex-1"
         value={block.key}
-        onChange={(e) => onUpdate(pageIndex, blockIndex, "key", e.target.value)}
+        onChange={handleKeyChange}
       />
       <Button
         variant="flat"
@@ -157,16 +236,16 @@ function SortableBlockItem({
         radius="full"
         isIconOnly
         size="sm"
-        onPress={() => onRemove(pageIndex, blockIndex)}
+        onPress={handleRemove}
       >
         <RiDeleteBin5Fill />
       </Button>
     </div>
   );
-}
+});
 
 // ===================== Sortable Blocks List =====================
-function SortableBlocksList({
+const SortableBlocksList = memo(function SortableBlocksList({
   blocks,
   pageIndex,
   onUpdate,
@@ -192,24 +271,28 @@ function SortableBlocksList({
     })
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
+      // Используем стабильные id на основе индексов
       const oldIndex = blocks.findIndex(
-        (b, i) => (b._id || `block-${pageIndex}-${i}`) === active.id
+        (_, i) => `block-${pageIndex}-${i}` === active.id
       );
       const newIndex = blocks.findIndex(
-        (b, i) => (b._id || `block-${pageIndex}-${i}`) === over.id
+        (_, i) => `block-${pageIndex}-${i}` === over.id
       );
 
       if (oldIndex !== -1 && newIndex !== -1) {
         onReorder(pageIndex, oldIndex, newIndex);
       }
     }
-  };
+  }, [blocks, pageIndex, onReorder]);
 
-  const blockIds = blocks.map((b, i) => b._id || `block-${pageIndex}-${i}`);
+  const blockIds = useMemo(() => 
+    blocks.map((_, i) => `block-${pageIndex}-${i}`),
+    [blocks.length, pageIndex]
+  );
 
   return (
     <div className="bg-foreground-50 rounded-2xl p-4">
@@ -231,16 +314,20 @@ function SortableBlocksList({
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={blockIds} strategy={verticalListSortingStrategy}>
             <div className="flex flex-col gap-3">
-              {blocks.map((block, blockIndex) => (
-                <SortableBlockItem
-                  key={block._id || `block-${pageIndex}-${blockIndex}`}
-                  block={block}
-                  pageIndex={pageIndex}
-                  blockIndex={blockIndex}
-                  onUpdate={onUpdate}
-                  onRemove={onRemove}
-                />
-              ))}
+              {blocks.map((block, blockIndex) => {
+                // Используем стабильный key на основе индексов, чтобы не терять фокус при изменении _id
+                const blockKey = `block-${pageIndex}-${blockIndex}`;
+                return (
+                  <SortableBlockItem
+                    key={blockKey}
+                    block={block}
+                    pageIndex={pageIndex}
+                    blockIndex={blockIndex}
+                    onUpdate={onUpdate}
+                    onRemove={onRemove}
+                  />
+                );
+              })}
             </div>
           </SortableContext>
         </DndContext>
@@ -249,7 +336,7 @@ function SortableBlocksList({
       )}
     </div>
   );
-}
+});
 
 // ===================== Main Component =====================
 export default function ProjectSiteSchemaEditPage({ projectId }: Props) {
@@ -287,135 +374,148 @@ export default function ProjectSiteSchemaEditPage({ projectId }: Props) {
   const currentSection: SiteSchemaSection | undefined = schema?.[activeMode];
 
   // ===================== Layout handlers =====================
-  const updateLayout = (field: string, value: string) => {
-    if (!schema) return;
-    setSchema({
-      ...schema,
-      [activeMode]: {
-        ...schema[activeMode],
-        layout: {
-          ...schema[activeMode].layout,
-          [field]: value,
+  const updateLayout = useCallback((field: string, value: string) => {
+    setSchema((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [activeMode]: {
+          ...prev[activeMode],
+          layout: {
+            ...prev[activeMode].layout,
+            [field]: value,
+          },
         },
-      },
+      };
     });
-  };
+  }, [activeMode]);
 
   // ===================== Page handlers =====================
-  const updatePage = (pageIndex: number, field: keyof SitePage, value: any) => {
-    if (!schema) return;
-    const pages = [...schema[activeMode].pages];
-    pages[pageIndex] = { ...pages[pageIndex], [field]: value };
-    setSchema({
-      ...schema,
-      [activeMode]: {
-        ...schema[activeMode],
-        pages,
-      },
+  const updatePage = useCallback((pageIndex: number, field: keyof SitePage, value: any) => {
+    setSchema((prev) => {
+      if (!prev) return prev;
+      const pages = [...prev[activeMode].pages];
+      pages[pageIndex] = { ...pages[pageIndex], [field]: value };
+      return {
+        ...prev,
+        [activeMode]: {
+          ...prev[activeMode],
+          pages,
+        },
+      };
     });
-  };
+  }, [activeMode]);
 
-  const addPage = () => {
-    if (!schema) return;
-    const newPage: SitePage = {
-      ...DEFAULT_PAGE,
-      _id: `page-${Date.now()}`,
-      name: "New Page",
-    };
-    setSchema({
-      ...schema,
-      [activeMode]: {
-        ...schema[activeMode],
-        pages: [...schema[activeMode].pages, newPage],
-      },
+  const addPage = useCallback(() => {
+    setSchema((prev) => {
+      if (!prev) return prev;
+      const newPage: SitePage = {
+        ...DEFAULT_PAGE,
+        _id: `page-${Date.now()}`,
+        name: "New Page",
+      };
+      return {
+        ...prev,
+        [activeMode]: {
+          ...prev[activeMode],
+          pages: [...prev[activeMode].pages, newPage],
+        },
+      };
     });
-  };
+  }, [activeMode]);
 
-  const removePage = (pageIndex: number) => {
-    if (!schema) return;
-    const pages = schema[activeMode].pages.filter((_, i) => i !== pageIndex);
-    setSchema({
-      ...schema,
-      [activeMode]: {
-        ...schema[activeMode],
-        pages,
-      },
+  const removePage = useCallback((pageIndex: number) => {
+    setSchema((prev) => {
+      if (!prev) return prev;
+      const pages = prev[activeMode].pages.filter((_, i) => i !== pageIndex);
+      return {
+        ...prev,
+        [activeMode]: {
+          ...prev[activeMode],
+          pages,
+        },
+      };
     });
-  };
+  }, [activeMode]);
 
   // ===================== Block handlers =====================
-  const updateBlock = (
+  const updateBlock = useCallback((
     pageIndex: number,
     blockIndex: number,
     field: keyof SiteBlock,
     value: any
   ) => {
-    if (!schema) return;
-    const pages = [...schema[activeMode].pages];
-    const blocks = [...pages[pageIndex].blocks];
-    blocks[blockIndex] = { ...blocks[blockIndex], [field]: value };
-    pages[pageIndex] = { ...pages[pageIndex], blocks };
-    setSchema({
-      ...schema,
-      [activeMode]: {
-        ...schema[activeMode],
-        pages,
-      },
+    setSchema((prev) => {
+      if (!prev) return prev;
+      const pages = [...prev[activeMode].pages];
+      const blocks = [...pages[pageIndex].blocks];
+      blocks[blockIndex] = { ...blocks[blockIndex], [field]: value };
+      pages[pageIndex] = { ...pages[pageIndex], blocks };
+      return {
+        ...prev,
+        [activeMode]: {
+          ...prev[activeMode],
+          pages,
+        },
+      };
     });
-  };
+  }, [activeMode]);
 
-  const addBlock = (pageIndex: number) => {
-    if (!schema) return;
-    const pages = [...schema[activeMode].pages];
-    const newBlock: SiteBlock = {
-      ...DEFAULT_BLOCK,
-      _id: `block-${Date.now()}`,
-    };
-    pages[pageIndex] = {
-      ...pages[pageIndex],
-      blocks: [...pages[pageIndex].blocks, newBlock],
-    };
-    setSchema({
-      ...schema,
-      [activeMode]: {
-        ...schema[activeMode],
-        pages,
-      },
+  const addBlock = useCallback((pageIndex: number) => {
+    setSchema((prev) => {
+      if (!prev) return prev;
+      const pages = [...prev[activeMode].pages];
+      const newBlock: SiteBlock = {
+        ...DEFAULT_BLOCK,
+        _id: `block-${Date.now()}`,
+      };
+      pages[pageIndex] = {
+        ...pages[pageIndex],
+        blocks: [...pages[pageIndex].blocks, newBlock],
+      };
+      return {
+        ...prev,
+        [activeMode]: {
+          ...prev[activeMode],
+          pages,
+        },
+      };
     });
-  };
+  }, [activeMode]);
 
-  const removeBlock = (pageIndex: number, blockIndex: number) => {
-    if (!schema) return;
-    const pages = [...schema[activeMode].pages];
-    const blocks = pages[pageIndex].blocks.filter((_, i) => i !== blockIndex);
-    pages[pageIndex] = { ...pages[pageIndex], blocks };
-    setSchema({
-      ...schema,
-      [activeMode]: {
-        ...schema[activeMode],
-        pages,
-      },
+  const removeBlock = useCallback((pageIndex: number, blockIndex: number) => {
+    setSchema((prev) => {
+      if (!prev) return prev;
+      const pages = [...prev[activeMode].pages];
+      const blocks = pages[pageIndex].blocks.filter((_, i) => i !== blockIndex);
+      pages[pageIndex] = { ...pages[pageIndex], blocks };
+      return {
+        ...prev,
+        [activeMode]: {
+          ...prev[activeMode],
+          pages,
+        },
+      };
     });
-  };
+  }, [activeMode]);
 
   // ===================== Reorder blocks (DnD) =====================
-  const reorderBlocks = (pageIndex: number, oldIndex: number, newIndex: number) => {
-    if (!schema) return;
-
-    const pages = [...schema[activeMode].pages];
-    const blocks = arrayMove(pages[pageIndex].blocks, oldIndex, newIndex);
-    pages[pageIndex] = { ...pages[pageIndex], blocks };
-
-    setSchema({
-      ...schema,
-      [activeMode]: {
-        ...schema[activeMode],
-        pages,
-      },
+  const reorderBlocks = useCallback((pageIndex: number, oldIndex: number, newIndex: number) => {
+    setSchema((prev) => {
+      if (!prev) return prev;
+      const pages = [...prev[activeMode].pages];
+      const blocks = arrayMove(pages[pageIndex].blocks, oldIndex, newIndex);
+      pages[pageIndex] = { ...pages[pageIndex], blocks };
+      return {
+        ...prev,
+        [activeMode]: {
+          ...prev[activeMode],
+          pages,
+        },
+      };
     });
-
     console.log(`🔄 Reordered blocks in page ${pageIndex}: ${oldIndex} -> ${newIndex}`);
-  };
+  }, [activeMode]);
 
   // ===================== Save =====================
   const handleSave = async () => {
@@ -530,9 +630,12 @@ export default function ProjectSiteSchemaEditPage({ projectId }: Props) {
             {/* Pages */}
             <Section title="Pages" description={`${currentSection.pages.length} страниц`}>
               <div className="flex flex-col gap-6">
-                {currentSection.pages.map((page, pageIndex) => (
+                {currentSection.pages.map((page, pageIndex) => {
+                  // Используем стабильный key на основе индекса, чтобы не терять фокус при изменении _id
+                  const pageKey = `page-${activeMode}-${pageIndex}`;
+                  return (
                   <div
-                    key={page._id || pageIndex}
+                    key={pageKey}
                     className="border border-foreground-200 rounded-3xl p-4"
                   >
                     <div className="flex items-center justify-between mb-4">
@@ -551,35 +654,11 @@ export default function ProjectSiteSchemaEditPage({ projectId }: Props) {
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
-                      <Input
-                        label="ID"
-                        size="lg"
-                        value={page._id}
-                        onChange={(e) => updatePage(pageIndex, "_id", e.target.value)}
-                      />
-                      <Input
-                        label="Name"
-                        size="lg"
-                        value={page.name}
-                        onChange={(e) => updatePage(pageIndex, "name", e.target.value)}
-                      />
-                      <Input
-                        label="Path"
-                        size="lg"
-                        value={page.path}
-                        onChange={(e) => updatePage(pageIndex, "path", e.target.value)}
-                      />
-                      <Select
-                        label="Kind"
-                        size="lg"
-                        selectedKeys={[page.kind]}
-                        onChange={(e) => updatePage(pageIndex, "kind", e.target.value)}
-                      >
-                        <SelectItem key="static">static</SelectItem>
-                        <SelectItem key="dynamic">dynamic</SelectItem>
-                      </Select>
-                    </div>
+                    <PageInputs
+                      page={page}
+                      pageIndex={pageIndex}
+                      updatePage={updatePage}
+                    />
 
                     {/* Blocks with DnD */}
                     <SortableBlocksList
@@ -591,10 +670,11 @@ export default function ProjectSiteSchemaEditPage({ projectId }: Props) {
                       onAdd={addBlock}
                     />
                   </div>
-                ))}
+                  );
+                })}
 
                 <Button
-                  variant="flat"
+                  variant="light"
                   color="primary"
                   radius="full"
                   startContent={<RiAddLine />}
