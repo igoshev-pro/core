@@ -1,63 +1,13 @@
-import { buildQuery } from "../utils/buildQuery";
+import { createCrudApi, type PaginationQuery } from "../httpClient";
+import type { FactoryItem, FactoryUpsertDto } from "./types";
 
-export async function createSection(body: any) {
-    const res = await fetch(`/api/factory/sections`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
+const sectionsApi = createCrudApi<FactoryItem, FactoryUpsertDto, FactoryUpsertDto>(
+  "/api/factory/sections"
+);
 
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function getSections(limit?: number, offset?: number) {
-    const res = await fetch(`/api/factory/sections${buildQuery({ limit, offset })}`, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function getSection(id: string) {
-    const res = await fetch(`/api/factory/sections/${id}`, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function updateSection(id: string, body: any) {
-    const res = await fetch(`/api/factory/sections/${id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function removeSection(id: string) {
-    const res = await fetch(`/api/factory/sections/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
+export const createSection = (body: FactoryUpsertDto) => sectionsApi.create(body);
+export const getSections = (limit?: number, offset?: number) =>
+  sectionsApi.list({ limit, offset } satisfies PaginationQuery);
+export const getSection = (id: string) => sectionsApi.get(id);
+export const updateSection = (id: string, body: FactoryUpsertDto) => sectionsApi.update(id, body);
+export const removeSection = (id: string) => sectionsApi.remove(id);

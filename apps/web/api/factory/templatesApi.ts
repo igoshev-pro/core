@@ -1,63 +1,14 @@
-import { buildQuery } from "../utils/buildQuery";
+import { createCrudApi, type PaginationQuery } from "../httpClient";
+import type { FactoryItem, FactoryUpsertDto } from "./types";
 
-export async function createTemplate(body: any) {
-    const res = await fetch(`/api/factory/templates`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
+const templatesApi = createCrudApi<FactoryItem, FactoryUpsertDto, FactoryUpsertDto>(
+  "/api/factory/templates"
+);
 
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function getTemplates(limit?: number, offset?: number) {
-    const res = await fetch(`/api/factory/templates${buildQuery({ limit, offset })}`, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function getTemplate(id: string) {
-    const res = await fetch(`/api/factory/templates/${id}`, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function updateTemplate(id: string, body: any) {
-    const res = await fetch(`/api/factory/templates/${id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function removeTemplate(id: string) {
-    const res = await fetch(`/api/factory/templates/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
+export const createTemplate = (body: FactoryUpsertDto) => templatesApi.create(body);
+export const getTemplates = (limit?: number, offset?: number) =>
+  templatesApi.list({ limit, offset } satisfies PaginationQuery);
+export const getTemplate = (id: string) => templatesApi.get(id);
+export const updateTemplate = (id: string, body: FactoryUpsertDto) =>
+  templatesApi.update(id, body);
+export const removeTemplate = (id: string) => templatesApi.remove(id);

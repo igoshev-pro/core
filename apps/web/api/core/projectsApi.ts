@@ -1,63 +1,11 @@
-import { buildQuery } from "../utils/buildQuery";
+import { createCrudApi, type PaginationQuery } from "../httpClient";
+import type { CreateProjectDto, Project, UpdateProjectDto } from "../types";
 
-export async function createProject(body: any) {
-    const res = await fetch(`/api/core/projects`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
+const projectsApi = createCrudApi<Project, CreateProjectDto, UpdateProjectDto>("/api/core/projects");
 
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function getProjects(limit?: number, offset?: number) {
-    const res = await fetch(`/api/core/projects${buildQuery({ limit, offset })}`, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function getProject(id: string) {
-    const res = await fetch(`/api/core/projects/${id}`, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function updateProject(id: string, body: any) {
-    const res = await fetch(`/api/core/projects/${id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
-
-export async function removeProject(id: string) {
-    const res = await fetch(`/api/core/projects/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-    });
-
-    if (!res.ok) return null;
-
-    return res.json();
-}
+export const createProject = (body: CreateProjectDto) => projectsApi.create(body);
+export const getProjects = (limit?: number, offset?: number) =>
+  projectsApi.list({ limit, offset } satisfies PaginationQuery);
+export const getProject = (id: string) => projectsApi.get(id);
+export const updateProject = (id: string, body: UpdateProjectDto) => projectsApi.update(id, body);
+export const removeProject = (id: string) => projectsApi.remove(id);
