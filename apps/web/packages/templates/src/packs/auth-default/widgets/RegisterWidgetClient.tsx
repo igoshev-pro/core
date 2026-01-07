@@ -1,6 +1,5 @@
 "use client";
 
-import { withProjectId } from "@/api/utils/withProjectId";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { addToast, useDisclosure } from "@heroui/react";
@@ -128,7 +127,7 @@ export const RegisterWidgetClient = () => {
             Есть аккаунт?{" "}
             <button
               className="text-primary cursor-pointer"
-              onClick={() => router.push(`/login${withProjectId()}`)}
+              onClick={() => router.push(`/login`)}
             >
               Вход
             </button>

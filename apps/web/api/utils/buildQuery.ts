@@ -1,16 +1,5 @@
-export function buildQuery(
-  params?: Record<string, string | number | boolean | null | undefined>
-) {
-  if (!params) return "";
+import { buildQueryString, type QueryParams } from "../httpClient";
 
-  const search = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      search.set(key, String(value));
-    }
-  });
-
-  const qs = search.toString();
-  return qs ? `?${qs}` : "";
+export function buildQuery(params?: QueryParams) {
+  return buildQueryString(params);
 }

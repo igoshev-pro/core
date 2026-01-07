@@ -1,7 +1,6 @@
 "use client";
 
 import { login } from "@/api/core/authApi";
-import { withProjectId } from "@/api/utils/withProjectId";
 import {
   addToast,
   Button,
@@ -58,7 +57,7 @@ export const OtpModal: React.FC<Props> = ({
     try {
       const res = await login({ email, otp });
       if (res) {
-        router.push(`/admin${withProjectId()}`)
+        router.push(`/admin`);
       }
     } catch (err: any) {
       switch (err.status) {
