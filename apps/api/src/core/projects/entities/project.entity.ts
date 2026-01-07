@@ -1,91 +1,86 @@
+// src/projects/entities/project.entity.ts
+
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { ProjectStatus, ProjectType } from '../project.enum'
+import { ProjectStatus, ProjectType } from '../project.enum';
 import { Client } from '../../clients/entities/client.entity';
-import { buildI18nText, type I18nMap } from 'src/common/types/i18n.types';
+import { type I18nMap } from 'src/common/types/i18n.types';
 import { FileObject } from 'src/common/types/file-object';
 import { SiteSchema } from './site-schema.entity';
 
 export type ProjectDocument = Project & Document;
 
 export type ProjectTemplate = {
-  public: string
-  admin: string
-  auth: string
-}
+  public: string;
+  admin: string;
+  auth: string;
+};
 
 export type ProjectTheme = {
   public: string;
   admin: string;
-  auth: string
-}
-
-export type SiteLayout = {
-  _id: string
-  type: string
-  layoutKey: string // идентификатор лейаута для регистри public.default
-  slots?: {
-    sidebar?: any[]
-  }
-}
-
-export type SiteBlock = {
-  _id: string
-  type: "widget" | "section"
-  key: string, // идентификатор 404.v1
-  props: any
-}
-
-export type PageAccess = {
-  auth?: boolean;                 // требуется логин
-  roles?: string[];               // роли (любой из списка)
-  features?: string[];
-  redirectTo?: string;            // куда при запрете (по умолчанию /login)
-
-  permissions?: string[];         // пермишены (любой из списка)// фичи проекта (включены)
-  all?: boolean;                  // если true: roles/permissions/features должны выполняться ВСЕ (AND),
-  // иначе по умолчанию: внутри каждого массива - OR, а массивы между собой - AND
-  hideInMenuIfNoAccess?: boolean; // чтобы меню не показывало
+  auth: string;
 };
 
-export type SitePage = {
-  _id: string,
-  name: string,
-  path: string,
-  kind: "static" | "dynamic"
-  access: PageAccess
-  blocks: SiteBlock[]
-}
-
-export type ProjectSiteSchema = {
-  public: {
-    version?: string
-    layout: SiteLayout
-    pages: SitePage[]
-  }; // SiteSchema
-  admin: {
-    version?: string
-    layout: SiteLayout
-    pages: SitePage[]
-  }  // SiteSchema
-  login: {
-    version?: string
-    layout: SiteLayout
-    pages: SitePage[]
-  }; // SiteSchema
-}
-
 export type ProjectSeoDefaults = {
-  title?: string;
-  description?: string;
+  title?: I18nMap;
+  description?: I18nMap;
   ogImage?: string;
-}
+};
 
 export type I18n = {
-  locales: string[],
-  defaultLocal: string
-}
+  locales: string[];
+  defaultLocal: string;
+};
 
+// ===================== NEW: Settings types =====================
+export type ProjectAddress = {
+  country?: string;
+  region?: string;
+  city?: string;
+  street?: string;
+  house?: string;
+  postalCode?: string;
+  placeId?: string;
+  geo?: {
+    lat?: number;
+    lng?: number;
+  };
+};
+
+export type ProjectSocialLinks = {
+  instagram?: string;
+  facebook?: string;
+  vk?: string;
+};
+
+export type ProjectContacts = {
+  phones?: string[];
+  emails?: string[];
+  telegram?: string;
+  whatsApp?: string;
+};
+
+export type ProjectAnalytics = {
+  ga4Id?: string;
+  ymId?: string;
+  metaPixelId?: string;
+};
+
+export type ProjectSettings = {
+  companyName?: I18nMap;
+  companyLogoPath?: string;
+  companyLogoDarkPath?: string;
+  companyLogoAltPath?: string;
+  faviconPath?: string;
+  seoDefaults?: ProjectSeoDefaults;
+  address?: ProjectAddress;
+  socialLinks?: ProjectSocialLinks;
+  contacts?: ProjectContacts;
+  analytics?: ProjectAnalytics;
+};
+
+// ===================== Schema =====================
 @Schema({ timestamps: true })
 export class Project {
   @Prop({ required: true })
@@ -98,12 +93,13 @@ export class Project {
   name!: I18nMap;
 
   @Prop({
-    type: Object, default: {
-      locales: ["ru"],
-      defaultLocal: "ru"
-    }
+    type: Object,
+    default: {
+      locales: ['ru'],
+      defaultLocal: 'ru',
+    },
   })
-  i18n: I18n
+  i18n: I18n;
 
   @Prop({ type: String, required: false, default: null })
   previewPath?: string | null;
@@ -129,99 +125,26 @@ export class Project {
   };
 
   // Bootstrap & schema
-
   @Prop({ type: Object, required: false })
   template?: ProjectTemplate;
 
   @Prop({ type: Object, required: false })
   theme?: ProjectTheme;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'SiteSchema', required: false, default: null })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SiteSchema',
+    required: false,
+    default: null,
+  })
   site?: mongoose.Types.ObjectId | SiteSchema | null;
 
   @Prop({ type: Object, required: false })
-  seoDefaults?: ProjectSeoDefaults
+  seoDefaults?: ProjectSeoDefaults;
 
-  // @Prop({ required: true, unique: true }) slug: string;
-  // @Prop() description?: string;
-  // @Prop() preview?: string;
-  // @Prop() logo?: string;
-  // @Prop() logoSmall?: string;
-
-  // @Prop({
-  //   type: ProjectFeatures,
-  //   default: {
-  //     topLevel: [],
-  //     cmsFeatures: [],
-  //     entityFeatures: [],
-  //     modulesFeatures: [],
-  //   },
-  // })
-  // features: ProjectFeatures;
-
-  // @Prop({
-  //   type: {
-  //     template: {
-  //       name: { type: String, default: 'Default' },
-  //     },
-  //     theme: {
-  //       primaryColor: { type: String, default: '#000000' },
-  //       secondaryColor: { type: String, default: '#ffffff' },
-  //       accentColor: { type: String, default: '#ff0000' },
-  //     },
-  //     fonts: {
-  //       primary: { type: String, default: 'Roboto' },
-  //       secondary: { type: String, default: 'Arial' },
-  //     },
-  //   },
-  //   default: {},
-  // })
-  // siteSettings: {
-  //   theme: {
-  //     primaryColor: string;
-  //     secondaryColor: string;
-  //     accentColor: string;
-  //   };
-  //   fonts: { primary: string; secondary: string };
-  // };
-
-  // @Prop({ type: Object })
-  // contacts?: Contacts;
-
-  // @Prop({ type: Object })
-  // socialLinks?: SocialLinks;
-
-  // @Prop({ type: Object })
-  // address?: Address;
-
-  // @Prop({
-  //   type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Page' }],
-  //   default: [],
-  // })
-  // pages: mongoose.Types.ObjectId[];
-
-  // @Prop({ type: Array, default: [] }) entities: EntitySchema[];
+  // ===================== NEW: Settings field =====================
+  @Prop({ type: Object, default: {} })
+  settings?: ProjectSettings;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
-
-// ProjectSchema.pre("save", function (next) {
-//   this.nameI18nText = buildI18nText(this.name);
-//   next();
-// });
-
-// ProjectSchema.pre(["findOneAndUpdate", "updateOne", "updateMany"], function (next) {
-//   const update: any = this.getUpdate() ?? {};
-//   const name = update.name ?? update.$set?.name;
-
-//   if (name && typeof name === "object") {
-//     const computed = buildI18nText(name);
-//     update.$set = update.$set ?? {};
-//     update.$set.nameI18nText = computed;
-//     this.setUpdate(update);
-//   }
-//   next();
-// });
-
-// ProjectSchema.index({ projectId: 1, slug: 1 }, { unique: true });
-// ProjectSchema.index({ projectId: 1, nameI18nText: "text" });

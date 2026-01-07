@@ -78,14 +78,14 @@ const SideMenuMainLayout = () => {
           route: '/admin/cms/settings',
         },
         {
+          label: "Схема сайта",
+          icon: <RiPagesFill className="text-[22px] w-[24px] flex justify-center" />,
+          route: '/admin/cms/pages',
+        },
+        {
           label: "Меню сайта",
           icon: <GiHamburgerMenu className="text-[22px] w-[24px] flex justify-center" />,
           route: '/admin/cms/menu',
-        },
-        {
-          label: "Страницы",
-          icon: <RiPagesFill className="text-[22px] w-[24px] flex justify-center" />,
-          route: '/admin/cms/pages',
         },
       ],
     },

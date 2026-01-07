@@ -1,6 +1,7 @@
 import { IsOptional, IsString, IsObject, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import type { I18nMap } from 'src/common/types/i18n.types';
+import type { ProjectSettings } from '../entities/project.entity';
 
 class MongoDbDto {
   @IsOptional()
@@ -127,4 +128,8 @@ export class UpdateProjectDto {
   @ValidateNested()
   @Type(() => SiteConfigDto)
   site?: SiteConfigDto;
+
+  @IsOptional()
+  @IsObject()
+  settings?: ProjectSettings;
 }

@@ -3,7 +3,7 @@ import CMSettingsSectionC from './CMSSettingsSectionC'
 
 const CMSSettingsSection = ({ node, ctx }: any) => {
   return (
-    <CMSettingsSectionC projectId={ctx.projectId} />
+    <CMSettingsSectionC projectId={ctx.projectId} id={ctx.projectId} type={node.props.type} />
   )
 }
 
