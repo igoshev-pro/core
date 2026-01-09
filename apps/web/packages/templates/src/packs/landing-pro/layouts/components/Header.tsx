@@ -23,16 +23,23 @@ import { FaChevronDown } from "react-icons/fa6";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [mounted]);
 
   const handleScrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -64,6 +71,13 @@ export default function Header() {
     { key: "freelancers", label: "vs Фрилансеры", href: "/comparisons/freelancers" },
     { key: "constructors", label: "vs Конструкторы", href: "/comparisons/constructors" },
   ];
+
+  // Не рендерим на сервере, чтобы избежать ошибок гидратации
+  if (!mounted) {
+    return (
+      <div className="h-20 w-full" /> // Placeholder для сохранения layout
+    );
+  }
 
   return (
     <HeroUINavbar

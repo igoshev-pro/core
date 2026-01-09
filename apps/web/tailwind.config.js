@@ -18,6 +18,7 @@ const config = {
 		"primary-300": "var(--color-primary)",
 		"primary-400": "var(--color-primary)",
 		"primary-500": "var(--color-primary)",
+		"primary-2": "var(--color-primary-2)",
         secondary: "var(--color-secondary)",
         gray: "var(--color-gray)",
       },
@@ -29,6 +30,9 @@ const config = {
 				custom: "0 8px 30px rgba(0,0,0,0.3)",
 				"custom-light": "0 8px 30px rgba(0,0,0,0.1)",
 			},
+      backgroundImage: {
+        "primary-gradient": "linear-gradient(to bottom right, var(--color-primary), var(--color-primary-2))",
+      },
     },
   },
   darkMode: "class",

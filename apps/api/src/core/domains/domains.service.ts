@@ -7,6 +7,7 @@ import { Model } from 'mongoose'
 import { Domain, type DomainDocument } from './entities/domain.entity'
 import { DomainDto } from './dto/domain.dto'
 import { Project, ProjectDocument } from '../projects/entities/project.entity';
+import { ProjectStatus } from '../projects/project.enum';
 
 type DomainRow = {
   host: string;
@@ -140,7 +141,16 @@ export class DomainsService {
   }
 
   create(data: DomainDto) {
-    const newDomain = new this.domainModel(data);
+    // Проверяем, что host существует
+    if (!data.host) {
+      throw new Error('Host is required');
+    }
+
+    const newDomain = new this.domainModel({
+      host: data.host,
+      projectId: data.projectId,
+      status: data.status || ProjectStatus.DRAFT,
+    });
     return newDomain.save();
   }
 

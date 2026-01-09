@@ -121,6 +121,11 @@ export class ProjectsService {
       },
     });
 
+    // Проверяем, что domainTech существует
+    if (!data.domainTech) {
+      throw new HttpException('Domain tech is required', HttpStatus.BAD_REQUEST);
+    }
+
     const newDomain = new this.domainModel({
       host: data.domainTech,
       projectId: savedProject._id.toString(),

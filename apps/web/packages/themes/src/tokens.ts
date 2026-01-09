@@ -5,7 +5,17 @@ export const themes: Record<string, ThemeTokens> = {
     _id: "default",
     vars: {
       "color-primary": "#22C55E",
+      "color-primary-2": "#00C7BE",
       "color-secondary": "#333F4E",
+      "color-gray": "#F2F4F8",
+      "font-sans": '"Montserrat"',
+    },
+  },
+  "default-red": {
+    _id: "default",
+    vars: {
+      "color-primary": "#FF5F57",
+      "color-secondary": "#0088FF",
       "color-gray": "#F2F4F8",
       "font-sans": '"Montserrat"',
     },
