@@ -21,6 +21,7 @@ const config = {
 		"primary-2": "var(--color-primary-2)",
         secondary: "var(--color-secondary)",
         gray: "var(--color-gray)",
+		accent: "var(--color-accent)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
@@ -32,6 +33,8 @@ const config = {
 			},
       backgroundImage: {
         "primary-gradient": "linear-gradient(to bottom right, var(--color-primary), var(--color-primary-2))",
+        "primary-gradient-dark": "linear-gradient(to bottom right, color-mix(in srgb, var(--color-primary) 60%, black), color-mix(in srgb, var(--color-primary-2) 60%, black))",
+        "secondary-gradient": "linear-gradient(to bottom right, var(--color-secondary), #F9AB72)",
       },
     },
   },

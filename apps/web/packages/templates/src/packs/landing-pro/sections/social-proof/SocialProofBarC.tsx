@@ -1,16 +1,17 @@
 "use client";
 
 import { Card } from "@heroui/react";
+import Image from "next/image";
 
 export default function SocialProofBarC({ node, ctx }: any) {
   // Placeholder логотипы - можно заменить на реальные
   const logos = [
-    { name: "Client 1", src: "/img/placeholders/logo-1.svg" },
-    { name: "Client 2", src: "/img/placeholders/logo-2.svg" },
-    { name: "Client 3", src: "/img/placeholders/logo-3.svg" },
-    { name: "Client 4", src: "/img/placeholders/logo-4.svg" },
-    { name: "Client 5", src: "/img/placeholders/logo-5.svg" },
-    { name: "Client 6", src: "/img/placeholders/logo-6.svg" },
+    { name: "Client 1", src: "/img/system/bc.svg" },
+    { name: "Client 2", src: "/img/system/s.svg" },
+    { name: "Client 4", src: "/img/system/moya.svg" },
+    { name: "Client 3", src: "/img/system/allur.png" },
+    { name: "Client 6", src: "/img/system/21.svg" },
+    { name: "Client 5", src: "/img/system/nat.svg" },
   ];
 
   return (
@@ -23,8 +24,15 @@ export default function SocialProofBarC({ node, ctx }: any) {
               key={index}
               className="flex flex-col gap-3 p-3 rounded-4xl opacity-60 hover:opacity-100 transition-opacity duration-300"
             >
-              <div className="w-24 h-16 bg-foreground-100 rounded-[21px] flex items-center justify-center">
-                <span className="text-xs text-foreground-500 font-semibold">{logo.name}</span>
+              <div className="w-24 h-16 px-3 flex items-center justify-center">
+                <Image
+                  src={logo.src}
+                  alt={logo.name}
+                  width={96}
+                  height={64}
+                  className="w-full h-auto"
+                  style={{ maxHeight: '64px', objectFit: 'contain' }}
+                />
               </div>
             </Card>
           ))}

@@ -6,8 +6,9 @@ export const themes: Record<string, ThemeTokens> = {
     vars: {
       "color-primary": "#22C55E",
       "color-primary-2": "#00C7BE",
-      "color-secondary": "#333F4E",
+      "color-secondary": "#FF5F57",
       "color-gray": "#F2F4F8",
+      "color-accent": "#FF5F57",
       "font-sans": '"Montserrat"',
     },
   },

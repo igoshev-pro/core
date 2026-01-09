@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Navbar as HeroUINavbar,
@@ -92,13 +93,14 @@ export default function Header() {
         <NavbarBrand as={Link} href="/" className="flex-shrink-0">
           <Logo />
         </NavbarBrand>
+      </NavbarContent>
 
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-6">
+      {/* Desktop Navigation - Centered */}
+      <NavbarContent className="hidden lg:flex gap-9" justify="center">
           <NavbarItem>
             <button
               onClick={() => handleScrollToSection("how-it-works")}
-              className="text-foreground hover:text-primary transition-colors"
+              className="text-foreground hover:text-primary transition-colors cursor-pointer"
             >
               Как работает
             </button>
@@ -109,7 +111,7 @@ export default function Header() {
               href="/tarify"
               className={`${
                 pathname === "/tarify" ? "text-primary font-medium" : "text-foreground"
-              } hover:text-primary transition-colors`}
+              } hover:text-primary transition-colors cursor-pointer`}
             >
               Тарифы
             </Link>
@@ -120,7 +122,7 @@ export default function Header() {
               href="/cases"
               className={`${
                 pathname === "/cases" ? "text-primary font-medium" : "text-foreground"
-              } hover:text-primary transition-colors`}
+              } hover:text-primary transition-colors cursor-pointer`}
             >
               Кейсы
             </Link>
@@ -131,7 +133,7 @@ export default function Header() {
               href="/blog"
               className={`${
                 pathname === "/blog" ? "text-primary font-medium" : "text-foreground"
-              } hover:text-primary transition-colors`}
+              } hover:text-primary transition-colors cursor-pointer`}
             >
               Блог
             </Link>
@@ -141,7 +143,7 @@ export default function Header() {
           <NavbarItem>
             <Dropdown>
               <DropdownTrigger>
-                <button className="flex items-center gap-1 text-foreground hover:text-primary transition-colors">
+                <button className="flex items-center gap-1 text-foreground hover:text-primary transition-colors cursor-pointer">
                   Ниши
                   <FaChevronDown className="text-xs" />
                 </button>
@@ -152,7 +154,7 @@ export default function Header() {
                     key={item.key}
                     as={Link}
                     href={item.href}
-                    className="text-foreground"
+                    className="text-foreground cursor-pointer"
                   >
                     {item.label}
                   </DropdownItem>
@@ -165,7 +167,7 @@ export default function Header() {
           <NavbarItem>
             <Dropdown>
               <DropdownTrigger>
-                <button className="flex items-center gap-1 text-foreground hover:text-primary transition-colors">
+                <button className="flex items-center gap-1 text-foreground hover:text-primary transition-colors cursor-pointer">
                   Сравнения
                   <FaChevronDown className="text-xs" />
                 </button>
@@ -176,7 +178,7 @@ export default function Header() {
                     key={item.key}
                     as={Link}
                     href={item.href}
-                    className="text-foreground"
+                    className="text-foreground cursor-pointer"
                   >
                     {item.label}
                   </DropdownItem>
@@ -184,17 +186,21 @@ export default function Header() {
               </DropdownMenu>
             </Dropdown>
           </NavbarItem>
-        </div>
       </NavbarContent>
 
-      <NavbarContent justify="end" className="gap-4">
+      <NavbarContent justify="end" className="gap-6">
         {/* CTA Button - Desktop */}
         <NavbarItem className="hidden md:flex">
           <Button
             color="primary"
             variant="solid"
+            radius="full"
             onPress={handleCTAClick}
-            className="font-medium"
+            className="font-medium bg-primary-gradient"
+            style={{
+              paddingLeft: '24px',
+              paddingRight: '24px',
+            }}
           >
             Оставить заявку
           </Button>
@@ -205,9 +211,13 @@ export default function Header() {
           <Button
             color="primary"
             variant="solid"
-            size="sm"
+            radius="full"
             onPress={handleCTAClick}
-            className="font-medium"
+            className="font-medium bg-primary-gradient"
+            style={{
+              paddingLeft: '24px',
+              paddingRight: '24px',
+            }}
           >
             Позвонить
           </Button>
@@ -227,7 +237,7 @@ export default function Header() {
         <NavbarMenuItem>
           <button
             onClick={() => handleScrollToSection("how-it-works")}
-            className="w-full text-left text-foreground hover:text-primary transition-colors py-2"
+            className="w-full text-left text-foreground hover:text-primary transition-colors py-2 cursor-pointer"
           >
             Как работает
           </button>
@@ -237,7 +247,7 @@ export default function Header() {
             href="/tarify"
             className={`w-full block py-2 ${
               pathname === "/tarify" ? "text-primary font-medium" : "text-foreground"
-            } hover:text-primary transition-colors`}
+            } hover:text-primary transition-colors cursor-pointer`}
           >
             Тарифы
           </Link>
@@ -247,7 +257,7 @@ export default function Header() {
             href="/cases"
             className={`w-full block py-2 ${
               pathname === "/cases" ? "text-primary font-medium" : "text-foreground"
-            } hover:text-primary transition-colors`}
+            } hover:text-primary transition-colors cursor-pointer`}
           >
             Кейсы
           </Link>
@@ -257,7 +267,7 @@ export default function Header() {
             href="/blog"
             className={`w-full block py-2 ${
               pathname === "/blog" ? "text-primary font-medium" : "text-foreground"
-            } hover:text-primary transition-colors`}
+            } hover:text-primary transition-colors cursor-pointer`}
           >
             Блог
           </Link>
@@ -270,7 +280,7 @@ export default function Header() {
                 <Link
                   key={item.key}
                   href={item.href}
-                  className="text-foreground hover:text-primary transition-colors py-1"
+                  className="text-foreground hover:text-primary transition-colors py-1 cursor-pointer"
                 >
                   {item.label}
                 </Link>
@@ -286,7 +296,7 @@ export default function Header() {
                 <Link
                   key={item.key}
                   href={item.href}
-                  className="text-foreground hover:text-primary transition-colors py-1"
+                  className="text-foreground hover:text-primary transition-colors py-1 cursor-pointer"
                 >
                   {item.label}
                 </Link>
@@ -301,24 +311,17 @@ export default function Header() {
 
 // Logo Component
 function Logo() {
+  // Соотношение сторон: 638x220 ≈ 2.9:1
+  // При высоте h-12 (48px) ширина должна быть ~139px
   return (
-    <svg
-      width="120"
-      height="40"
-      viewBox="0 0 120 40"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-8 w-auto"
-    >
-      <rect width="120" height="40" rx="4" fill="currentColor" className="text-primary" />
-      <text
-        x="60"
-        y="25"
-        textAnchor="middle"
-        className="fill-white text-sm font-bold"
-      >
-        LOGO
-      </text>
-    </svg>
+    <div className="h-12" style={{ width: 'calc(3rem * 638 / 220)', position: 'relative' }}>
+      <Image
+        src="/img/system/logo-dark.png"
+        alt="Logo"
+        fill
+        style={{ objectFit: 'contain' }}
+        priority
+      />
+    </div>
   );
 }
