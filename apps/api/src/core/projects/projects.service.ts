@@ -108,11 +108,17 @@ export class ProjectsService {
       throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    await this.siteSchemaModel.create({
+    const site = await this.siteSchemaModel.create({
       projectId: savedProject._id.toString(),
       public: DEFAULT_SCHEMA_BY_MODE.public,
       admin: DEFAULT_SCHEMA_BY_MODE.admin,
       login: DEFAULT_SCHEMA_BY_MODE.login,
+    });
+
+    await this.projectModel.findByIdAndUpdate(savedProject._id, {
+      $set: {
+        site: site._id,
+      },
     });
 
     const newDomain = new this.domainModel({

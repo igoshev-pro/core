@@ -5,21 +5,18 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: [
-      "https://igoshev.pro",
-      "https://www.igoshev.pro",
-      "https://core.igoshev.pro",
-      "https://www.core.igoshev.pro",
-      "http://localhost:3000",
-    ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    origin: true, // 🔥 разрешает любой origin
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "x-project-id",
+      'Content-Type',
+      'Authorization',
+      'x-project-id',
+      'Origin',
+      'Accept',
     ],
-    exposedHeaders: ["ETag"],
-    credentials: false,
+    exposedHeaders: ['ETag'],
+    credentials: false, // важно: если true → origin нельзя '*'
+    optionsSuccessStatus: 204, // 🔥 для Safari / старых браузеров
   });
 
   await app.listen(3000);
