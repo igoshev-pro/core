@@ -277,6 +277,36 @@ const PropsEditor = memo(function PropsEditor({
     });
   }, [pageIndex, blockIndex, onUpdate]);
 
+  // Вычисляем properties и required - ВСЕГДА вызываем, до любых условных возвратов
+  const properties = propsSchema?.properties || {};
+  const required = propsSchema?.required || [];
+
+  // Фильтруем пропсы: если не суперадмин, показываем только контентные - ВСЕГДА вызываем, до любых условных возвратов
+  const filteredProperties = useMemo(() => {
+    if (!propsSchema || !propsSchema.properties) {
+      return {};
+    }
+    if (isSuperAdmin) {
+      return properties;
+    }
+    // Фильтруем только контентные пропсы для клиентов
+    return Object.fromEntries(
+      Object.entries(properties).filter(([_, propSchema]: [string, any]) => {
+        // Если isContent не указан, считаем контентным (для обратной совместимости)
+        return propSchema.isContent !== false;
+      })
+    );
+  }, [propsSchema, properties, isSuperAdmin]);
+
+  const getPropLabel = useCallback((propKey: string, propSchema: any): string => {
+    // Если есть label с i18n, используем его
+    if (propSchema.label && typeof propSchema.label === 'object') {
+      return t(propSchema.label) || propKey;
+    }
+    // Иначе используем title или propKey
+    return propSchema.title || propKey;
+  }, [t]);
+
   // Условные возвраты только после всех хуков
   if (!block.key || !block.type) {
     return null;
@@ -342,33 +372,6 @@ const PropsEditor = memo(function PropsEditor({
       </div>
     );
   }
-
-  // Рендерим поля на основе схемы
-  const properties = propsSchema.properties || {};
-  const required = propsSchema.required || [];
-
-  // Фильтруем пропсы: если не суперадмин, показываем только контентные
-  const filteredProperties = useMemo(() => {
-    if (isSuperAdmin) {
-      return properties;
-    }
-    // Фильтруем только контентные пропсы для клиентов
-    return Object.fromEntries(
-      Object.entries(properties).filter(([_, propSchema]: [string, any]) => {
-        // Если isContent не указан, считаем контентным (для обратной совместимости)
-        return propSchema.isContent !== false;
-      })
-    );
-  }, [properties, isSuperAdmin]);
-
-  const getPropLabel = useCallback((propKey: string, propSchema: any): string => {
-    // Если есть label с i18n, используем его
-    if (propSchema.label && typeof propSchema.label === 'object') {
-      return t(propSchema.label) || propKey;
-    }
-    // Иначе используем title или propKey
-    return propSchema.title || propKey;
-  }, [t]);
 
   return (
     <div className="mt-3">

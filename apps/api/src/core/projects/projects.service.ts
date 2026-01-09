@@ -108,6 +108,13 @@ export class ProjectsService {
       throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    await this.siteSchemaModel.create({
+      projectId: savedProject._id.toString(),
+      public: DEFAULT_SCHEMA_BY_MODE.public,
+      admin: DEFAULT_SCHEMA_BY_MODE.admin,
+      login: DEFAULT_SCHEMA_BY_MODE.login,
+    });
+
     const newDomain = new this.domainModel({
       host: data.domainTech,
       projectId: savedProject._id.toString(),

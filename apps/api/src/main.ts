@@ -8,6 +8,8 @@ async function bootstrap() {
     origin: [
       "https://igoshev.pro",
       "https://www.igoshev.pro",
+      "https://core.igoshev.pro",
+      "https://www.core.igoshev.pro",
       "http://localhost:3000",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
